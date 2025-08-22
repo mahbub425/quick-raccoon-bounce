@@ -30,92 +30,172 @@ const getVoucherDetails = (id: string): VoucherType | undefined => {
   return allVouchers.find(v => v.id === id);
 };
 
+// Helper to generate default values based on form fields
+const generateDefaultValues = (formFields: FormFieldType[]) => {
+  const defaults: { [key: string]: any } = {};
+  formFields.forEach(field => {
+    if (field.type === 'date') {
+      defaults[field.name] = field.mandatory ? new Date() : null; // Use new Date() for mandatory, null for optional
+    } else if (field.type === 'number') {
+      defaults[field.name] = field.mandatory ? 0 : undefined;
+    } else if (field.type === 'pin-selector') {
+      defaults[field.name] = [];
+    } else if (field.type === 'quantity-unit') {
+      defaults[field.name] = { quantity: "", unit: "" };
+    } else if (field.type === 'file') {
+      defaults[field.name] = undefined;
+    } else {
+      defaults[field.name] = "";
+    }
+
+    // Handle conditional fields for default values
+    if (field.conditionalFields) {
+      field.conditionalFields.forEach(cond => {
+        cond.fields.forEach(condField => {
+          if (condField.type === 'date') {
+            defaults[condField.name] = condField.mandatory ? new Date() : null;
+          } else if (condField.type === 'number') {
+            defaults[condField.name] = condField.mandatory ? 0 : undefined;
+          } else if (condField.type === 'pin-selector') {
+            defaults[condField.name] = [];
+          } else if (condField.type === 'quantity-unit') {
+            defaults[condField.name] = { quantity: "", unit: "" };
+          } else if (condField.type === 'file') {
+            defaults[condField.name] = undefined;
+          } else {
+            defaults[condField.name] = "";
+          }
+        });
+      });
+    }
+  });
+  return defaults;
+};
+
 // Dynamic Zod schema generation
 const createSchema = (fields: FormFieldType[]) => {
   const schemaFields: { [key: string]: z.ZodTypeAny } = {};
 
   fields.forEach(field => {
-    let fieldSchema: z.ZodTypeAny;
+    let currentFieldSchema: z.ZodTypeAny;
 
     switch (field.type) {
       case "date":
-        fieldSchema = z.date({ required_error: `${field.label} আবশ্যক` });
+        currentFieldSchema = z.date();
+        if (!field.mandatory) {
+          currentFieldSchema = currentFieldSchema.nullable().optional();
+        }
         break;
       case "number":
-        fieldSchema = z.coerce.number({ invalid_type_error: `${field.label} অবশ্যই একটি সংখ্যা হতে হবে` });
+        currentFieldSchema = z.coerce.number({ invalid_type_error: `${field.label} অবশ্যই একটি সংখ্যা হতে হবে` });
+        if (field.mandatory) {
+          currentFieldSchema = currentFieldSchema.min(1, { message: `${field.label} অবশ্যই 0 এর বেশি হতে হবে` });
+        } else {
+          currentFieldSchema = currentFieldSchema.optional();
+        }
         break;
       case "dropdown":
       case "text":
       case "textarea":
       case "time":
-        fieldSchema = z.string();
+        currentFieldSchema = z.string();
+        if (field.mandatory) {
+          currentFieldSchema = currentFieldSchema.min(1, { message: `${field.label} আবশ্যক` });
+        } else {
+          currentFieldSchema = currentFieldSchema.optional();
+        }
         break;
       case "file":
-        fieldSchema = z.any(); // File input is tricky, often handled manually or with specific file schemas
+        currentFieldSchema = z.any();
+        if (field.mandatory) {
+          currentFieldSchema = currentFieldSchema.refine(file => file !== undefined, { message: `${field.label} আবশ্যক` });
+        } else {
+          currentFieldSchema = currentFieldSchema.optional();
+        }
         break;
       case "pin-selector":
-        fieldSchema = z.array(z.string());
+        currentFieldSchema = z.array(z.string());
+        if (field.mandatory) {
+          currentFieldSchema = currentFieldSchema.min(1, { message: `${field.label} আবশ্যক` });
+        } else {
+          currentFieldSchema = currentFieldSchema.optional();
+        }
         break;
       case "quantity-unit":
-        fieldSchema = z.object({
+        currentFieldSchema = z.object({
           quantity: z.string().min(1, "পরিমান আবশ্যক"),
           unit: z.string().min(1, "ইউনিট আবশ্যক"),
         });
+        if (!field.mandatory) {
+          currentFieldSchema = currentFieldSchema.optional();
+        }
         break;
       default:
-        fieldSchema = z.any();
+        currentFieldSchema = z.any().optional();
     }
 
-    if (field.mandatory) {
-      if (field.type === 'pin-selector') {
-        fieldSchema = fieldSchema.refine(val => (val as string[]).length > 0, { message: `${field.label} আবশ্যক` });
-      } else if (field.type === 'quantity-unit') {
-        fieldSchema = fieldSchema.refine(val => (val as { quantity: string, unit: string }).quantity && (val as { quantity: string, unit: string }).unit, { message: `${field.label} আবশ্যক` });
-      } else if (field.type !== 'file') { // File mandatory check is complex, skip for now
-        fieldSchema = fieldSchema.min(1, { message: `${field.label} আবশ্যক` });
-      }
-    } else {
-      fieldSchema = fieldSchema.optional();
-    }
-
-    schemaFields[field.name] = fieldSchema;
+    schemaFields[field.name] = currentFieldSchema;
 
     // Handle conditional fields recursively
     if (field.conditionalFields) {
       field.conditionalFields.forEach(cond => {
         cond.fields.forEach(condField => {
-          let condFieldSchema: z.ZodTypeAny;
+          let currentCondFieldSchema: z.ZodTypeAny;
           switch (condField.type) {
-            case "date": condFieldSchema = z.date({ required_error: `${condField.label} আবশ্যক` }); break;
-            case "number": condFieldSchema = z.coerce.number({ invalid_type_error: `${condField.label} অবশ্যই একটি সংখ্যা হতে হবে` }); break;
+            case "date":
+              currentCondFieldSchema = z.date();
+              if (!condField.mandatory) {
+                currentCondFieldSchema = currentCondFieldSchema.nullable().optional();
+              }
+              break;
+            case "number":
+              currentCondFieldSchema = z.coerce.number({ invalid_type_error: `${condField.label} অবশ্যই একটি সংখ্যা হতে হবে` });
+              if (condField.mandatory) {
+                currentCondFieldSchema = currentCondFieldSchema.min(1, { message: `${condField.label} অবশ্যই 0 এর বেশি হতে হবে` });
+              } else {
+                currentCondFieldSchema = currentCondFieldSchema.optional();
+              }
+              break;
             case "dropdown":
             case "text":
             case "textarea":
             case "time":
-              condFieldSchema = z.string();
+              currentCondFieldSchema = z.string();
+              if (condField.mandatory) {
+                currentCondFieldSchema = currentCondFieldSchema.min(1, { message: `${condField.label} আবশ্যক` });
+              } else {
+                currentCondFieldSchema = currentCondFieldSchema.optional();
+              }
               break;
-            case "file": condFieldSchema = z.any(); break;
-            case "pin-selector": condFieldSchema = z.array(z.string()); break;
+            case "file":
+              currentCondFieldSchema = z.any();
+              if (condField.mandatory) {
+                currentCondFieldSchema = currentCondFieldSchema.refine(file => file !== undefined, { message: `${condField.label} আবশ্যক` });
+              } else {
+                currentCondFieldSchema = currentCondFieldSchema.optional();
+              }
+              break;
+            case "pin-selector":
+              currentCondFieldSchema = z.array(z.string());
+              if (condField.mandatory) {
+                currentCondFieldSchema = currentCondFieldSchema.min(1, { message: `${condField.label} আবশ্যক` });
+              } else {
+                currentCondFieldSchema = currentCondFieldSchema.optional();
+              }
+              break;
             case "quantity-unit":
-              condFieldSchema = z.object({
+              currentCondFieldSchema = z.object({
                 quantity: z.string().min(1, "পরিমান আবশ্যক"),
                 unit: z.string().min(1, "ইউনিট আবশ্যক"),
               });
+              if (!condField.mandatory) {
+                currentCondFieldSchema = currentCondFieldSchema.optional();
+              }
               break;
-            default: condFieldSchema = z.any();
+            default:
+              currentCondFieldSchema = z.any().optional();
           }
-          if (condField.mandatory) {
-            if (condField.type === 'pin-selector') {
-              condFieldSchema = condFieldSchema.refine(val => (val as string[]).length > 0, { message: `${condField.label} আবশ্যক` });
-            } else if (condField.type === 'quantity-unit') {
-              condFieldSchema = condFieldSchema.refine(val => (val as { quantity: string, unit: string }).quantity && (val as { quantity: string, unit: string }).unit, { message: `${condField.label} আবশ্যক` });
-            } else if (condField.type !== 'file') {
-              condFieldSchema = condFieldSchema.min(1, { message: `${condField.label} আবশ্যক` });
-            }
-          } else {
-            condFieldSchema = condFieldSchema.optional();
-          }
-          schemaFields[condField.name] = condFieldSchema;
+          schemaFields[condField.name] = currentCondFieldSchema;
         });
       });
     }
@@ -133,25 +213,11 @@ const EntertainmentVoucherForm = ({ voucherTypeId, onFormSubmit }: Entertainment
   }
 
   const formSchema = createSchema(voucherDetails.formFields);
+  const defaultFormValues = useMemo(() => generateDefaultValues(voucherDetails.formFields), [voucherDetails.formFields]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      // Initialize all possible fields to prevent undefined issues
-      date: undefined,
-      institutionId: "",
-      branchId: "",
-      expenseTitle: "",
-      expenseCategory: "",
-      selectedPins: [],
-      guestName: "",
-      studentName: "",
-      guardianName: "",
-      quantityUnit: { quantity: "", unit: "" },
-      amount: undefined,
-      description: "",
-      attachment: undefined,
-    },
+    defaultValues: defaultFormValues,
   });
 
   const watchedValues = useWatch({ control: form.control });
@@ -179,7 +245,7 @@ const EntertainmentVoucherForm = ({ voucherTypeId, onFormSubmit }: Entertainment
       voucherHeading: voucherDetails.heading,
       data: data,
     });
-    form.reset(); // Reset form after submission
+    form.reset(defaultFormValues); // Reset form to initial default values after submission
     onFormSubmit?.(); // Call optional callback
   };
 
@@ -193,7 +259,7 @@ const EntertainmentVoucherForm = ({ voucherTypeId, onFormSubmit }: Entertainment
       <FormField
         key={field.name}
         control={form.control}
-        name={field.name as keyof z.infer<typeof formSchema>} // Use z.infer<typeof formSchema> for type safety
+        name={field.name as keyof z.infer<typeof formSchema>}
         render={({ field: formHookField }) => (
           <FormItem className="flex flex-col">
             <FormLabel className="text-gray-700 font-semibold">{field.label} {field.mandatory && <span className="text-red-500">*</span>}</FormLabel>
@@ -211,7 +277,7 @@ const EntertainmentVoucherForm = ({ voucherTypeId, onFormSubmit }: Entertainment
                   type="number"
                   placeholder={field.placeholder}
                   {...formHookField}
-                  value={formHookField.value === undefined || formHookField.value === null ? "" : formHookField.value}
+                  value={formHookField.value === undefined || formHookField.value === null ? "" : String(formHookField.value)} // Convert number to string
                   onChange={(e) => formHookField.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
                   className="border-blue-300 focus:border-blue-500 focus:ring-blue-500"
                 />
@@ -269,7 +335,7 @@ const EntertainmentVoucherForm = ({ voucherTypeId, onFormSubmit }: Entertainment
                   <PopoverContent className="w-auto p-0" align="start">
                     <Calendar
                       mode="single"
-                      selected={formHookField.value as Date}
+                      selected={formHookField.value as Date | null | undefined} // Handle null/undefined
                       onSelect={formHookField.onChange}
                       initialFocus
                     />
