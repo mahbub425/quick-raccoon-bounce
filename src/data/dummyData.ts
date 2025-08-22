@@ -628,13 +628,13 @@ export const DUMMY_VOUCHER_TYPES: VoucherType[] = [
               {
                 value: "Teacher",
                 fields: [
-                  { name: "teacherPins", label: "টিচার পিন", type: "text", mandatory: true, placeholder: "পিন লিখুন (স্পেস দিয়ে একাধিক)" },
+                  { name: "teacherPins", label: "টিচার পিন", type: "pin-selector", mandatory: true, allowMultiplePins: true },
                 ],
               },
               {
                 value: "Others",
                 fields: [
-                  { name: "otherPins", label: "পিন", type: "text", mandatory: true, placeholder: "পিন লিখুন (স্পেস দিয়ে একাধিক)" },
+                  { name: "otherPins", label: "পিন", type: "pin-selector", mandatory: true, allowMultiplePins: true },
                 ],
               },
             ],
