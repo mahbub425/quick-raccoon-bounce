@@ -24,19 +24,8 @@ const SelectedVouchers = () => {
     toast.info(`ফর্ম লোড হচ্ছে: ${getVoucherDetails(voucherId)?.heading}`);
   };
 
-  const handleSubFormLoad = (subVoucherId: string) => {
-    setActiveSubFormId(subVoucherId);
-    toast.info(`সাব-ফর্ম লোড হচ্ছে: ${getVoucherDetails(subVoucherId)?.heading}`);
-  };
-
-  const handleMainFormSubmissionComplete = () => {
-    setActiveFormId(null); // Reset main form after submission
-    setActiveSubFormId(null); // Also reset sub-form if any was active
-  };
-
-  const handleSubFormSubmissionComplete = () => {
-    setActiveSubFormId(null); // Only reset the sub-form, keep the main form active
-  };
+  // No need for handleMainFormSubmissionComplete or handleSubFormSubmissionComplete
+  // as DynamicVoucherForm will now handle its own reset and stay visible.
 
   if (selectedVouchers.length === 0) {
     return (
@@ -76,7 +65,8 @@ const SelectedVouchers = () => {
           </div>
         ) : (
           <>
-            <DynamicVoucherForm voucherTypeId={activeFormId} onFormSubmit={activeFormId === 'publicity' ? undefined : handleMainFormSubmissionComplete} />
+            {/* DynamicVoucherForm will now handle its own reset and stay visible */}
+            <DynamicVoucherForm voucherTypeId={activeFormId} />
 
             {activeFormId === 'publicity' && (
               <div className="mt-8 p-6 bg-white rounded-lg shadow-lg border border-blue-200">
@@ -85,21 +75,21 @@ const SelectedVouchers = () => {
                   <Button
                     variant={activeSubFormId === 'publicity-conveyance' ? "default" : "outline"}
                     className={activeSubFormId === 'publicity-conveyance' ? "bg-purple-600 text-white hover:bg-purple-700" : "bg-white text-purple-700 border-purple-400 hover:bg-purple-100 hover:text-purple-800"}
-                    onClick={() => handleSubFormLoad('publicity-conveyance')}
+                    onClick={() => setActiveSubFormId('publicity-conveyance')}
                   >
                     কনভেয়েন্স
                   </Button>
                   <Button
                     variant={activeSubFormId === 'publicity-entertainment' ? "default" : "outline"}
                     className={activeSubFormId === 'publicity-entertainment' ? "bg-purple-600 text-white hover:bg-purple-700" : "bg-white text-purple-700 border-purple-400 hover:bg-purple-100 hover:text-purple-800"}
-                    onClick={() => handleSubFormLoad('publicity-entertainment')}
+                    onClick={() => setActiveSubFormId('publicity-entertainment')}
                   >
                     এন্টারটেইনমেন্ট
                   </Button>
                   <Button
                     variant={activeSubFormId === 'publicity-publicist-bill' ? "default" : "outline"}
                     className={activeSubFormId === 'publicity-publicist-bill' ? "bg-purple-600 text-white hover:bg-purple-700" : "bg-white text-purple-700 border-purple-400 hover:bg-purple-100 hover:text-purple-800"}
-                    onClick={() => handleSubFormLoad('publicity-publicist-bill')}
+                    onClick={() => setActiveSubFormId('publicity-publicist-bill')}
                   >
                     প্রচারণাকরীর বিল
                   </Button>
@@ -107,7 +97,8 @@ const SelectedVouchers = () => {
 
                 {activeSubFormId && (
                   <div className="mt-6">
-                    <DynamicVoucherForm voucherTypeId={activeSubFormId} onFormSubmit={handleSubFormSubmissionComplete} />
+                    {/* DynamicVoucherForm will now handle its own reset and stay visible */}
+                    <DynamicVoucherForm voucherTypeId={activeSubFormId} />
                   </div>
                 )}
               </div>

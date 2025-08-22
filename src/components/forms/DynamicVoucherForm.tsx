@@ -18,7 +18,7 @@ import { FormField as FormFieldType, VoucherType } from "@/types";
 import PinSelector from "@/components/PinSelector";
 import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
-import AutosuggestInput from "@/components/AutosuggestInput"; // Import AutosuggestInput
+import AutosuggestInput from "@/components/AutosuggestInput";
 
 interface DynamicVoucherFormProps {
   voucherTypeId: string;
@@ -38,9 +38,9 @@ const generateDefaultValues = (formFields: FormFieldType[]) => {
   const processFields = (fields: FormFieldType[]) => {
     fields.forEach(field => {
       if (field.type === 'date') {
-        defaults[field.name] = field.mandatory ? new Date() : null;
+        defaults[field.name] = null;
       } else if (field.type === 'number') {
-        defaults[field.name] = field.mandatory ? 0 : undefined;
+        defaults[field.name] = undefined;
       } else if (field.type === 'pin-selector') {
         defaults[field.name] = [];
       } else if (field.type === 'quantity-unit') {
@@ -51,10 +51,9 @@ const generateDefaultValues = (formFields: FormFieldType[]) => {
         defaults[field.name] = "";
       }
 
-      // Recursively process conditional fields
       if (field.conditionalFields) {
         field.conditionalFields.forEach(cond => {
-          processFields(cond.fields); // Recursive call
+          processFields(cond.fields);
         });
       }
     });
@@ -65,7 +64,7 @@ const generateDefaultValues = (formFields: FormFieldType[]) => {
 };
 
 // Dynamic Zod schema generation (recursive)
-const createSchema = (fields: FormFieldType[], watchedValues: any) => {
+const createSchema = (fields: FormFieldType[], currentFormValues: any) => {
   const schemaFields: { [key: string]: z.ZodTypeAny } = {};
 
   const addFieldToSchema = (field: FormFieldType) => {
@@ -73,22 +72,23 @@ const createSchema = (fields: FormFieldType[], watchedValues: any) => {
 
     switch (field.type) {
       case "date":
-        currentFieldSchema = z.date({ required_error: `${field.label} আবশ্যক` });
-        if (!field.mandatory) {
+        currentFieldSchema = z.date({ invalid_type_error: `${field.label} অবশ্যই একটি তারিখ হতে হবে` });
+        if (field.mandatory) {
+          currentFieldSchema = (currentFieldSchema as z.ZodDate).nullable().refine(val => val !== null, { message: `${field.label} আবশ্যক` });
+        } else {
           currentFieldSchema = (currentFieldSchema as z.ZodDate).nullable().optional();
         }
         break;
       case "number":
-        currentFieldSchema = z.coerce.number({ invalid_type_error: `${field.label} অবশ্যই একটি সংখ্যা হতে হবে`, required_error: `${field.label} আবশ্যক` });
+        currentFieldSchema = z.coerce.number({ invalid_type_error: `${field.label} অবশ্যই একটি সংখ্যা হতে হবে` });
         if (field.mandatory) {
           currentFieldSchema = (currentFieldSchema as z.ZodNumber).min(1, { message: `${field.label} অবশ্যই 0 এর বেশি হতে হবে` });
         } else {
           currentFieldSchema = (currentFieldSchema as z.ZodNumber).optional();
         }
 
-        // Add maxAmountRules validation if present
-        if (field.maxAmountRules && field.name === "amount" && watchedValues.shift) {
-          const maxAmount = field.maxAmountRules[watchedValues.shift];
+        if (field.maxAmountRules && field.name === "amount" && currentFormValues.shift) {
+          const maxAmount = field.maxAmountRules[currentFormValues.shift];
           if (maxAmount !== undefined) {
             currentFieldSchema = (currentFieldSchema as z.ZodNumber).refine(
               (val) => val === undefined || val <= maxAmount,
@@ -107,13 +107,13 @@ const createSchema = (fields: FormFieldType[], watchedValues: any) => {
         if (field.mandatory) {
           currentFieldSchema = (currentFieldSchema as z.ZodString).min(1, { message: `${field.label} আবশ্যক` });
         } else {
-          currentFieldSchema = (currentFieldSchema as z.ZodString).optional();
+          currentFieldSchema = (currentFieldSchema as z.ZodString).optional().or(z.literal(""));
         }
         break;
       case "file":
         currentFieldSchema = z.any();
         if (field.mandatory) {
-          currentFieldSchema = (currentFieldSchema as z.ZodAny).refine(file => file !== undefined, { message: `${field.label} আবশ্যক` });
+          currentFieldSchema = (currentFieldSchema as z.ZodAny).refine(file => file !== undefined && file !== null, { message: `${field.label} আবশ্যক` });
         } else {
           currentFieldSchema = (currentFieldSchema as z.ZodAny).optional();
         }
@@ -131,7 +131,12 @@ const createSchema = (fields: FormFieldType[], watchedValues: any) => {
           quantity: z.string().min(1, "পরিমান আবশ্যক"),
           unit: z.string().min(1, "ইউনিট আবশ্যক"),
         });
-        if (!field.mandatory) {
+        if (field.mandatory) {
+          currentFieldSchema = (currentFieldSchema as z.ZodObject<{ quantity: z.ZodString, unit: z.ZodString }>).refine(
+            (val) => val.quantity !== "" && val.unit !== "",
+            { message: `${field.label} এর পরিমান ও ইউনিট উভয়ই আবশ্যক` }
+          );
+        } else {
           currentFieldSchema = (currentFieldSchema as z.ZodObject<{ quantity: z.ZodString, unit: z.ZodString }>).optional();
         }
         break;
@@ -141,15 +146,17 @@ const createSchema = (fields: FormFieldType[], watchedValues: any) => {
 
     schemaFields[field.name] = currentFieldSchema;
 
-    // Recursively add conditional fields to schema
     if (field.conditionalFields) {
+      const currentFieldValue = currentFormValues[field.name];
       field.conditionalFields.forEach(cond => {
-        cond.fields.forEach(condField => addFieldToSchema(condField)); // Recursive call
+        if (currentFieldValue === cond.value) {
+          cond.fields.forEach(condField => addFieldToSchema(condField));
+        }
       });
     }
   };
 
-  fields.forEach(addFieldToSchema); // Start recursion for top-level fields
+  fields.forEach(addFieldToSchema);
 
   return z.object(schemaFields);
 };
@@ -164,55 +171,18 @@ const DynamicVoucherForm = ({ voucherTypeId, onFormSubmit }: DynamicVoucherFormP
 
   const defaultFormValues = useMemo(() => generateDefaultValues(voucherDetails.formFields), [voucherDetails.formFields]);
 
-  // Initialize form with a temporary schema to get control for useWatch
-  const tempForm = useForm({ defaultValues: defaultFormValues });
-  const watchedValues = useWatch({ control: tempForm.control });
-
-  // Now create the dynamic schema using watchedValues
-  const formSchema = useMemo(() => createSchema(voucherDetails.formFields, watchedValues), [voucherDetails.formFields, watchedValues]);
-
-  // Re-initialize useForm with the dynamic schema
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema), // Pass resolver here
+  const form = useForm<z.infer<z.ZodObject<any>>>({
     defaultValues: defaultFormValues,
+    resolver: (values, context, options) => {
+      const dynamicSchema = createSchema(voucherDetails.formFields, values);
+      return zodResolver(dynamicSchema)(values, context, options);
+    },
   });
 
-  // If watchedValues change, the formSchema will change, and useForm will effectively re-initialize its resolver.
-  // We need to ensure the form instance used for useWatch is the same as the one used for the form.
-  // The best practice is to define form once and let its resolver update.
-  // The previous approach of `form.setResolver` was incorrect.
-  // The current approach of re-initializing `form` with `useMemo` or `useState` is also not ideal.
+  const watchedValues = useWatch({ control: form.control });
 
-  // Let's simplify: `useForm` should be called once. The `resolver` can be a `useMemo` value.
-  // The `watchedValues` will be derived from the `form.control` of that single `useForm` instance.
-  // This means `formSchema` will update, and `react-hook-form` will handle the resolver update internally.
+  const selectedInstitutionId = form.watch("institutionId");
 
-  // Re-structuring to avoid the temporary form and ensure `watchedValues` are from the actual form.
-  // This is the standard pattern for dynamic resolvers in RHF.
-  const formInstance = useForm<z.infer<typeof formSchema>>({
-    defaultValues: defaultFormValues,
-    resolver: zodResolver(formSchema), // Pass resolver here
-  });
-
-  // Use the control from the actual form instance
-  const actualWatchedValues = useWatch({ control: formInstance.control });
-  const actualFormSchema = useMemo(() => createSchema(voucherDetails.formFields, actualWatchedValues), [voucherDetails.formFields, actualWatchedValues]);
-
-  // Re-initialize formInstance with the actualFormSchema. This will cause a re-render.
-  // This is the correct way to handle dynamic schemas that depend on form values.
-  // The `formInstance` variable will be updated on subsequent renders.
-
-  // The `form` variable should be the one returned by `useForm`.
-  // Let's use `form` directly and ensure `formSchema` is correctly memoized.
-
-  const finalForm = useForm<z.infer<typeof formSchema>>({
-    defaultValues: defaultFormValues,
-    resolver: zodResolver(formSchema), // This formSchema will be re-evaluated when watchedValues change
-  });
-
-  const selectedInstitutionId = finalForm.watch("institutionId"); // Use watch from the final form instance
-
-  // Dynamically get branch options based on selected institution
   const branchOptions = useMemo(() => {
     if (!selectedInstitutionId) {
       return [];
@@ -228,7 +198,6 @@ const DynamicVoucherForm = ({ voucherTypeId, onFormSubmit }: DynamicVoucherFormP
       : [];
   }, [selectedInstitutionId]);
 
-  // Dynamically get program session options based on selected institution
   const programSessionOptions = useMemo(() => {
     if (!selectedInstitutionId || !DUMMY_PROGRAM_SESSIONS[selectedInstitutionId]) {
       return [];
@@ -240,27 +209,31 @@ const DynamicVoucherForm = ({ voucherTypeId, onFormSubmit }: DynamicVoucherFormP
   }, [selectedInstitutionId]);
 
 
-  const onSubmit = (data: z.infer<typeof formSchema>) => {
+  const onSubmit = (data: z.infer<z.ZodObject<any>>) => {
     addToCart({
       voucherTypeId: voucherDetails.id,
       voucherHeading: voucherDetails.heading,
       data: data,
     });
-    finalForm.reset(defaultFormValues); // Reset form to initial default values after submission
-    onFormSubmit?.(); // Call optional callback
+    form.reset(defaultFormValues);
+    onFormSubmit?.();
   };
 
-  // Recursive render function for form fields
+  const onError = (errors: any) => {
+    console.error("Form validation errors:", errors);
+    toast.error("ফর্ম পূরণে ত্রুটি আছে। অনুগ্রহ করে সকল আবশ্যক ফিল্ড পূরণ করুন।");
+  };
+
   const renderField = (field: FormFieldType) => {
-    const isVisible = !field.dependency || (finalForm.watch(field.dependency.field) === field.dependency.value || field.dependency.value === "*");
+    const isVisible = !field.dependency || (form.watch(field.dependency.field) === field.dependency.value || field.dependency.value === "*");
 
     if (!isVisible) return null;
 
     return (
       <div key={field.name} className="space-y-4">
         <FormField
-          control={finalForm.control}
-          name={field.name as Path<z.infer<typeof formSchema>>} // Use the correct schema type
+          control={form.control}
+          name={field.name as Path<z.infer<z.ZodObject<any>>>}
           render={({ field: formHookField }) => (
             <FormItem className="flex flex-col">
               <FormLabel className="text-gray-700 font-semibold">{field.label} {field.mandatory && <span className="text-red-500">*</span>}</FormLabel>
@@ -352,7 +325,7 @@ const DynamicVoucherForm = ({ voucherTypeId, onFormSubmit }: DynamicVoucherFormP
                             selected={formHookField.value as Date | null | undefined}
                             onSelect={formHookField.onChange}
                             initialFocus
-                            toDate={new Date()} 
+                            toDate={new Date()}
                           />
                         </PopoverContent>
                       </Popover>
@@ -415,17 +388,16 @@ const DynamicVoucherForm = ({ voucherTypeId, onFormSubmit }: DynamicVoucherFormP
                       </div>
                     );
                   }
-                  return null; // Fallback if no type matches
+                  return null;
                 })()}
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        {/* Recursively render nested conditional fields */}
         {field.conditionalFields &&
           field.conditionalFields.map((cond) =>
-            finalForm.watch(field.name) === cond.value
+            form.watch(field.name) === cond.value
               ? cond.fields.map((nestedCondField) => renderField(nestedCondField))
               : null
           )}
@@ -434,8 +406,8 @@ const DynamicVoucherForm = ({ voucherTypeId, onFormSubmit }: DynamicVoucherFormP
   };
 
   return (
-    <Form {...finalForm}>
-      <form onSubmit={finalForm.handleSubmit(onSubmit)} className="space-y-6 p-6 bg-white rounded-lg shadow-lg border border-blue-200">
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit, onError)} className="space-y-6 p-6 bg-white rounded-lg shadow-lg border border-blue-200">
         <h2 className="text-3xl font-bold text-blue-800 mb-6 text-center">{voucherDetails.heading}</h2>
         {voucherDetails.formFields.map((field) => renderField(field))}
         <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-700 hover:to-purple-800 text-white text-lg py-3 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105">
