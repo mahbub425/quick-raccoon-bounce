@@ -16,6 +16,10 @@ const Cart = () => {
   const publicityConveyanceVouchers = cartItems.filter(item => item.voucherTypeId === 'publicity-conveyance');
   const publicityEntertainmentVouchers = cartItems.filter(item => item.voucherTypeId === 'publicity-entertainment');
   const publicityPublicistBillVouchers = cartItems.filter(item => item.voucherTypeId === 'publicity-publicist-bill');
+  const rentalUtilityVouchers = cartItems.filter(item => item.voucherTypeId === 'rental-utility');
+  const mobileBillVouchers = cartItems.filter(item => item.voucherTypeId === 'mobile-bill');
+  const repairVouchers = cartItems.filter(item => item.voucherTypeId === 'repair');
+  const pettyCashVouchers = cartItems.filter(item => item.voucherTypeId === 'petty-cash');
 
   const getInstitutionName = (id: string) => DUMMY_INSTITUTIONS.find(inst => inst.id === id)?.name || "N/A";
   const getBranchName = (institutionId: string, branchId: string) => {
@@ -68,7 +72,7 @@ const Cart = () => {
     if (items.length === 0) {
       return (
         <TableRow>
-          <TableCell colSpan={11} className="text-center text-gray-500">
+          <TableCell colSpan={13} className="text-center text-gray-500">
             কোনো কনভেয়েন্স ভাউচার নেই।
           </TableCell>
         </TableRow>
@@ -136,7 +140,7 @@ const Cart = () => {
     if (items.length === 0) {
       return (
         <TableRow>
-          <TableCell colSpan={10} className="text-center text-gray-500">
+          <TableCell colSpan={9} className="text-center text-gray-500">
             কোনো প্রচারণা (কনভেয়েন্স) ভাউচার নেই।
           </TableCell>
         </TableRow>
@@ -168,7 +172,7 @@ const Cart = () => {
     if (items.length === 0) {
       return (
         <TableRow>
-          <TableCell colSpan={7} className="text-center text-gray-500">
+          <TableCell colSpan={6} className="text-center text-gray-500">
             কোনো প্রচারণা (এন্টারটেইনমেন্ট) ভাউচার নেই।
           </TableCell>
         </TableRow>
@@ -198,7 +202,7 @@ const Cart = () => {
     if (items.length === 0) {
       return (
         <TableRow>
-          <TableCell colSpan={8} className="text-center text-gray-500">
+          <TableCell colSpan={7} className="text-center text-gray-500">
             কোনো প্রচারণা (প্রচারণাকারীর বিল) ভাউচার নেই।
           </TableCell>
         </TableRow>
@@ -212,6 +216,35 @@ const Cart = () => {
         <TableCell>{item.data.mobileNumber || "N/A"}</TableCell>
         <TableCell>{item.data.shift || "N/A"}</TableCell>
         <TableCell className="text-right">{item.data.amount || 0}</TableCell>
+        <TableCell>{item.data.attachment ? "আছে" : "নেই"}</TableCell>
+        <TableCell className="flex justify-center space-x-2">
+          <Button variant="outline" size="sm" onClick={() => toast.info("এডিট ক্লিক করা হয়েছে")}>এডিট</Button>
+          <Button variant="destructive" size="sm" onClick={() => removeFromCart(item.id)}>মুছে ফেলুন</Button>
+        </TableCell>
+      </TableRow>
+    ));
+  };
+
+  // Helper function for rendering simple voucher tables (rental-utility, mobile-bill, repair, petty-cash)
+  const renderGenericSimpleTable = (items: CartItem[], title: string, headerBgClass: string) => {
+    if (items.length === 0) {
+      return (
+        <TableRow>
+          <TableCell colSpan={8} className="text-center text-gray-500">
+            কোনো {title} ভাউচার নেই।
+          </TableCell>
+        </TableRow>
+      );
+    }
+
+    return items.map((item, index) => (
+      <TableRow key={item.id}>
+        <TableCell className="font-medium">{index + 1}</TableCell>
+        <TableCell>{item.data.date ? format(new Date(item.data.date), "dd MMM, yyyy") : "N/A"}</TableCell>
+        <TableCell>{getInstitutionName(item.data.institutionId)}</TableCell>
+        <TableCell>{getBranchName(item.data.institutionId, item.data.branchId)}</TableCell>
+        <TableCell className="text-right">{item.data.amount || 0}</TableCell>
+        <TableCell>{item.data.description || "N/A"}</TableCell>
         <TableCell>{item.data.attachment ? "আছে" : "নেই"}</TableCell>
         <TableCell className="flex justify-center space-x-2">
           <Button variant="outline" size="sm" onClick={() => toast.info("এডিট ক্লিক করা হয়েছে")}>এডিট</Button>
@@ -328,7 +361,7 @@ const Cart = () => {
             </div>
           )}
 
-          {/* Other Voucher Tables */}
+          {/* Entertainment Voucher Table */}
           {entertainmentVouchers.length > 0 && (
             <div className="bg-white p-6 rounded-xl shadow-lg border border-green-200">
               <h2 className="text-2xl font-bold text-green-700 mb-4">এন্টারটেইনমেন্ট ভাউচার</h2>
@@ -354,6 +387,7 @@ const Cart = () => {
             </div>
           )}
 
+          {/* Conveyance Voucher Table */}
           {conveyanceVouchers.length > 0 && (
             <div className="bg-white p-6 rounded-xl shadow-lg border border-blue-200">
               <h2 className="text-2xl font-bold text-blue-700 mb-4">কনভেয়েন্স ভাউচার</h2>
@@ -382,17 +416,96 @@ const Cart = () => {
             </div>
           )}
 
-          {/* For now, if there are other types, just show a generic message */}
-          {cartItems.filter(item =>
-            item.voucherTypeId !== 'entertainment' &&
-            item.voucherTypeId !== 'conveyance' &&
-            item.voucherTypeId !== 'publicity' &&
-            item.voucherTypeId !== 'publicity-conveyance' &&
-            item.voucherTypeId !== 'publicity-entertainment' &&
-            item.voucherTypeId !== 'publicity-publicist-bill'
-          ).length > 0 && (
-            <div className="text-center text-xl text-gray-600 p-8 bg-white rounded-lg shadow-inner border border-gray-200">
-              অন্যান্য ভাউচার প্রকারের আইটেম কার্টে আছে।
+          {/* New tables for simple single-type vouchers */}
+          {rentalUtilityVouchers.length > 0 && (
+            <div className="bg-white p-6 rounded-xl shadow-lg border border-red-200">
+              <h2 className="text-2xl font-bold text-red-700 mb-4">রেন্টাল ও ইউটিলিটি বিল ভাউচার</h2>
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-red-100">
+                    <TableHead className="w-[50px]">ক্রমিক</TableHead>
+                    <TableHead>তারিখ</TableHead>
+                    <TableHead>প্রতিষ্ঠানের নাম</TableHead>
+                    <TableHead>শাখার নাম</TableHead>
+                    <TableHead className="text-right">টাকার পরিমাণ</TableHead>
+                    <TableHead>বর্ণনা</TableHead>
+                    <TableHead>সংযুক্তি</TableHead>
+                    <TableHead className="text-center">অ্যাকশন</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {renderGenericSimpleTable(rentalUtilityVouchers, "রেন্টাল ও ইউটিলিটি বিল", "bg-red-100")}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+
+          {mobileBillVouchers.length > 0 && (
+            <div className="bg-white p-6 rounded-xl shadow-lg border border-yellow-200">
+              <h2 className="text-2xl font-bold text-yellow-700 mb-4">মোবাইল বিল ভাউচার</h2>
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-yellow-100">
+                    <TableHead className="w-[50px]">ক্রমিক</TableHead>
+                    <TableHead>তারিখ</TableHead>
+                    <TableHead>প্রতিষ্ঠানের নাম</TableHead>
+                    <TableHead>শাখার নাম</TableHead>
+                    <TableHead className="text-right">টাকার পরিমাণ</TableHead>
+                    <TableHead>বর্ণনা</TableHead>
+                    <TableHead>সংযুক্তি</TableHead>
+                    <TableHead className="text-center">অ্যাকশন</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {renderGenericSimpleTable(mobileBillVouchers, "মোবাইল বিল", "bg-yellow-100")}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+
+          {repairVouchers.length > 0 && (
+            <div className="bg-white p-6 rounded-xl shadow-lg border border-teal-200">
+              <h2 className="text-2xl font-bold text-teal-700 mb-4">রিপেয়ার ভাউচার</h2>
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-teal-100">
+                    <TableHead className="w-[50px]">ক্রমিক</TableHead>
+                    <TableHead>তারিখ</TableHead>
+                    <TableHead>প্রতিষ্ঠানের নাম</TableHead>
+                    <TableHead>শাখার নাম</TableHead>
+                    <TableHead className="text-right">টাকার পরিমাণ</TableHead>
+                    <TableHead>বর্ণনা</TableHead>
+                    <TableHead>সংযুক্তি</TableHead>
+                    <TableHead className="text-center">অ্যাকশন</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {renderGenericSimpleTable(repairVouchers, "রিপেয়ার", "bg-teal-100")}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+
+          {pettyCashVouchers.length > 0 && (
+            <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+              <h2 className="text-2xl font-bold text-gray-700 mb-4">পেটি ক্যাশ ভাউচার</h2>
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-gray-100">
+                    <TableHead className="w-[50px]">ক্রমিক</TableHead>
+                    <TableHead>তারিখ</TableHead>
+                    <TableHead>প্রতিষ্ঠানের নাম</TableHead>
+                    <TableHead>শাখার নাম</TableHead>
+                    <TableHead className="text-right">টাকার পরিমাণ</TableHead>
+                    <TableHead>বর্ণনা</TableHead>
+                    <TableHead>সংযুক্তি</TableHead>
+                    <TableHead className="text-center">অ্যাকশন</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {renderGenericSimpleTable(pettyCashVouchers, "পেটি ক্যাশ", "bg-gray-100")}
+                </TableBody>
+              </Table>
             </div>
           )}
         </div>
