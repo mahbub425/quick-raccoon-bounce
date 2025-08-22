@@ -1,12 +1,14 @@
-import React from "react";
+import React, { useState } from "react";
 import { useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { DUMMY_VOUCHER_TYPES } from "@/data/dummyData";
 import { toast } from "sonner";
+import EntertainmentVoucherForm from "@/components/forms/EntertainmentVoucherForm"; // Import the new form component
 
 const SelectedVouchers = () => {
   const location = useLocation();
   const selectedVoucherIds: string[] = location.state?.selectedVoucherIds || [];
+  const [activeFormId, setActiveFormId] = useState<string | null>(null);
 
   const getVoucherDetails = (id: string) => {
     const allVouchers = DUMMY_VOUCHER_TYPES.flatMap(v => v.type === 'multi' && v.subTypes ? [v, ...v.subTypes] : [v]);
@@ -14,6 +16,15 @@ const SelectedVouchers = () => {
   };
 
   const selectedVouchers = selectedVoucherIds.map(getVoucherDetails).filter(Boolean);
+
+  const handleFormLoad = (voucherId: string) => {
+    setActiveFormId(voucherId);
+    toast.info(`ফর্ম লোড হচ্ছে: ${getVoucherDetails(voucherId)?.heading}`);
+  };
+
+  const handleFormSubmissionComplete = () => {
+    setActiveFormId(null); // Optionally reset active form after submission
+  };
 
   if (selectedVouchers.length === 0) {
     return (
@@ -37,20 +48,29 @@ const SelectedVouchers = () => {
         {selectedVouchers.map((voucher) => (
           <Button
             key={voucher?.id}
-            variant="outline"
-            className="bg-white text-blue-700 border-blue-400 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 ease-in-out shadow-md"
-            onClick={() => toast.info(`ফর্ম লোড হচ্ছে: ${voucher?.heading}`)}
+            variant={activeFormId === voucher?.id ? "default" : "outline"}
+            className={activeFormId === voucher?.id ? "bg-blue-600 text-white hover:bg-blue-700" : "bg-white text-blue-700 border-blue-400 hover:bg-blue-100 hover:text-blue-800"}
+            onClick={() => handleFormLoad(voucher?.id || "")}
           >
             {voucher?.heading}
           </Button>
         ))}
       </div>
 
-      <div className="text-center text-xl text-gray-600 p-8 bg-white rounded-lg shadow-inner border border-gray-200">
-        সংশ্লিষ্ট ফর্ম দেখতে যে কোনো একটি ভাউচার বোতামে ক্লিক করুন।
+      <div className="max-w-3xl mx-auto">
+        {!activeFormId ? (
+          <div className="text-center text-xl text-gray-600 p-8 bg-white rounded-lg shadow-inner border border-gray-200">
+            সংশ্লিষ্ট ফর্ম দেখতে যে কোনো একটি ভাউচার বোতামে ক্লিক করুন।
+          </div>
+        ) : (
+          <>
+            {activeFormId === "entertainment" && (
+              <EntertainmentVoucherForm voucherTypeId="entertainment" onFormSubmit={handleFormSubmissionComplete} />
+            )}
+            {/* Other forms will be rendered here based on activeFormId */}
+          </>
+        )}
       </div>
-
-      {/* Forms will be rendered here based on selected button */}
     </div>
   );
 };
