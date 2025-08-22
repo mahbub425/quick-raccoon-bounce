@@ -1,4 +1,4 @@
-import React, { useMemo, useImperativeHandle, forwardRef } from "react";
+import React, { useMemo, useImperativeHandle, forwardRef, useEffect } from "react";
 import { useForm, useWatch, Controller, Path } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -24,6 +24,7 @@ interface DynamicVoucherFormProps {
   voucherTypeId: string;
   onFormSubmit?: (data: any) => void; // This will be used when parent wants to handle submission
   hideSubmitButton?: boolean; // New prop to hide the submit button
+  initialData?: any; // New prop for pre-filling form data for editing
 }
 
 // Define the ref type for the parent component
@@ -171,7 +172,7 @@ const createSchema = (fields: FormFieldType[], currentFormValues: any) => {
 };
 
 const DynamicVoucherForm = forwardRef<DynamicVoucherFormRef, DynamicVoucherFormProps>(
-  ({ voucherTypeId, onFormSubmit, hideSubmitButton }, ref) => {
+  ({ voucherTypeId, onFormSubmit, hideSubmitButton, initialData }, ref) => {
     const voucherDetails = getVoucherDetails(voucherTypeId);
     const { addToCart } = useCart();
 
@@ -182,12 +183,27 @@ const DynamicVoucherForm = forwardRef<DynamicVoucherFormRef, DynamicVoucherFormP
     const defaultFormValues = useMemo(() => generateDefaultValues(voucherDetails.formFields), [voucherDetails.formFields]);
 
     const form = useForm<z.infer<z.ZodObject<any>>>({
-      defaultValues: defaultFormValues,
+      defaultValues: initialData ? {
+        ...defaultFormValues,
+        ...initialData,
+        // Special handling for date type if it's a string from initialData
+        date: initialData.date ? new Date(initialData.date) : null,
+      } : defaultFormValues,
       resolver: (values, context, options) => {
         const dynamicSchema = createSchema(voucherDetails.formFields, values);
         return zodResolver(dynamicSchema)(values, context, options);
       },
     });
+
+    // Reset form when voucherTypeId changes or initialData changes (for edit mode)
+    useEffect(() => {
+      form.reset(initialData ? {
+        ...defaultFormValues,
+        ...initialData,
+        date: initialData.date ? new Date(initialData.date) : null,
+      } : defaultFormValues);
+    }, [voucherTypeId, initialData, form, defaultFormValues]);
+
 
     // Expose form methods to parent via ref
     useImperativeHandle(ref, () => ({
@@ -435,7 +451,7 @@ const DynamicVoucherForm = forwardRef<DynamicVoucherFormRef, DynamicVoucherFormP
           {voucherDetails.formFields.map((field) => renderField(field))}
           {!hideSubmitButton && ( // Conditionally render submit button
             <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-700 hover:to-purple-800 text-white text-lg py-3 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105">
-              কার্টে যোগ করুন
+              {initialData ? "আপডেট করুন" : "কার্টে যোগ করুন"}
             </Button>
           )}
         </form>

@@ -1,18 +1,23 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
 import { useCart } from "@/context/CartContext";
 import { CartItem } from "@/types";
-import { DUMMY_INSTITUTIONS, DUMMY_PINS } from "@/data/dummyData";
-import { format } from "date-fns"; // Import format from date-fns
+import { DUMMY_INSTITUTIONS, DUMMY_PINS, DUMMY_PROGRAM_SESSIONS } from "@/data/dummyData";
+import { format } from "date-fns";
+import { useAuth } from "@/context/AuthContext";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import DynamicVoucherForm from "@/components/forms/DynamicVoucherForm";
 
 const Cart = () => {
-  const { cartItems, removeFromCart } = useCart();
+  const { cartItems, removeFromCart, updateCartItem } = useCart();
+  const { user } = useAuth();
+  const [editingItem, setEditingItem] = useState<CartItem | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const entertainmentVouchers = cartItems.filter(item => item.voucherTypeId === 'entertainment');
   const conveyanceVouchers = cartItems.filter(item => item.voucherTypeId === 'conveyance');
-  const publicityVouchers = cartItems.filter(item => item.voucherTypeId === 'publicity');
   const publicityConveyanceVouchers = cartItems.filter(item => item.voucherTypeId === 'publicity-conveyance');
   const publicityEntertainmentVouchers = cartItems.filter(item => item.voucherTypeId === 'publicity-entertainment');
   const publicityPublicistBillVouchers = cartItems.filter(item => item.voucherTypeId === 'publicity-publicist-bill');
@@ -26,9 +31,26 @@ const Cart = () => {
     const institution = DUMMY_INSTITUTIONS.find(inst => inst.id === institutionId);
     return institution?.branches.find(branch => branch.id === branchId)?.name || "N/A";
   };
+  const getProgramSessionName = (institutionId: string, sessionId: string) => {
+    const sessions = DUMMY_PROGRAM_SESSIONS[institutionId];
+    return sessions?.find(session => session.id === sessionId)?.name || "N/A";
+  };
   const getPinNames = (pins: string[]) => {
     if (!pins || pins.length === 0) return "N/A";
     return pins.map(pin => DUMMY_PINS.find(p => p.pin === pin)?.name || pin).join(", ");
+  };
+
+  const handleEdit = (item: CartItem) => {
+    setEditingItem(item);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleUpdateVoucher = (updatedData: any) => {
+    if (editingItem) {
+      updateCartItem(editingItem.id, updatedData);
+      setIsEditDialogOpen(false);
+      setEditingItem(null);
+    }
   };
 
   const renderEntertainmentTable = (items: CartItem[]) => {
@@ -61,7 +83,7 @@ const Cart = () => {
         <TableCell>{item.data.description || "N/A"}</TableCell>
         <TableCell>{item.data.attachment ? "আছে" : "নেই"}</TableCell>
         <TableCell className="flex justify-center space-x-2">
-          <Button variant="outline" size="sm" onClick={() => toast.info("এডিট ক্লিক করা হয়েছে")}>এডিট</Button>
+          <Button variant="outline" size="sm" onClick={() => handleEdit(item)}>এডিট</Button>
           <Button variant="destructive" size="sm" onClick={() => removeFromCart(item.id)}>মুছে ফেলুন</Button>
         </TableCell>
       </TableRow>
@@ -72,7 +94,7 @@ const Cart = () => {
     if (items.length === 0) {
       return (
         <TableRow>
-          <TableCell colSpan={13} className="text-center text-gray-500">
+          <TableCell colSpan={12} className="text-center text-gray-500">
             কোনো কনভেয়েন্স ভাউচার নেই।
           </TableCell>
         </TableRow>
@@ -87,9 +109,9 @@ const Cart = () => {
         <TableCell>{getBranchName(item.data.institutionId, item.data.branchId)}</TableCell>
         <TableCell>{item.data.applicableFor || "N/A"}</TableCell>
         <TableCell>
-          {item.data.teacherPins && item.data.teacherPins.length > 0 && `(শিক্ষক পিন: ${getPinNames(item.data.teacherPins)})`}
-          {item.data.otherPins && item.data.otherPins.length > 0 && `(অন্যান্য পিন: ${getPinNames(item.data.otherPins)})`}
-          {!item.data.teacherPins?.length && !item.data.otherPins?.length && "N/A"}
+          {item.data.applicableFor === 'Myself' ? (user?.pin || 'N/A') :
+           (item.data.teacherPins && item.data.teacherPins.length > 0 && `(শিক্ষক পিন: ${getPinNames(item.data.teacherPins)})`) ||
+           (item.data.otherPins && item.data.otherPins.length > 0 && `(অন্যান্য পিন: ${getPinNames(item.data.otherPins)})`) || "N/A"}
         </TableCell>
         <TableCell>{item.data.from || "N/A"}</TableCell>
         <TableCell>{item.data.to || "N/A"}</TableCell>
@@ -101,19 +123,19 @@ const Cart = () => {
         <TableCell>{item.data.purpose || "N/A"}</TableCell>
         <TableCell>{item.data.attachment ? "আছে" : "নেই"}</TableCell>
         <TableCell className="flex justify-center space-x-2">
-          <Button variant="outline" size="sm" onClick={() => toast.info("এডিট ক্লিক করা হয়েছে")}>এডিট</Button>
+          <Button variant="outline" size="sm" onClick={() => handleEdit(item)}>এডিট</Button>
           <Button variant="destructive" size="sm" onClick={() => removeFromCart(item.id)}>মুছে ফেলুন</Button>
         </TableCell>
       </TableRow>
     ));
   };
 
-  const renderPublicityTable = (items: CartItem[]) => {
+  const renderPublicityConveyanceTable = (items: CartItem[]) => {
     if (items.length === 0) {
       return (
         <TableRow>
-          <TableCell colSpan={8} className="text-center text-gray-500">
-            কোনো প্রচারণা ভাউচার নেই।
+          <TableCell colSpan={15} className="text-center text-gray-500">
+            কোনো প্রচারণা (কনভেয়েন্স) ভাউচার নেই।
           </TableCell>
         </TableRow>
       );
@@ -125,31 +147,9 @@ const Cart = () => {
         <TableCell>{item.data.date ? format(new Date(item.data.date), "dd MMM, yyyy") : "N/A"}</TableCell>
         <TableCell>{getInstitutionName(item.data.institutionId)}</TableCell>
         <TableCell>{getBranchName(item.data.institutionId, item.data.branchId)}</TableCell>
-        <TableCell>{item.data.programSessionId || "N/A"}</TableCell>
+        <TableCell>{getProgramSessionName(item.data.institutionId, item.data.programSessionId)}</TableCell>
         <TableCell>{item.data.publicityLocation || "N/A"}</TableCell>
         <TableCell>{item.data.startTime || "N/A"} - {item.data.endTime || "N/A"}</TableCell>
-        <TableCell className="flex justify-center space-x-2">
-          <Button variant="outline" size="sm" onClick={() => toast.info("এডিট ক্লিক করা হয়েছে")}>এডিট</Button>
-          <Button variant="destructive" size="sm" onClick={() => removeFromCart(item.id)}>মুছে ফেলুন</Button>
-        </TableCell>
-      </TableRow>
-    ));
-  };
-
-  const renderPublicityConveyanceTable = (items: CartItem[]) => {
-    if (items.length === 0) {
-      return (
-        <TableRow>
-          <TableCell colSpan={9} className="text-center text-gray-500">
-            কোনো প্রচারণা (কনভেয়েন্স) ভাউচার নেই।
-          </TableCell>
-        </TableRow>
-      );
-    }
-
-    return items.map((item, index) => (
-      <TableRow key={item.id}>
-        <TableCell className="font-medium">{index + 1}</TableCell>
         <TableCell>{item.data.from || "N/A"}</TableCell>
         <TableCell>{item.data.to || "N/A"}</TableCell>
         <TableCell>
@@ -161,7 +161,7 @@ const Cart = () => {
         <TableCell>{item.data.description || "N/A"}</TableCell>
         <TableCell>{item.data.attachment ? "আছে" : "নেই"}</TableCell>
         <TableCell className="flex justify-center space-x-2">
-          <Button variant="outline" size="sm" onClick={() => toast.info("এডিট ক্লিক করা হয়েছে")}>এডিট</Button>
+          <Button variant="outline" size="sm" onClick={() => handleEdit(item)}>এডিট</Button>
           <Button variant="destructive" size="sm" onClick={() => removeFromCart(item.id)}>মুছে ফেলুন</Button>
         </TableCell>
       </TableRow>
@@ -172,7 +172,7 @@ const Cart = () => {
     if (items.length === 0) {
       return (
         <TableRow>
-          <TableCell colSpan={6} className="text-center text-gray-500">
+          <TableCell colSpan={14} className="text-center text-gray-500">
             কোনো প্রচারণা (এন্টারটেইনমেন্ট) ভাউচার নেই।
           </TableCell>
         </TableRow>
@@ -182,6 +182,12 @@ const Cart = () => {
     return items.map((item, index) => (
       <TableRow key={item.id}>
         <TableCell className="font-medium">{index + 1}</TableCell>
+        <TableCell>{item.data.date ? format(new Date(item.data.date), "dd MMM, yyyy") : "N/A"}</TableCell>
+        <TableCell>{getInstitutionName(item.data.institutionId)}</TableCell>
+        <TableCell>{getBranchName(item.data.institutionId, item.data.branchId)}</TableCell>
+        <TableCell>{getProgramSessionName(item.data.institutionId, item.data.programSessionId)}</TableCell>
+        <TableCell>{item.data.publicityLocation || "N/A"}</TableCell>
+        <TableCell>{item.data.startTime || "N/A"} - {item.data.endTime || "N/A"}</TableCell>
         <TableCell>{item.data.applicableFor || "N/A"}</TableCell>
         <TableCell>
           {item.data.pin && `(পিন: ${getPinNames([item.data.pin])})`}
@@ -190,8 +196,10 @@ const Cart = () => {
         </TableCell>
         <TableCell>{item.data.type || "N/A"}</TableCell>
         <TableCell className="text-right">{item.data.amount || 0}</TableCell>
+        <TableCell>{item.data.description || "N/A"}</TableCell>
+        <TableCell>{item.data.attachment ? "আছে" : "নেই"}</TableCell>
         <TableCell className="flex justify-center space-x-2">
-          <Button variant="outline" size="sm" onClick={() => toast.info("এডিট ক্লিক করা হয়েছে")}>এডিট</Button>
+          <Button variant="outline" size="sm" onClick={() => handleEdit(item)}>এডিট</Button>
           <Button variant="destructive" size="sm" onClick={() => removeFromCart(item.id)}>মুছে ফেলুন</Button>
         </TableCell>
       </TableRow>
@@ -202,7 +210,7 @@ const Cart = () => {
     if (items.length === 0) {
       return (
         <TableRow>
-          <TableCell colSpan={7} className="text-center text-gray-500">
+          <TableCell colSpan={13} className="text-center text-gray-500">
             কোনো প্রচারণা (প্রচারণাকারীর বিল) ভাউচার নেই।
           </TableCell>
         </TableRow>
@@ -212,13 +220,19 @@ const Cart = () => {
     return items.map((item, index) => (
       <TableRow key={item.id}>
         <TableCell className="font-medium">{index + 1}</TableCell>
+        <TableCell>{item.data.date ? format(new Date(item.data.date), "dd MMM, yyyy") : "N/A"}</TableCell>
+        <TableCell>{getInstitutionName(item.data.institutionId)}</TableCell>
+        <TableCell>{getBranchName(item.data.institutionId, item.data.branchId)}</TableCell>
+        <TableCell>{getProgramSessionName(item.data.institutionId, item.data.programSessionId)}</TableCell>
+        <TableCell>{item.data.publicityLocation || "N/A"}</TableCell>
+        <TableCell>{item.data.startTime || "N/A"} - {item.data.endTime || "N/A"}</TableCell>
         <TableCell>{item.data.publicistName || "N/A"}</TableCell>
         <TableCell>{item.data.mobileNumber || "N/A"}</TableCell>
         <TableCell>{item.data.shift || "N/A"}</TableCell>
         <TableCell className="text-right">{item.data.amount || 0}</TableCell>
         <TableCell>{item.data.attachment ? "আছে" : "নেই"}</TableCell>
         <TableCell className="flex justify-center space-x-2">
-          <Button variant="outline" size="sm" onClick={() => toast.info("এডিট ক্লিক করা হয়েছে")}>এডিট</Button>
+          <Button variant="outline" size="sm" onClick={() => handleEdit(item)}>এডিট</Button>
           <Button variant="destructive" size="sm" onClick={() => removeFromCart(item.id)}>মুছে ফেলুন</Button>
         </TableCell>
       </TableRow>
@@ -247,7 +261,7 @@ const Cart = () => {
         <TableCell>{item.data.description || "N/A"}</TableCell>
         <TableCell>{item.data.attachment ? "আছে" : "নেই"}</TableCell>
         <TableCell className="flex justify-center space-x-2">
-          <Button variant="outline" size="sm" onClick={() => toast.info("এডিট ক্লিক করা হয়েছে")}>এডিট</Button>
+          <Button variant="outline" size="sm" onClick={() => handleEdit(item)}>এডিট</Button>
           <Button variant="destructive" size="sm" onClick={() => removeFromCart(item.id)}>মুছে ফেলুন</Button>
         </TableCell>
       </TableRow>
@@ -267,52 +281,36 @@ const Cart = () => {
         </div>
       ) : (
         <div className="space-y-8">
-          {/* Publicity Voucher Table */}
-          {publicityVouchers.length > 0 && (
-            <div className="bg-white p-6 rounded-xl shadow-lg border border-purple-200">
-              <h2 className="text-2xl font-bold text-purple-700 mb-4">প্রচারণা ভাউচার</h2>
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-purple-100">
-                    <TableHead className="w-[50px]">ক্রমিক</TableHead>
-                    <TableHead>তারিখ</TableHead>
-                    <TableHead>প্রতিষ্ঠানের নাম</TableHead>
-                    <TableHead>শাখার নাম</TableHead>
-                    <TableHead>প্রোগ্রাম ও সেশন</TableHead>
-                    <TableHead>প্রচারণার স্থান</TableHead>
-                    <TableHead>সময়কাল</TableHead>
-                    <TableHead className="text-center">অ্যাকশন</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {renderPublicityTable(publicityVouchers)}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-
           {/* Publicity Conveyance Voucher Table */}
           {publicityConveyanceVouchers.length > 0 && (
             <div className="bg-white p-6 rounded-xl shadow-lg border border-blue-200">
               <h2 className="text-2xl font-bold text-blue-700 mb-4">প্রচারণা (কনভেয়েন্স)</h2>
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-blue-100">
-                    <TableHead className="w-[50px]">ক্রমিক</TableHead>
-                    <TableHead>হইতে</TableHead>
-                    <TableHead>পর্যন্ত</TableHead>
-                    <TableHead>বাহনের নাম</TableHead>
-                    <TableHead>ব্যক্তির সংখ্যা</TableHead>
-                    <TableHead className="text-right">টাকার পরিমাণ</TableHead>
-                    <TableHead>বর্ণনা</TableHead>
-                    <TableHead>সংযুক্তি</TableHead>
-                    <TableHead className="text-center">অ্যাকশন</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {renderPublicityConveyanceTable(publicityConveyanceVouchers)}
-                </TableBody>
-              </Table>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-blue-100">
+                      <TableHead className="w-[50px]">ক্রমিক</TableHead>
+                      <TableHead>তারিখ</TableHead>
+                      <TableHead>প্রতিষ্ঠানের নাম</TableHead>
+                      <TableHead>শাখার নাম</TableHead>
+                      <TableHead>প্রোগ্রাম ও সেশন</TableHead>
+                      <TableHead>প্রচারণার স্থান</TableHead>
+                      <TableHead>সময়কাল</TableHead>
+                      <TableHead>হইতে</TableHead>
+                      <TableHead>পর্যন্ত</TableHead>
+                      <TableHead>বাহনের নাম</TableHead>
+                      <TableHead>ব্যক্তির সংখ্যা</TableHead>
+                      <TableHead className="text-right">টাকার পরিমাণ</TableHead>
+                      <TableHead>বর্ণনা</TableHead>
+                      <TableHead>সংযুক্তি</TableHead>
+                      <TableHead className="text-center">অ্যাকশন</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {renderPublicityConveyanceTable(publicityConveyanceVouchers)}
+                  </TableBody>
+                </Table>
+              </div>
             </div>
           )}
 
@@ -320,21 +318,31 @@ const Cart = () => {
           {publicityEntertainmentVouchers.length > 0 && (
             <div className="bg-white p-6 rounded-xl shadow-lg border border-green-200">
               <h2 className="text-2xl font-bold text-green-700 mb-4">প্রচারণা (এন্টারটেইনমেন্ট)</h2>
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-green-100">
-                    <TableHead className="w-[50px]">ক্রমিক</TableHead>
-                    <TableHead>যাহার জন্য প্রযোজ্য</TableHead>
-                    <TableHead>ব্যক্তি/পিন</TableHead>
-                    <TableHead>ধরণ</TableHead>
-                    <TableHead className="text-right">টাকার পরিমাণ</TableHead>
-                    <TableHead className="text-center">অ্যাকশন</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {renderPublicityEntertainmentTable(publicityEntertainmentVouchers)}
-                </TableBody>
-              </Table>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-green-100">
+                      <TableHead className="w-[50px]">ক্রমিক</TableHead>
+                      <TableHead>তারিখ</TableHead>
+                      <TableHead>প্রতিষ্ঠানের নাম</TableHead>
+                      <TableHead>শাখার নাম</TableHead>
+                      <TableHead>প্রোগ্রাম ও সেশন</TableHead>
+                      <TableHead>প্রচারণার স্থান</TableHead>
+                      <TableHead>সময়কাল</TableHead>
+                      <TableHead>যাহার জন্য প্রযোজ্য</TableHead>
+                      <TableHead>ব্যক্তি/পিন</TableHead>
+                      <TableHead>ধরণ</TableHead>
+                      <TableHead className="text-right">টাকার পরিমাণ</TableHead>
+                      <TableHead>বর্ণনা</TableHead>
+                      <TableHead>সংযুক্তি</TableHead>
+                      <TableHead className="text-center">অ্যাকশন</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {renderPublicityEntertainmentTable(publicityEntertainmentVouchers)}
+                  </TableBody>
+                </Table>
+              </div>
             </div>
           )}
 
@@ -342,22 +350,30 @@ const Cart = () => {
           {publicityPublicistBillVouchers.length > 0 && (
             <div className="bg-white p-6 rounded-xl shadow-lg border border-orange-200">
               <h2 className="text-2xl font-bold text-orange-700 mb-4">প্রচারণা (প্রচারণাকারীর বিল)</h2>
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-orange-100">
-                    <TableHead className="w-[50px]">ক্রমিক</TableHead>
-                    <TableHead>প্রচারণাকরীর নাম</TableHead>
-                    <TableHead>মোবাইল নম্বর</TableHead>
-                    <TableHead>সিফট</TableHead>
-                    <TableHead className="text-right">টাকার পরিমাণ</TableHead>
-                    <TableHead>সংযুক্তি</TableHead>
-                    <TableHead className="text-center">অ্যাকশন</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {renderPublicityPublicistBillTable(publicityPublicistBillVouchers)}
-                </TableBody>
-              </Table>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-orange-100">
+                      <TableHead className="w-[50px]">ক্রমিক</TableHead>
+                      <TableHead>তারিখ</TableHead>
+                      <TableHead>প্রতিষ্ঠানের নাম</TableHead>
+                      <TableHead>শাখার নাম</TableHead>
+                      <TableHead>প্রোগ্রাম ও সেশন</TableHead>
+                      <TableHead>প্রচারণার স্থান</TableHead>
+                      <TableHead>সময়কাল</TableHead>
+                      <TableHead>প্রচারণাকরীর নাম</TableHead>
+                      <TableHead>মোবাইল নম্বর</TableHead>
+                      <TableHead>সিফট</TableHead>
+                      <TableHead className="text-right">টাকার পরিমাণ</TableHead>
+                      <TableHead>সংযুক্তি</TableHead>
+                      <TableHead className="text-center">অ্যাকশন</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {renderPublicityPublicistBillTable(publicityPublicistBillVouchers)}
+                  </TableBody>
+                </Table>
+              </div>
             </div>
           )}
 
@@ -365,25 +381,27 @@ const Cart = () => {
           {entertainmentVouchers.length > 0 && (
             <div className="bg-white p-6 rounded-xl shadow-lg border border-green-200">
               <h2 className="text-2xl font-bold text-green-700 mb-4">এন্টারটেইনমেন্ট ভাউচার</h2>
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-green-100">
-                    <TableHead className="w-[50px]">ক্রমিক</TableHead>
-                    <TableHead>তারিখ</TableHead>
-                    <TableHead>প্রতিষ্ঠানের নাম</TableHead>
-                    <TableHead>শাখার নাম</TableHead>
-                    <TableHead>ব্যয়ের শিরোনাম</TableHead>
-                    <TableHead>ব্যয়ের খাত</TableHead>
-                    <TableHead className="text-right">টাকার পরিমাণ</TableHead>
-                    <TableHead>বর্ণনা</TableHead>
-                    <TableHead>সংযুক্তি</TableHead>
-                    <TableHead className="text-center">অ্যাকশন</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {renderEntertainmentTable(entertainmentVouchers)}
-                </TableBody>
-              </Table>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-green-100">
+                      <TableHead className="w-[50px]">ক্রমিক</TableHead>
+                      <TableHead>তারিখ</TableHead>
+                      <TableHead>প্রতিষ্ঠানের নাম</TableHead>
+                      <TableHead>শাখার নাম</TableHead>
+                      <TableHead>ব্যয়ের শিরোনাম</TableHead>
+                      <TableHead>ব্যয়ের খাত</TableHead>
+                      <TableHead className="text-right">টাকার পরিমাণ</TableHead>
+                      <TableHead>বর্ণনা</TableHead>
+                      <TableHead>সংযুক্তি</TableHead>
+                      <TableHead className="text-center">অ্যাকশন</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {renderEntertainmentTable(entertainmentVouchers)}
+                  </TableBody>
+                </Table>
+              </div>
             </div>
           )}
 
@@ -391,28 +409,30 @@ const Cart = () => {
           {conveyanceVouchers.length > 0 && (
             <div className="bg-white p-6 rounded-xl shadow-lg border border-blue-200">
               <h2 className="text-2xl font-bold text-blue-700 mb-4">কনভেয়েন্স ভাউচার</h2>
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-blue-100">
-                    <TableHead className="w-[50px]">ক্রমিক</TableHead>
-                    <TableHead>তারিখ</TableHead>
-                    <TableHead>প্রতিষ্ঠানের নাম</TableHead>
-                    <TableHead>শাখার নাম</TableHead>
-                    <TableHead>যাহার জন্য প্রযোজ্য</TableHead>
-                    <TableHead>পিন</TableHead>
-                    <TableHead>হইতে</TableHead>
-                    <TableHead>পর্যন্ত</TableHead>
-                    <TableHead>বাহনের নাম</TableHead>
-                    <TableHead className="text-right">টাকার পরিমাণ</TableHead>
-                    <TableHead>উদ্দেশ্য</TableHead>
-                    <TableHead>সংযুক্তি</TableHead>
-                    <TableHead className="text-center">অ্যাকশন</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {renderConveyanceTable(conveyanceVouchers)}
-                </TableBody>
-              </Table>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-blue-100">
+                      <TableHead className="w-[50px]">ক্রমিক</TableHead>
+                      <TableHead>তারিখ</TableHead>
+                      <TableHead>প্রতিষ্ঠানের নাম</TableHead>
+                      <TableHead>শাখার নাম</TableHead>
+                      <TableHead>যাহার জন্য প্রযোজ্য</TableHead>
+                      <TableHead>পিন</TableHead>
+                      <TableHead>হইতে</TableHead>
+                      <TableHead>পর্যন্ত</TableHead>
+                      <TableHead>বাহনের নাম</TableHead>
+                      <TableHead className="text-right">টাকার পরিমাণ</TableHead>
+                      <TableHead>উদ্দেশ্য</TableHead>
+                      <TableHead>সংযুক্তি</TableHead>
+                      <TableHead className="text-center">অ্যাকশন</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {renderConveyanceTable(conveyanceVouchers)}
+                  </TableBody>
+                </Table>
+              </div>
             </div>
           )}
 
@@ -420,96 +440,120 @@ const Cart = () => {
           {rentalUtilityVouchers.length > 0 && (
             <div className="bg-white p-6 rounded-xl shadow-lg border border-red-200">
               <h2 className="text-2xl font-bold text-red-700 mb-4">রেন্টাল ও ইউটিলিটি বিল ভাউচার</h2>
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-red-100">
-                    <TableHead className="w-[50px]">ক্রমিক</TableHead>
-                    <TableHead>তারিখ</TableHead>
-                    <TableHead>প্রতিষ্ঠানের নাম</TableHead>
-                    <TableHead>শাখার নাম</TableHead>
-                    <TableHead className="text-right">টাকার পরিমাণ</TableHead>
-                    <TableHead>বর্ণনা</TableHead>
-                    <TableHead>সংযুক্তি</TableHead>
-                    <TableHead className="text-center">অ্যাকশন</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {renderGenericSimpleTable(rentalUtilityVouchers, "রেন্টাল ও ইউটিলিটি বিল", "bg-red-100")}
-                </TableBody>
-              </Table>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-red-100">
+                      <TableHead className="w-[50px]">ক্রমিক</TableHead>
+                      <TableHead>তারিখ</TableHead>
+                      <TableHead>প্রতিষ্ঠানের নাম</TableHead>
+                      <TableHead>শাখার নাম</TableHead>
+                      <TableHead className="text-right">টাকার পরিমাণ</TableHead>
+                      <TableHead>বর্ণনা</TableHead>
+                      <TableHead>সংযুক্তি</TableHead>
+                      <TableHead className="text-center">অ্যাকশন</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {renderGenericSimpleTable(rentalUtilityVouchers, "রেন্টাল ও ইউটিলিটি বিল", "bg-red-100")}
+                  </TableBody>
+                </Table>
+              </div>
             </div>
           )}
 
           {mobileBillVouchers.length > 0 && (
             <div className="bg-white p-6 rounded-xl shadow-lg border border-yellow-200">
               <h2 className="text-2xl font-bold text-yellow-700 mb-4">মোবাইল বিল ভাউচার</h2>
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-yellow-100">
-                    <TableHead className="w-[50px]">ক্রমিক</TableHead>
-                    <TableHead>তারিখ</TableHead>
-                    <TableHead>প্রতিষ্ঠানের নাম</TableHead>
-                    <TableHead>শাখার নাম</TableHead>
-                    <TableHead className="text-right">টাকার পরিমাণ</TableHead>
-                    <TableHead>বর্ণনা</TableHead>
-                    <TableHead>সংযুক্তি</TableHead>
-                    <TableHead className="text-center">অ্যাকশন</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {renderGenericSimpleTable(mobileBillVouchers, "মোবাইল বিল", "bg-yellow-100")}
-                </TableBody>
-              </Table>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-yellow-100">
+                      <TableHead className="w-[50px]">ক্রমিক</TableHead>
+                      <TableHead>তারিখ</TableHead>
+                      <TableHead>প্রতিষ্ঠানের নাম</TableHead>
+                      <TableHead>শাখার নাম</TableHead>
+                      <TableHead className="text-right">টাকার পরিমাণ</TableHead>
+                      <TableHead>বর্ণনা</TableHead>
+                      <TableHead>সংযুক্তি</TableHead>
+                      <TableHead className="text-center">অ্যাকশন</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {renderGenericSimpleTable(mobileBillVouchers, "মোবাইল বিল", "bg-yellow-100")}
+                  </TableBody>
+                </Table>
+              </div>
             </div>
           )}
 
           {repairVouchers.length > 0 && (
             <div className="bg-white p-6 rounded-xl shadow-lg border border-teal-200">
               <h2 className="text-2xl font-bold text-teal-700 mb-4">রিপেয়ার ভাউচার</h2>
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-teal-100">
-                    <TableHead className="w-[50px]">ক্রমিক</TableHead>
-                    <TableHead>তারিখ</TableHead>
-                    <TableHead>প্রতিষ্ঠানের নাম</TableHead>
-                    <TableHead>শাখার নাম</TableHead>
-                    <TableHead className="text-right">টাকার পরিমাণ</TableHead>
-                    <TableHead>বর্ণনা</TableHead>
-                    <TableHead>সংযুক্তি</TableHead>
-                    <TableHead className="text-center">অ্যাকশন</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {renderGenericSimpleTable(repairVouchers, "রিপেয়ার", "bg-teal-100")}
-                </TableBody>
-              </Table>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-teal-100">
+                      <TableHead className="w-[50px]">ক্রমিক</TableHead>
+                      <TableHead>তারিখ</TableHead>
+                      <TableHead>প্রতিষ্ঠানের নাম</TableHead>
+                      <TableHead>শাখার নাম</TableHead>
+                      <TableHead className="text-right">টাকার পরিমাণ</TableHead>
+                      <TableHead>বর্ণনা</TableHead>
+                      <TableHead>সংযুক্তি</TableHead>
+                      <TableHead className="text-center">অ্যাকশন</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {renderGenericSimpleTable(repairVouchers, "রিপেয়ার", "bg-teal-100")}
+                  </TableBody>
+                </Table>
+              </div>
             </div>
           )}
 
           {pettyCashVouchers.length > 0 && (
             <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
               <h2 className="text-2xl font-bold text-gray-700 mb-4">পেটি ক্যাশ ভাউচার</h2>
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-gray-100">
-                    <TableHead className="w-[50px]">ক্রমিক</TableHead>
-                    <TableHead>তারিখ</TableHead>
-                    <TableHead>প্রতিষ্ঠানের নাম</TableHead>
-                    <TableHead>শাখার নাম</TableHead>
-                    <TableHead className="text-right">টাকার পরিমাণ</TableHead>
-                    <TableHead>বর্ণনা</TableHead>
-                    <TableHead>সংযুক্তি</TableHead>
-                    <TableHead className="text-center">অ্যাকশন</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {renderGenericSimpleTable(pettyCashVouchers, "পেটি ক্যাশ", "bg-gray-100")}
-                </TableBody>
-              </Table>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-gray-100">
+                      <TableHead className="w-[50px]">ক্রমিক</TableHead>
+                      <TableHead>তারিখ</TableHead>
+                      <TableHead>প্রতিষ্ঠানের নাম</TableHead>
+                      <TableHead>শাখার নাম</TableHead>
+                      <TableHead className="text-right">টাকার পরিমাণ</TableHead>
+                      <TableHead>বর্ণনা</TableHead>
+                      <TableHead>সংযুক্তি</TableHead>
+                      <TableHead className="text-center">অ্যাকশন</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {renderGenericSimpleTable(pettyCashVouchers, "পেটি ক্যাশ", "bg-gray-100")}
+                  </TableBody>
+                </Table>
+              </div>
             </div>
           )}
         </div>
       )}
+
+      {/* Edit Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-[700px] p-6">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-blue-700">ভাউচার এডিট করুন</DialogTitle>
+          </DialogHeader>
+          {editingItem && (
+            <DynamicVoucherForm
+              voucherTypeId={editingItem.voucherTypeId}
+              initialData={editingItem.data}
+              onFormSubmit={handleUpdateVoucher}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
