@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import DynamicVoucherForm from "@/components/forms/DynamicVoucherForm";
 
 const Cart = () => {
-  const { cartItems, removeFromCart, updateCartItem } = useCart();
+  const { cartItems, removeFromCart, updateCartItem, clearCart } = useCart();
   const { user } = useAuth();
   const [editingItem, setEditingItem] = useState<CartItem | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -51,6 +51,17 @@ const Cart = () => {
       setIsEditDialogOpen(false);
       setEditingItem(null);
     }
+  };
+
+  const handleSubmitAllVouchers = () => {
+    if (cartItems.length === 0) {
+      toast.error("কার্টে কোনো ভাউচার নেই সাবমিট করার জন্য।");
+      return;
+    }
+    // In a real application, you would send these items to a backend for mentor approval
+    // For now, we just show a message and clear the cart.
+    toast.success("মেন্টরের কাছে রিভিউ এর জন্য পাঠানো হয়েছে!");
+    clearCart();
   };
 
   const renderEntertainmentTable = (items: CartItem[]) => {
@@ -536,12 +547,20 @@ const Cart = () => {
               </div>
             </div>
           )}
+          <div className="text-center mt-10">
+            <Button
+              onClick={handleSubmitAllVouchers}
+              className="bg-gradient-to-r from-green-600 to-teal-700 hover:from-green-700 hover:to-teal-800 text-white text-xl py-3 px-8 rounded-full shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105"
+            >
+              সাবমিট করুন
+            </Button>
+          </div>
         </div>
       )}
 
       {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-[700px] p-6">
+        <DialogContent className="sm:max-w-[700px] p-6 max-h-[90vh] overflow-y-auto"> {/* Added max-h and overflow-y-auto */}
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-blue-700">ভাউচার এডিট করুন</DialogTitle>
           </DialogHeader>
