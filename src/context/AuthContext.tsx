@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, ReactNode } from "react";
-import { UserProfile, DUMMY_USERS } from "@/data/dummyData";
+import { UserProfile } from "@/types"; // Corrected import for UserProfile
+import { DUMMY_USERS } from "@/data/dummyData"; // DUMMY_USERS is correctly imported from dummyData
 import { toast } from "sonner";
 
 interface AuthContextType {

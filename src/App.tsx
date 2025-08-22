@@ -7,11 +7,12 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import VoucherEntry from "./pages/VoucherEntry";
-import SelectedVouchers from "./pages/SelectedVouchers"; // Will create this next
-import Cart from "./pages/Cart"; // Will create this next
+import SelectedVouchers from "./pages/SelectedVouchers";
+import Cart from "./pages/Cart";
 import { AuthProvider } from "./context/AuthContext";
+import { CartProvider } from "./context/CartContext"; // Import CartProvider
 import Header from "./components/layout/Header";
-import ProtectedRoute from "./components/ProtectedRoute"; // Will create this next
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -22,19 +23,21 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <Header /> {/* Header will be visible on all pages */}
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/login" element={<Login />} />
-            {/* Protected Routes */}
-            <Route element={<ProtectedRoute />}>
-              <Route path="/voucher-entry" element={<VoucherEntry />} />
-              <Route path="/selected-vouchers" element={<SelectedVouchers />} />
-              <Route path="/cart" element={<Cart />} />
-            </Route>
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <CartProvider> {/* Wrap AuthProvider with CartProvider */}
+            <Header />
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/login" element={<Login />} />
+              {/* Protected Routes */}
+              <Route element={<ProtectedRoute />}>
+                <Route path="/voucher-entry" element={<VoucherEntry />} />
+                <Route path="/selected-vouchers" element={<SelectedVouchers />} />
+                <Route path="/cart" element={<Cart />} />
+              </Route>
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </CartProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

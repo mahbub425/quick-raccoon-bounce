@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
+import { useCart } from "@/context/CartContext"; // Import useCart
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -15,6 +16,7 @@ import { ShoppingCart, User } from "lucide-react";
 
 const Header = () => {
   const { user, logout } = useAuth();
+  const { cartItemCount } = useCart(); // Use cartItemCount
 
   return (
     <header className="bg-gradient-to-r from-blue-600 to-purple-700 text-white p-4 shadow-lg">
@@ -27,10 +29,11 @@ const Header = () => {
             <>
               <Link to="/cart" className="relative p-2 hover:bg-blue-700 rounded-md transition-colors">
                 <ShoppingCart className="h-6 w-6" />
-                {/* Placeholder for cart item count */}
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                  0
-                </span>
+                {cartItemCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {cartItemCount}
+                  </span>
+                )}
               </Link>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
