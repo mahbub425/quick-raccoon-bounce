@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useImperativeHandle, forwardRef } from "react";
 import { useForm, useWatch, Controller, Path } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -22,7 +22,16 @@ import AutosuggestInput from "@/components/AutosuggestInput";
 
 interface DynamicVoucherFormProps {
   voucherTypeId: string;
-  onFormSubmit?: () => void;
+  onFormSubmit?: (data: any) => void; // This will be used when parent wants to handle submission
+  hideSubmitButton?: boolean; // New prop to hide the submit button
+}
+
+// Define the ref type for the parent component
+export interface DynamicVoucherFormRef {
+  getValues: () => any;
+  trigger: (name?: Path<any> | Path<any>[]) => Promise<boolean>;
+  reset: (values?: any) => void;
+  control: any; // Expose control for useWatch in parent if needed
 }
 
 // Helper to get voucher details and form fields
@@ -161,261 +170,278 @@ const createSchema = (fields: FormFieldType[], currentFormValues: any) => {
   return z.object(schemaFields);
 };
 
-const DynamicVoucherForm = ({ voucherTypeId, onFormSubmit }: DynamicVoucherFormProps) => {
-  const voucherDetails = getVoucherDetails(voucherTypeId);
-  const { addToCart } = useCart();
+const DynamicVoucherForm = forwardRef<DynamicVoucherFormRef, DynamicVoucherFormProps>(
+  ({ voucherTypeId, onFormSubmit, hideSubmitButton }, ref) => {
+    const voucherDetails = getVoucherDetails(voucherTypeId);
+    const { addToCart } = useCart();
 
-  if (!voucherDetails || !voucherDetails.formFields) {
-    return <div className="text-center text-red-500">ভাউচার ফর্মের তথ্য পাওয়া যায়নি।</div>;
-  }
-
-  const defaultFormValues = useMemo(() => generateDefaultValues(voucherDetails.formFields), [voucherDetails.formFields]);
-
-  const form = useForm<z.infer<z.ZodObject<any>>>({
-    defaultValues: defaultFormValues,
-    resolver: (values, context, options) => {
-      const dynamicSchema = createSchema(voucherDetails.formFields, values);
-      return zodResolver(dynamicSchema)(values, context, options);
-    },
-  });
-
-  const watchedValues = useWatch({ control: form.control });
-
-  const selectedInstitutionId = form.watch("institutionId");
-
-  const branchOptions = useMemo(() => {
-    if (!selectedInstitutionId) {
-      return [];
+    if (!voucherDetails || !voucherDetails.formFields) {
+      return <div className="text-center text-red-500">ভাউচার ফর্মের তথ্য পাওয়া যায়নি।</div>;
     }
-    const institution = DUMMY_INSTITUTIONS.find(
-      (inst) => inst.id === selectedInstitutionId,
-    );
-    return institution
-      ? institution.branches.map((branch) => ({
-          value: branch.id,
-          label: branch.name,
-        }))
-      : [];
-  }, [selectedInstitutionId]);
 
-  const programSessionOptions = useMemo(() => {
-    if (!selectedInstitutionId || !DUMMY_PROGRAM_SESSIONS[selectedInstitutionId]) {
-      return [];
-    }
-    return DUMMY_PROGRAM_SESSIONS[selectedInstitutionId].map(session => ({
-      value: session.id,
-      label: session.name,
-    }));
-  }, [selectedInstitutionId]);
+    const defaultFormValues = useMemo(() => generateDefaultValues(voucherDetails.formFields), [voucherDetails.formFields]);
 
-
-  const onSubmit = (data: z.infer<z.ZodObject<any>>) => {
-    addToCart({
-      voucherTypeId: voucherDetails.id,
-      voucherHeading: voucherDetails.heading,
-      data: data,
+    const form = useForm<z.infer<z.ZodObject<any>>>({
+      defaultValues: defaultFormValues,
+      resolver: (values, context, options) => {
+        const dynamicSchema = createSchema(voucherDetails.formFields, values);
+        return zodResolver(dynamicSchema)(values, context, options);
+      },
     });
-    form.reset(defaultFormValues);
-    onFormSubmit?.();
-  };
 
-  const onError = (errors: any) => {
-    console.error("Form validation errors:", errors);
-    toast.error("ফর্ম পূরণে ত্রুটি আছে। অনুগ্রহ করে সকল আবশ্যক ফিল্ড পূরণ করুন।");
-  };
+    // Expose form methods to parent via ref
+    useImperativeHandle(ref, () => ({
+      getValues: form.getValues,
+      trigger: form.trigger,
+      reset: form.reset,
+      control: form.control,
+    }));
 
-  const renderField = (field: FormFieldType) => {
-    const isVisible = !field.dependency || (form.watch(field.dependency.field) === field.dependency.value || field.dependency.value === "*");
+    const selectedInstitutionId = form.watch("institutionId");
 
-    if (!isVisible) return null;
+    const branchOptions = useMemo(() => {
+      if (!selectedInstitutionId) {
+        return [];
+      }
+      const institution = DUMMY_INSTITUTIONS.find(
+        (inst) => inst.id === selectedInstitutionId,
+      );
+      return institution
+        ? institution.branches.map((branch) => ({
+            value: branch.id,
+            label: branch.name,
+          }))
+        : [];
+    }, [selectedInstitutionId]);
 
-    return (
-      <div key={field.name} className="space-y-4">
-        <FormField
-          control={form.control}
-          name={field.name as Path<z.infer<z.ZodObject<any>>>}
-          render={({ field: formHookField }) => (
-            <FormItem className="flex flex-col">
-              <FormLabel className="text-gray-700 font-semibold">{field.label} {field.mandatory && <span className="text-red-500">*</span>}</FormLabel>
-              <FormControl>
-                {(() => {
-                  if (field.type === "text") {
-                    if (field.options && field.options.length > 0) {
+    const programSessionOptions = useMemo(() => {
+      if (!selectedInstitutionId || !DUMMY_PROGRAM_SESSIONS[selectedInstitutionId]) {
+        return [];
+      }
+      return DUMMY_PROGRAM_SESSIONS[selectedInstitutionId].map(session => ({
+        value: session.id,
+        label: session.name,
+      }));
+    }, [selectedInstitutionId]);
+
+
+    const onSubmit = async (data: z.infer<z.ZodObject<any>>) => {
+      if (onFormSubmit) {
+        // If onFormSubmit is provided, parent wants to handle the submission
+        // This form's data is passed to the parent. Parent will handle reset.
+        onFormSubmit(data);
+      } else {
+        // Default behavior: add to cart directly
+        addToCart({
+          voucherTypeId: voucherDetails.id,
+          voucherHeading: voucherDetails.heading,
+          data: data,
+        });
+        toast.success(`${voucherDetails.heading} কার্টে যোগ করা হয়েছে!`);
+        form.reset(defaultFormValues); // Only reset if this component handles addToCart
+      }
+    };
+
+    const onError = (errors: any) => {
+      console.error("Form validation errors:", errors);
+      toast.error("ফর্ম পূরণে ত্রুটি আছে। অনুগ্রহ করে সকল আবশ্যক ফিল্ড পূরণ করুন।");
+    };
+
+    const renderField = (field: FormFieldType) => {
+      const isVisible = !field.dependency || (form.watch(field.dependency.field) === field.dependency.value || field.dependency.value === "*");
+
+      if (!isVisible) return null;
+
+      return (
+        <div key={field.name} className="space-y-4">
+          <FormField
+            control={form.control}
+            name={field.name as Path<z.infer<z.ZodObject<any>>>}
+            render={({ field: formHookField }) => (
+              <FormItem className="flex flex-col">
+                <FormLabel className="text-gray-700 font-semibold">{field.label} {field.mandatory && <span className="text-red-500">*</span>}</FormLabel>
+                <FormControl>
+                  {(() => {
+                    if (field.type === "text") {
+                      if (field.options && field.options.length > 0) {
+                        return (
+                          <AutosuggestInput
+                            placeholder={field.placeholder}
+                            value={formHookField.value || ""}
+                            onChange={formHookField.onChange}
+                            options={field.options}
+                            className="border-blue-300 focus:border-blue-500 focus:ring-blue-500"
+                          />
+                        );
+                      }
                       return (
-                        <AutosuggestInput
+                        <Input
                           placeholder={field.placeholder}
+                          {...formHookField}
                           value={formHookField.value || ""}
-                          onChange={formHookField.onChange}
-                          options={field.options}
                           className="border-blue-300 focus:border-blue-500 focus:ring-blue-500"
                         />
                       );
                     }
-                    return (
-                      <Input
-                        placeholder={field.placeholder}
-                        {...formHookField}
-                        value={formHookField.value || ""}
-                        className="border-blue-300 focus:border-blue-500 focus:ring-blue-500"
-                      />
-                    );
-                  }
-                  if (field.type === "number") {
-                    return (
-                      <Input
-                        type="number"
-                        placeholder={field.placeholder}
-                        {...formHookField}
-                        value={formHookField.value === undefined || formHookField.value === null ? "" : String(formHookField.value)}
-                        onChange={(e) => formHookField.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
-                        className="border-blue-300 focus:border-blue-500 focus:ring-blue-500"
-                      />
-                    );
-                  }
-                  if (field.type === "textarea") {
-                    return (
-                      <Textarea
-                        placeholder={field.placeholder}
-                        {...formHookField}
-                        value={formHookField.value || ""}
-                        className="border-blue-300 focus:border-blue-500 focus:ring-blue-500"
-                      />
-                    );
-                  }
-                  if (field.type === "dropdown") {
-                    let optionsToRender = field.options;
-                    if (field.name === "branchId") {
-                      optionsToRender = branchOptions;
-                    } else if (field.name === "programSessionId") {
-                      optionsToRender = programSessionOptions;
-                    }
-                    return (
-                      <Select onValueChange={formHookField.onChange} value={formHookField.value || ""}>
-                        <SelectTrigger className="border-blue-300 focus:border-blue-500 focus:ring-blue-500">
-                          <SelectValue placeholder={field.label} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {optionsToRender?.map((option) => (
-                            <SelectItem key={option.value} value={option.value}>
-                              {option.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    );
-                  }
-                  if (field.type === "date") {
-                    return (
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant={"outline"}
-                            className={cn(
-                              "w-full justify-start text-left font-normal border-blue-300 focus:border-blue-500 focus:ring-blue-500",
-                              !formHookField.value && "text-muted-foreground"
-                            )}
-                          >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {formHookField.value ? format(formHookField.value as Date, "dd MMM, yyyy") : <span>তারিখ নির্বাচন করুন</span>}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={formHookField.value as Date | null | undefined}
-                            onSelect={formHookField.onChange}
-                            initialFocus
-                            toDate={new Date()}
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    );
-                  }
-                  if (field.type === "time") {
-                    return (
-                      <Input
-                        type="time"
-                        {...formHookField}
-                        value={formHookField.value || ""}
-                        className="border-blue-300 focus:border-blue-500 focus:ring-blue-500"
-                      />
-                    );
-                  }
-                  if (field.type === "file") {
-                    return (
-                      <Input
-                        type="file"
-                        onChange={(e) => formHookField.onChange(e.target.files ? e.target.files[0] : undefined)}
-                        className="border-blue-300 focus:border-blue-500 focus:ring-blue-500"
-                      />
-                    );
-                  }
-                  if (field.type === "pin-selector") {
-                    return (
-                      <PinSelector
-                        label={field.label}
-                        selectedPins={formHookField.value || []}
-                        onSelectPins={formHookField.onChange}
-                        allowMultiplePins={field.allowMultiplePins}
-                      />
-                    );
-                  }
-                  if (field.type === "quantity-unit") {
-                    return (
-                      <div className="flex space-x-2">
+                    if (field.type === "number") {
+                      return (
                         <Input
-                          type="text"
-                          placeholder="পরিমান"
-                          value={formHookField.value?.quantity || ""}
-                          onChange={(e) => formHookField.onChange({ ...formHookField.value, quantity: e.target.value })}
-                          className="w-2/3 border-blue-300 focus:border-blue-500 focus:ring-blue-500"
+                          type="number"
+                          placeholder={field.placeholder}
+                          {...formHookField}
+                          value={formHookField.value === undefined || formHookField.value === null ? "" : String(formHookField.value)}
+                          onChange={(e) => formHookField.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                          className="border-blue-300 focus:border-blue-500 focus:ring-blue-500"
                         />
-                        <Select
-                          value={formHookField.value?.unit || ""}
-                          onValueChange={(value) => formHookField.onChange({ ...formHookField.value, unit: value })}
-                        >
-                          <SelectTrigger className="w-1/3 border-blue-300 focus:border-blue-500 focus:ring-blue-500">
-                            <SelectValue placeholder="ইউনিট" />
+                      );
+                    }
+                    if (field.type === "textarea") {
+                      return (
+                        <Textarea
+                          placeholder={field.placeholder}
+                          {...formHookField}
+                          value={formHookField.value || ""}
+                          className="border-blue-300 focus:border-blue-500 focus:ring-blue-500"
+                        />
+                      );
+                    }
+                    if (field.type === "dropdown") {
+                      let optionsToRender = field.options;
+                      if (field.name === "branchId") {
+                        optionsToRender = branchOptions;
+                      } else if (field.name === "programSessionId") {
+                        optionsToRender = programSessionOptions;
+                      }
+                      return (
+                        <Select onValueChange={formHookField.onChange} value={formHookField.value || ""}>
+                          <SelectTrigger className="border-blue-300 focus:border-blue-500 focus:ring-blue-500">
+                            <SelectValue placeholder={field.label} />
                           </SelectTrigger>
                           <SelectContent>
-                            {field.unitOptions?.map((option) => (
+                            {optionsToRender?.map((option) => (
                               <SelectItem key={option.value} value={option.value}>
                                 {option.label}
                               </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
-                      </div>
-                    );
-                  }
-                  return null;
-                })()}
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        {field.conditionalFields &&
-          field.conditionalFields.map((cond) =>
-            form.watch(field.name) === cond.value
-              ? cond.fields.map((nestedCondField) => renderField(nestedCondField))
-              : null
-          )}
-      </div>
-    );
-  };
+                      );
+                    }
+                    if (field.type === "date") {
+                      return (
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant={"outline"}
+                              className={cn(
+                                "w-full justify-start text-left font-normal border-blue-300 focus:border-blue-500 focus:ring-blue-500",
+                                !formHookField.value && "text-muted-foreground"
+                              )}
+                            >
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              {formHookField.value ? format(formHookField.value as Date, "dd MMM, yyyy") : <span>তারিখ নির্বাচন করুন</span>}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={formHookField.value as Date | null | undefined}
+                              onSelect={formHookField.onChange}
+                              initialFocus
+                              toDate={new Date()}
+                            />
+                          </PopoverContent>
+                        </Popover>
+                      );
+                    }
+                    if (field.type === "time") {
+                      return (
+                        <Input
+                          type="time"
+                          {...formHookField}
+                          value={formHookField.value || ""}
+                          className="border-blue-300 focus:border-blue-500 focus:ring-blue-500"
+                        />
+                      );
+                    }
+                    if (field.type === "file") {
+                      return (
+                        <Input
+                          type="file"
+                          onChange={(e) => formHookField.onChange(e.target.files ? e.target.files[0] : undefined)}
+                          className="border-blue-300 focus:border-blue-500 focus:ring-blue-500"
+                        />
+                      );
+                    }
+                    if (field.type === "pin-selector") {
+                      return (
+                        <PinSelector
+                          label={field.label}
+                          selectedPins={formHookField.value || []}
+                          onSelectPins={formHookField.onChange}
+                          allowMultiplePins={field.allowMultiplePins}
+                        />
+                      );
+                    }
+                    if (field.type === "quantity-unit") {
+                      return (
+                        <div className="flex space-x-2">
+                          <Input
+                            type="text"
+                            placeholder="পরিমান"
+                            value={formHookField.value?.quantity || ""}
+                            onChange={(e) => formHookField.onChange({ ...formHookField.value, quantity: e.target.value })}
+                            className="w-2/3 border-blue-300 focus:border-blue-500 focus:ring-blue-500"
+                          />
+                          <Select
+                            value={formHookField.value?.unit || ""}
+                            onValueChange={(value) => formHookField.onChange({ ...formHookField.value, unit: value })}
+                          >
+                            <SelectTrigger className="w-1/3 border-blue-300 focus:border-blue-500 focus:ring-blue-500">
+                              <SelectValue placeholder="ইউনিট" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {field.unitOptions?.map((option) => (
+                                <SelectItem key={option.value} value={option.value}>
+                                  {option.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          {field.conditionalFields &&
+            field.conditionalFields.map((cond) =>
+              form.watch(field.name) === cond.value
+                ? cond.fields.map((nestedCondField) => renderField(nestedCondField))
+                : null
+            )}
+        </div>
+      );
+    };
 
-  return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit, onError)} className="space-y-6 p-6 bg-white rounded-lg shadow-lg border border-blue-200">
-        <h2 className="text-3xl font-bold text-blue-800 mb-6 text-center">{voucherDetails.heading}</h2>
-        {voucherDetails.formFields.map((field) => renderField(field))}
-        <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-700 hover:to-purple-800 text-white text-lg py-3 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105">
-          কার্টে যোগ করুন
-        </Button>
-      </form>
-    </Form>
-  );
-};
+    return (
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit, onError)} className="space-y-6 p-6 bg-white rounded-lg shadow-lg border border-blue-200">
+          <h2 className="text-3xl font-bold text-blue-800 mb-6 text-center">{voucherDetails.heading}</h2>
+          {voucherDetails.formFields.map((field) => renderField(field))}
+          {!hideSubmitButton && ( // Conditionally render submit button
+            <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-700 hover:to-purple-800 text-white text-lg py-3 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105">
+              কার্টে যোগ করুন
+            </Button>
+          )}
+        </form>
+      </Form>
+    );
+  }
+);
 
 export default DynamicVoucherForm;

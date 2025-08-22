@@ -1,15 +1,18 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { DUMMY_VOUCHER_TYPES } from "@/data/dummyData";
 import { toast } from "sonner";
-import DynamicVoucherForm from "@/components/forms/DynamicVoucherForm";
+import DynamicVoucherForm, { DynamicVoucherFormRef } from "@/components/forms/DynamicVoucherForm"; // Import ref type
+import { useCart } from "@/context/CartContext"; // Need useCart here for combined submission
 
 const SelectedVouchers = () => {
   const location = useLocation();
   const selectedVoucherIds: string[] = location.state?.selectedVoucherIds || [];
   const [activeFormId, setActiveFormId] = useState<string | null>(null);
-  const [activeSubFormId, setActiveSubFormId] = useState<string | null>(null); // State for sub-forms
+  const [activeSubFormId, setActiveSubFormId] = useState<string | null>(null);
+  const mainPublicityFormRef = useRef<DynamicVoucherFormRef>(null); // Ref for main publicity form
+  const { addToCart } = useCart(); // Get addToCart from context
 
   const getVoucherDetails = (id: string) => {
     const allVouchers = DUMMY_VOUCHER_TYPES.flatMap(v => v.type === 'multi' && v.subTypes ? [v, ...v.subTypes] : [v]);
@@ -24,8 +27,48 @@ const SelectedVouchers = () => {
     toast.info(`ফর্ম লোড হচ্ছে: ${getVoucherDetails(voucherId)?.heading}`);
   };
 
-  // No need for handleMainFormSubmissionComplete or handleSubFormSubmissionComplete
-  // as DynamicVoucherForm will now handle its own reset and stay visible.
+  const handleSubFormLoad = (subVoucherId: string) => {
+    setActiveSubFormId(subVoucherId);
+    toast.info(`সাব-ফর্ম লোড হচ্ছে: ${getVoucherDetails(subVoucherId)?.heading}`);
+  };
+
+  // This function will be passed to sub-forms of 'publicity'
+  const handlePublicitySubFormSubmit = async (subFormData: any) => {
+    if (!mainPublicityFormRef.current) {
+      toast.error("প্রচারণা মূল ফর্ম লোড হয়নি।");
+      return;
+    }
+
+    // Validate main publicity form
+    const isMainFormValid = await mainPublicityFormRef.current.trigger();
+    if (!isMainFormValid) {
+      toast.error("প্রচারণা মূল ফর্মে ত্রুটি আছে। অনুগ্রহ করে সকল আবশ্যক ফিল্ড পূরণ করুন।");
+      return;
+    }
+
+    const mainPublicityData = mainPublicityFormRef.current.getValues();
+    const subVoucherDetails = getVoucherDetails(activeSubFormId || "");
+
+    if (!subVoucherDetails) {
+      toast.error("উপ-ভাউচারের তথ্য পাওয়া যায়নি।");
+      return;
+    }
+
+    // Combine main form data and sub-form data
+    const combinedData = { ...mainPublicityData, ...subFormData };
+    const newHeading = `প্রচারণা (${subVoucherDetails.heading})`;
+
+    addToCart({
+      voucherTypeId: activeSubFormId || "", // Use sub-voucher ID
+      voucherHeading: newHeading,
+      data: combinedData,
+    });
+    toast.success(`${newHeading} কার্টে যোগ করা হয়েছে!`);
+
+    // Reset both forms after successful combined submission
+    mainPublicityFormRef.current.reset();
+    setActiveSubFormId(null); // This will unmount and reset the sub-form
+  };
 
   if (selectedVouchers.length === 0) {
     return (
@@ -65,8 +108,15 @@ const SelectedVouchers = () => {
           </div>
         ) : (
           <>
-            {/* DynamicVoucherForm will now handle its own reset and stay visible */}
-            <DynamicVoucherForm voucherTypeId={activeFormId} />
+            {activeFormId === 'publicity' ? (
+              <DynamicVoucherForm
+                voucherTypeId={activeFormId}
+                hideSubmitButton={true} // Hide submit button for main publicity form
+                ref={mainPublicityFormRef} // Pass ref to get its form instance
+              />
+            ) : (
+              <DynamicVoucherForm voucherTypeId={activeFormId} />
+            )}
 
             {activeFormId === 'publicity' && (
               <div className="mt-8 p-6 bg-white rounded-lg shadow-lg border border-blue-200">
@@ -75,30 +125,32 @@ const SelectedVouchers = () => {
                   <Button
                     variant={activeSubFormId === 'publicity-conveyance' ? "default" : "outline"}
                     className={activeSubFormId === 'publicity-conveyance' ? "bg-purple-600 text-white hover:bg-purple-700" : "bg-white text-purple-700 border-purple-400 hover:bg-purple-100 hover:text-purple-800"}
-                    onClick={() => setActiveSubFormId('publicity-conveyance')}
+                    onClick={() => handleSubFormLoad('publicity-conveyance')}
                   >
                     কনভেয়েন্স
                   </Button>
                   <Button
                     variant={activeSubFormId === 'publicity-entertainment' ? "default" : "outline"}
                     className={activeSubFormId === 'publicity-entertainment' ? "bg-purple-600 text-white hover:bg-purple-700" : "bg-white text-purple-700 border-purple-400 hover:bg-purple-100 hover:text-purple-800"}
-                    onClick={() => setActiveSubFormId('publicity-entertainment')}
+                    onClick={() => handleSubFormLoad('publicity-entertainment')}
                   >
                     এন্টারটেইনমেন্ট
                   </Button>
                   <Button
                     variant={activeSubFormId === 'publicity-publicist-bill' ? "default" : "outline"}
                     className={activeSubFormId === 'publicity-publicist-bill' ? "bg-purple-600 text-white hover:bg-purple-700" : "bg-white text-purple-700 border-purple-400 hover:bg-purple-100 hover:text-purple-800"}
-                    onClick={() => setActiveSubFormId('publicity-publicist-bill')}
+                    onClick={() => handleSubFormLoad('publicity-publicist-bill')}
                   >
-                    প্রচারণাকরীর বিল
+                    প্রচারণাকারীর বিল
                   </Button>
                 </div>
 
                 {activeSubFormId && (
                   <div className="mt-6">
-                    {/* DynamicVoucherForm will now handle its own reset and stay visible */}
-                    <DynamicVoucherForm voucherTypeId={activeSubFormId} />
+                    <DynamicVoucherForm
+                      voucherTypeId={activeSubFormId}
+                      onFormSubmit={handlePublicitySubFormSubmit} // Pass custom handler for combined submission
+                    />
                   </div>
                 )}
               </div>
