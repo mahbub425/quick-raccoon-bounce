@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { useForm, useWatch, Controller, Path } from "react-hook-form"; // Import Path
+import { useForm, useWatch, Controller, Path } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
@@ -259,7 +259,7 @@ const EntertainmentVoucherForm = ({ voucherTypeId, onFormSubmit }: Entertainment
       <FormField
         key={field.name}
         control={form.control}
-        name={field.name as Path<z.infer<typeof formSchema>>} // Use Path for more precise typing
+        name={field.name as Path<z.infer<typeof formSchema>>}
         render={({ field: formHookField }) => (
           <FormItem className="flex flex-col">
             <FormLabel className="text-gray-700 font-semibold">{field.label} {field.mandatory && <span className="text-red-500">*</span>}</FormLabel>
@@ -341,7 +341,7 @@ const EntertainmentVoucherForm = ({ voucherTypeId, onFormSubmit }: Entertainment
                           )}
                         >
                           <CalendarIcon className="mr-2 h-4 w-4" />
-                          {formHookField.value ? format(formHookField.value as Date, "PPP") : <span>তারিখ নির্বাচন করুন</span>}
+                          {formHookField.value ? format(formHookField.value as Date, "dd MMM, yyyy") : <span>তারিখ নির্বাচন করুন</span>}
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0" align="start">
@@ -350,6 +350,7 @@ const EntertainmentVoucherForm = ({ voucherTypeId, onFormSubmit }: Entertainment
                           selected={formHookField.value as Date | null | undefined}
                           onSelect={formHookField.onChange}
                           initialFocus
+                          toDate={new Date()} 
                         />
                       </PopoverContent>
                     </Popover>
