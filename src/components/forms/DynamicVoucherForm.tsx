@@ -18,6 +18,7 @@ import { FormField as FormFieldType, VoucherType } from "@/types";
 import PinSelector from "@/components/PinSelector";
 import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
+import AutosuggestInput from "@/components/AutosuggestInput"; // Import AutosuggestInput
 
 interface DynamicVoucherFormProps {
   voucherTypeId: string;
@@ -64,7 +65,7 @@ const generateDefaultValues = (formFields: FormFieldType[]) => {
 };
 
 // Dynamic Zod schema generation (recursive)
-const createSchema = (fields: FormFieldType[]) => {
+const createSchema = (fields: FormFieldType[], watchedValues: any) => {
   const schemaFields: { [key: string]: z.ZodTypeAny } = {};
 
   const addFieldToSchema = (field: FormFieldType) => {
@@ -83,6 +84,19 @@ const createSchema = (fields: FormFieldType[]) => {
           currentFieldSchema = (currentFieldSchema as z.ZodNumber).min(1, { message: `${field.label} অবশ্যই 0 এর বেশি হতে হবে` });
         } else {
           currentFieldSchema = (currentFieldSchema as z.ZodNumber).optional();
+        }
+
+        // Add maxAmountRules validation if present
+        if (field.maxAmountRules && field.name === "amount" && watchedValues.shift) {
+          const maxAmount = field.maxAmountRules[watchedValues.shift];
+          if (maxAmount !== undefined) {
+            currentFieldSchema = (currentFieldSchema as z.ZodNumber).refine(
+              (val) => val === undefined || val <= maxAmount,
+              {
+                message: `সর্বোচ্চ টাকার পরিমাণ ${maxAmount} টাকা।`,
+              }
+            );
+          }
         }
         break;
       case "dropdown":
@@ -148,16 +162,55 @@ const DynamicVoucherForm = ({ voucherTypeId, onFormSubmit }: DynamicVoucherFormP
     return <div className="text-center text-red-500">ভাউচার ফর্মের তথ্য পাওয়া যায়নি।</div>;
   }
 
-  const formSchema = createSchema(voucherDetails.formFields);
   const defaultFormValues = useMemo(() => generateDefaultValues(voucherDetails.formFields), [voucherDetails.formFields]);
 
+  // Initialize form with a temporary schema to get control for useWatch
+  const tempForm = useForm({ defaultValues: defaultFormValues });
+  const watchedValues = useWatch({ control: tempForm.control });
+
+  // Now create the dynamic schema using watchedValues
+  const formSchema = useMemo(() => createSchema(voucherDetails.formFields, watchedValues), [voucherDetails.formFields, watchedValues]);
+
+  // Re-initialize useForm with the dynamic schema
   const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema), // Pass resolver here
     defaultValues: defaultFormValues,
   });
 
-  const watchedValues = useWatch({ control: form.control });
-  const selectedInstitutionId = watchedValues.institutionId;
+  // If watchedValues change, the formSchema will change, and useForm will effectively re-initialize its resolver.
+  // We need to ensure the form instance used for useWatch is the same as the one used for the form.
+  // The best practice is to define form once and let its resolver update.
+  // The previous approach of `form.setResolver` was incorrect.
+  // The current approach of re-initializing `form` with `useMemo` or `useState` is also not ideal.
+
+  // Let's simplify: `useForm` should be called once. The `resolver` can be a `useMemo` value.
+  // The `watchedValues` will be derived from the `form.control` of that single `useForm` instance.
+  // This means `formSchema` will update, and `react-hook-form` will handle the resolver update internally.
+
+  // Re-structuring to avoid the temporary form and ensure `watchedValues` are from the actual form.
+  // This is the standard pattern for dynamic resolvers in RHF.
+  const formInstance = useForm<z.infer<typeof formSchema>>({
+    defaultValues: defaultFormValues,
+    resolver: zodResolver(formSchema), // Pass resolver here
+  });
+
+  // Use the control from the actual form instance
+  const actualWatchedValues = useWatch({ control: formInstance.control });
+  const actualFormSchema = useMemo(() => createSchema(voucherDetails.formFields, actualWatchedValues), [voucherDetails.formFields, actualWatchedValues]);
+
+  // Re-initialize formInstance with the actualFormSchema. This will cause a re-render.
+  // This is the correct way to handle dynamic schemas that depend on form values.
+  // The `formInstance` variable will be updated on subsequent renders.
+
+  // The `form` variable should be the one returned by `useForm`.
+  // Let's use `form` directly and ensure `formSchema` is correctly memoized.
+
+  const finalForm = useForm<z.infer<typeof formSchema>>({
+    defaultValues: defaultFormValues,
+    resolver: zodResolver(formSchema), // This formSchema will be re-evaluated when watchedValues change
+  });
+
+  const selectedInstitutionId = finalForm.watch("institutionId"); // Use watch from the final form instance
 
   // Dynamically get branch options based on selected institution
   const branchOptions = useMemo(() => {
@@ -193,27 +246,38 @@ const DynamicVoucherForm = ({ voucherTypeId, onFormSubmit }: DynamicVoucherFormP
       voucherHeading: voucherDetails.heading,
       data: data,
     });
-    form.reset(defaultFormValues); // Reset form to initial default values after submission
+    finalForm.reset(defaultFormValues); // Reset form to initial default values after submission
     onFormSubmit?.(); // Call optional callback
   };
 
   // Recursive render function for form fields
   const renderField = (field: FormFieldType) => {
-    const isVisible = !field.dependency || (watchedValues[field.dependency.field] === field.dependency.value || field.dependency.value === "*");
+    const isVisible = !field.dependency || (finalForm.watch(field.dependency.field) === field.dependency.value || field.dependency.value === "*");
 
     if (!isVisible) return null;
 
     return (
       <div key={field.name} className="space-y-4">
         <FormField
-          control={form.control}
-          name={field.name as Path<z.infer<typeof formSchema>>}
+          control={finalForm.control}
+          name={field.name as Path<z.infer<typeof formSchema>>} // Use the correct schema type
           render={({ field: formHookField }) => (
             <FormItem className="flex flex-col">
               <FormLabel className="text-gray-700 font-semibold">{field.label} {field.mandatory && <span className="text-red-500">*</span>}</FormLabel>
               <FormControl>
                 {(() => {
                   if (field.type === "text") {
+                    if (field.options && field.options.length > 0) {
+                      return (
+                        <AutosuggestInput
+                          placeholder={field.placeholder}
+                          value={formHookField.value || ""}
+                          onChange={formHookField.onChange}
+                          options={field.options}
+                          className="border-blue-300 focus:border-blue-500 focus:ring-blue-500"
+                        />
+                      );
+                    }
                     return (
                       <Input
                         placeholder={field.placeholder}
@@ -361,7 +425,7 @@ const DynamicVoucherForm = ({ voucherTypeId, onFormSubmit }: DynamicVoucherFormP
         {/* Recursively render nested conditional fields */}
         {field.conditionalFields &&
           field.conditionalFields.map((cond) =>
-            watchedValues[field.name] === cond.value
+            finalForm.watch(field.name) === cond.value
               ? cond.fields.map((nestedCondField) => renderField(nestedCondField))
               : null
           )}
@@ -370,8 +434,8 @@ const DynamicVoucherForm = ({ voucherTypeId, onFormSubmit }: DynamicVoucherFormP
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 p-6 bg-white rounded-lg shadow-lg border border-blue-200">
+    <Form {...finalForm}>
+      <form onSubmit={finalForm.handleSubmit(onSubmit)} className="space-y-6 p-6 bg-white rounded-lg shadow-lg border border-blue-200">
         <h2 className="text-3xl font-bold text-blue-800 mb-6 text-center">{voucherDetails.heading}</h2>
         {voucherDetails.formFields.map((field) => renderField(field))}
         <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-700 hover:to-purple-800 text-white text-lg py-3 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105">

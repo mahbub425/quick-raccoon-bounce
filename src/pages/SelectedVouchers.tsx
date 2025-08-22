@@ -3,12 +3,13 @@ import { useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { DUMMY_VOUCHER_TYPES } from "@/data/dummyData";
 import { toast } from "sonner";
-import DynamicVoucherForm from "@/components/forms/DynamicVoucherForm"; // Import the generic form component
+import DynamicVoucherForm from "@/components/forms/DynamicVoucherForm";
 
 const SelectedVouchers = () => {
   const location = useLocation();
   const selectedVoucherIds: string[] = location.state?.selectedVoucherIds || [];
   const [activeFormId, setActiveFormId] = useState<string | null>(null);
+  const [activeSubFormId, setActiveSubFormId] = useState<string | null>(null); // State for sub-forms
 
   const getVoucherDetails = (id: string) => {
     const allVouchers = DUMMY_VOUCHER_TYPES.flatMap(v => v.type === 'multi' && v.subTypes ? [v, ...v.subTypes] : [v]);
@@ -19,11 +20,18 @@ const SelectedVouchers = () => {
 
   const handleFormLoad = (voucherId: string) => {
     setActiveFormId(voucherId);
+    setActiveSubFormId(null); // Reset sub-form when main form changes
     toast.info(`ফর্ম লোড হচ্ছে: ${getVoucherDetails(voucherId)?.heading}`);
+  };
+
+  const handleSubFormLoad = (subVoucherId: string) => {
+    setActiveSubFormId(subVoucherId);
+    toast.info(`সাব-ফর্ম লোড হচ্ছে: ${getVoucherDetails(subVoucherId)?.heading}`);
   };
 
   const handleFormSubmissionComplete = () => {
     setActiveFormId(null); // Optionally reset active form after submission
+    setActiveSubFormId(null); // Reset sub-form after submission
   };
 
   if (selectedVouchers.length === 0) {
@@ -37,6 +45,8 @@ const SelectedVouchers = () => {
       </div>
     );
   }
+
+  const publicityVoucher = selectedVouchers.find(v => v?.id === 'publicity');
 
   return (
     <div className="min-h-[calc(100vh-80px)] bg-gradient-to-br from-blue-50 to-purple-50 p-6">
@@ -63,7 +73,44 @@ const SelectedVouchers = () => {
             সংশ্লিষ্ট ফর্ম দেখতে যে কোনো একটি ভাউচার বোতামে ক্লিক করুন।
           </div>
         ) : (
-          <DynamicVoucherForm voucherTypeId={activeFormId} onFormSubmit={handleFormSubmissionComplete} />
+          <>
+            <DynamicVoucherForm voucherTypeId={activeFormId} onFormSubmit={handleFormSubmissionComplete} />
+
+            {activeFormId === 'publicity' && (
+              <div className="mt-8 p-6 bg-white rounded-lg shadow-lg border border-blue-200">
+                <h3 className="text-2xl font-bold text-blue-800 mb-4 text-center">প্রচারণার উপ-ভাউচার যোগ করুন</h3>
+                <div className="flex flex-wrap justify-center gap-4">
+                  <Button
+                    variant={activeSubFormId === 'publicity-conveyance' ? "default" : "outline"}
+                    className={activeSubFormId === 'publicity-conveyance' ? "bg-purple-600 text-white hover:bg-purple-700" : "bg-white text-purple-700 border-purple-400 hover:bg-purple-100 hover:text-purple-800"}
+                    onClick={() => handleSubFormLoad('publicity-conveyance')}
+                  >
+                    কনভেয়েন্স
+                  </Button>
+                  <Button
+                    variant={activeSubFormId === 'publicity-entertainment' ? "default" : "outline"}
+                    className={activeSubFormId === 'publicity-entertainment' ? "bg-purple-600 text-white hover:bg-purple-700" : "bg-white text-purple-700 border-purple-400 hover:bg-purple-100 hover:text-purple-800"}
+                    onClick={() => handleSubFormLoad('publicity-entertainment')}
+                  >
+                    এন্টারটেইনমেন্ট
+                  </Button>
+                  <Button
+                    variant={activeSubFormId === 'publicity-publicist-bill' ? "default" : "outline"}
+                    className={activeSubFormId === 'publicity-publicist-bill' ? "bg-purple-600 text-white hover:bg-purple-700" : "bg-white text-purple-700 border-purple-400 hover:bg-purple-100 hover:text-purple-800"}
+                    onClick={() => handleSubFormLoad('publicity-publicist-bill')}
+                  >
+                    প্রচারণাকরীর বিল
+                  </Button>
+                </div>
+
+                {activeSubFormId && (
+                  <div className="mt-6">
+                    <DynamicVoucherForm voucherTypeId={activeSubFormId} onFormSubmit={() => setActiveSubFormId(null)} />
+                  </div>
+                )}
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

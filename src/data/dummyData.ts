@@ -702,13 +702,13 @@ export const DUMMY_VOUCHER_TYPES: VoucherType[] = [
             label: "প্রোগ্রাম ও সেশন",
             type: "dropdown",
             mandatory: true,
-            dependency: { field: "institutionId", value: "udvash" }, // Example, will need dynamic options based on institutionId
-            options: [], // This will be dynamically populated in the form component
+            options: [], // Dynamically populated in form component
+            dependency: { field: "institutionId", value: "*" },
           },
           {
             name: "publicityLocation",
             label: "প্রচারণার স্থান",
-            type: "text", // Should be an autosuggestion field
+            type: "text", // Will use AutosuggestInput
             mandatory: true,
             placeholder: "প্রচারণার স্থান লিখুন",
             options: DUMMY_PUBLICITY_LOCATIONS.map(loc => ({ value: loc, label: loc })), // For autosuggestion
@@ -726,6 +726,135 @@ export const DUMMY_VOUCHER_TYPES: VoucherType[] = [
           // This will have its own form fields based on further requirements
         ],
       },
+    ],
+  },
+  // New sub-voucher types for Publicity
+  {
+    id: "publicity-conveyance",
+    heading: "প্রচারণা (কনভেয়েন্স)",
+    shortDescription: "প্রচারণা সম্পর্কিত যাতায়াত বা পরিবহন খরচ।",
+    type: "single",
+    formFields: [
+      { name: "from", label: "হইতে", type: "text", mandatory: true, placeholder: "কোথা থেকে" },
+      { name: "to", label: "পর্যন্ত", type: "text", mandatory: true, placeholder: "কোথা পর্যন্ত" },
+      {
+        name: "vehicleName",
+        label: "বাহনের নাম",
+        type: "dropdown",
+        mandatory: true,
+        options: [
+          { value: "Bus (Non-AC)", label: "Bus (নন এসি)" },
+          { value: "Bus (AC)", label: "Bus (এসি)" },
+          { value: "CNG", label: "CNG" },
+          { value: "Rickshaw", label: "Rickshaw" },
+          { value: "Metro Rail", label: "Metro Rail" },
+        ],
+        conditionalFields: [
+          {
+            value: "Bus (AC)",
+            fields: [
+              { name: "specialApproverPin", label: "বিশেষ ক্ষেত্রে অনুমোদনকারী পিন", type: "number", mandatory: true, placeholder: "অনুমোদনকারীর পিন" },
+            ],
+          },
+        ],
+      },
+      { name: "numberOfPersons", label: "ব্যক্তির সংখ্যা", type: "number", mandatory: true, placeholder: "ব্যক্তির সংখ্যা লিখুন" },
+      { name: "amount", label: "টাকার পরিমাণ", type: "number", mandatory: true, placeholder: "টাকার পরিমাণ লিখুন" },
+      { name: "description", label: "বর্ণনা", type: "textarea", mandatory: true, placeholder: "বর্ণনা লিখুন" },
+      { name: "attachment", label: "সংযুক্তি", type: "file", mandatory: false },
+    ],
+  },
+  {
+    id: "publicity-entertainment",
+    heading: "প্রচারণা (এন্টারটেইনমেন্ট)",
+    shortDescription: "প্রচারণা সম্পর্কিত আপ্যায়ন খরচ।",
+    type: "single",
+    formFields: [
+      {
+        name: "applicableFor",
+        label: "যাহার জন্য প্রযোজ্য",
+        type: "dropdown",
+        mandatory: true,
+        options: [
+          { value: "Regular Staff", label: "Regular Staff (নিয়মিত কর্মী)" },
+          { value: "Irregular Staff", label: "Irregular Staff (অনিয়মিত কর্মী)" },
+        ],
+        conditionalFields: [
+          {
+            value: "Regular Staff",
+            fields: [
+              { name: "pin", label: "পিন", type: "pin-selector", mandatory: true, allowMultiplePins: false }, // Assuming single pin for regular staff
+            ],
+          },
+          {
+            value: "Irregular Staff",
+            fields: [
+              { name: "name", label: "নাম", type: "text", mandatory: true, placeholder: "নাম লিখুন" },
+            ],
+          },
+        ],
+      },
+      {
+        name: "type",
+        label: "ধরণ",
+        type: "dropdown",
+        mandatory: true,
+        options: [
+          { value: "Breakfast", label: "Breakfast (সকালের নাস্তা)" },
+          { value: "Lunch", label: "Lunch (দুপুরের খাবার)" },
+          { value: "Afternoon Snacks", label: "Afternoon Snacks (বিকালের নাস্তা)" },
+          { value: "Dinner", label: "Dinner (রাতের খাবার)" },
+          { value: "Iftar", label: "Iftar (ইফতার)" },
+          { value: "Publicity Snacks", label: "Publicity Snacks (প্রচারণাকালিন নাস্তা)" },
+        ],
+      },
+      { name: "amount", label: "টাকার পরিমাণ", type: "number", mandatory: true, placeholder: "টাকার পরিমাণ লিখুন" },
+    ],
+  },
+  {
+    id: "publicity-publicist-bill",
+    heading: "প্রচারণা (প্রচারণাকারীর বিল)",
+    shortDescription: "প্রচারণাকারীর বিল সম্পর্কিত ভাউচার।",
+    type: "single",
+    formFields: [
+      { name: "publicistName", label: "প্রচারণাকরীর নাম", type: "text", mandatory: true, placeholder: "প্রচারণাকরীর নাম লিখুন" },
+      { name: "mobileNumber", label: "মোবাইল নম্বর", type: "text", mandatory: true, placeholder: "মোবাইল নম্বর লিখুন" }, // Changed to text for now, can be number with pattern later
+      {
+        name: "shift",
+        label: "সিফট",
+        type: "dropdown",
+        mandatory: true,
+        options: [
+          { value: "সকাল", label: "সকাল" },
+          { value: "দুপুর", label: "দুপুর" },
+          { value: "বিকাল", label: "বিকাল" },
+          { value: "সকাল ও দুপুর", label: "সকাল ও দুপুর" },
+          { value: "সকাল ও বিকাল", label: "সকাল ও বিকাল" },
+          { value: "দুপুর ও বিকাল", label: "দুপুর ও বিকাল" },
+          { value: "সকাল, দুপুর ও বিকাল", label: "সকাল, দুপুর ও বিকাল" },
+          { value: "বোর্ড ও চাকরি পরীক্ষা", label: "বোর্ড ও চাকরি পরীক্ষা" },
+          { value: "অন্য থানা", label: "অন্য থানা" },
+        ],
+      },
+      {
+        name: "amount",
+        label: "টাকার পরিমাণ",
+        type: "number",
+        mandatory: true,
+        placeholder: "টাকার পরিমাণ লিখুন",
+        maxAmountRules: {
+          "সকাল": 220,
+          "দুপুর": 220,
+          "বিকাল": 220,
+          "সকাল ও দুপুর": 270,
+          "দুপুর ও বিকাল": 270,
+          "সকাল ও বিকাল": 320,
+          "সকাল, দুপুর ও বিকাল": 380,
+          "বোর্ড ও চাকরি পরীক্ষা": 270,
+          "অন্য থানা": 360,
+        },
+      },
+      { name: "attachment", label: "সংযুক্তি", type: "file", mandatory: false },
     ],
   },
 ];
