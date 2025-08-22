@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useForm, useWatch, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -39,10 +39,10 @@ const createSchema = (fields: FormFieldType[]) => {
 
     switch (field.type) {
       case "date":
-        fieldSchema = z.date();
+        fieldSchema = z.date({ required_error: `${field.label} আবশ্যক` });
         break;
       case "number":
-        fieldSchema = z.coerce.number();
+        fieldSchema = z.coerce.number({ invalid_type_error: `${field.label} অবশ্যই একটি সংখ্যা হতে হবে` });
         break;
       case "dropdown":
       case "text":
@@ -58,8 +58,8 @@ const createSchema = (fields: FormFieldType[]) => {
         break;
       case "quantity-unit":
         fieldSchema = z.object({
-          quantity: z.string(),
-          unit: z.string(),
+          quantity: z.string().min(1, "পরিমান আবশ্যক"),
+          unit: z.string().min(1, "ইউনিট আবশ্যক"),
         });
         break;
       default:
@@ -67,12 +67,13 @@ const createSchema = (fields: FormFieldType[]) => {
     }
 
     if (field.mandatory) {
-      fieldSchema = fieldSchema.refine(val => {
-        if (field.type === 'file') return true; // File mandatory check is complex, skip for now
-        if (field.type === 'pin-selector') return (val as string[]).length > 0;
-        if (field.type === 'quantity-unit') return (val as { quantity: string, unit: string }).quantity && (val as { quantity: string, unit: string }).unit;
-        return !!val;
-      }, { message: `${field.label} আবশ্যক` });
+      if (field.type === 'pin-selector') {
+        fieldSchema = fieldSchema.refine(val => (val as string[]).length > 0, { message: `${field.label} আবশ্যক` });
+      } else if (field.type === 'quantity-unit') {
+        fieldSchema = fieldSchema.refine(val => (val as { quantity: string, unit: string }).quantity && (val as { quantity: string, unit: string }).unit, { message: `${field.label} আবশ্যক` });
+      } else if (field.type !== 'file') { // File mandatory check is complex, skip for now
+        fieldSchema = fieldSchema.min(1, { message: `${field.label} আবশ্যক` });
+      }
     } else {
       fieldSchema = fieldSchema.optional();
     }
@@ -85,8 +86,8 @@ const createSchema = (fields: FormFieldType[]) => {
         cond.fields.forEach(condField => {
           let condFieldSchema: z.ZodTypeAny;
           switch (condField.type) {
-            case "date": condFieldSchema = z.date(); break;
-            case "number": condFieldSchema = z.coerce.number(); break;
+            case "date": condFieldSchema = z.date({ required_error: `${condField.label} আবশ্যক` }); break;
+            case "number": condFieldSchema = z.coerce.number({ invalid_type_error: `${condField.label} অবশ্যই একটি সংখ্যা হতে হবে` }); break;
             case "dropdown":
             case "text":
             case "textarea":
@@ -97,19 +98,20 @@ const createSchema = (fields: FormFieldType[]) => {
             case "pin-selector": condFieldSchema = z.array(z.string()); break;
             case "quantity-unit":
               condFieldSchema = z.object({
-                quantity: z.string(),
-                unit: z.string(),
+                quantity: z.string().min(1, "পরিমান আবশ্যক"),
+                unit: z.string().min(1, "ইউনিট আবশ্যক"),
               });
               break;
             default: condFieldSchema = z.any();
           }
           if (condField.mandatory) {
-            condFieldSchema = condFieldSchema.refine(val => {
-              if (condField.type === 'file') return true;
-              if (condField.type === 'pin-selector') return (val as string[]).length > 0;
-              if (condField.type === 'quantity-unit') return (val as { quantity: string, unit: string }).quantity && (val as { quantity: string, unit: string }).unit;
-              return !!val;
-            }, { message: `${condField.label} আবশ্যক` });
+            if (condField.type === 'pin-selector') {
+              condFieldSchema = condFieldSchema.refine(val => (val as string[]).length > 0, { message: `${condField.label} আবশ্যক` });
+            } else if (condField.type === 'quantity-unit') {
+              condFieldSchema = condFieldSchema.refine(val => (val as { quantity: string, unit: string }).quantity && (val as { quantity: string, unit: string }).unit, { message: `${condField.label} আবশ্যক` });
+            } else if (condField.type !== 'file') {
+              condFieldSchema = condFieldSchema.min(1, { message: `${condField.label} আবশ্যক` });
+            }
           } else {
             condFieldSchema = condFieldSchema.optional();
           }
@@ -134,10 +136,42 @@ const EntertainmentVoucherForm = ({ voucherTypeId, onFormSubmit }: Entertainment
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {},
+    defaultValues: {
+      // Initialize all possible fields to prevent undefined issues
+      date: undefined,
+      institutionId: "",
+      branchId: "",
+      expenseTitle: "",
+      expenseCategory: "",
+      selectedPins: [],
+      guestName: "",
+      studentName: "",
+      guardianName: "",
+      quantityUnit: { quantity: "", unit: "" },
+      amount: undefined,
+      description: "",
+      attachment: undefined,
+    },
   });
 
   const watchedValues = useWatch({ control: form.control });
+  const selectedInstitutionId = watchedValues.institutionId;
+
+  // Dynamically get branch options based on selected institution
+  const branchOptions = useMemo(() => {
+    if (!selectedInstitutionId) {
+      return [];
+    }
+    const institution = DUMMY_INSTITUTIONS.find(
+      (inst) => inst.id === selectedInstitutionId,
+    );
+    return institution
+      ? institution.branches.map((branch) => ({
+          value: branch.id,
+          label: branch.name,
+        }))
+      : [];
+  }, [selectedInstitutionId]);
 
   const onSubmit = (data: z.infer<typeof formSchema>) => {
     addToCart({
@@ -159,7 +193,7 @@ const EntertainmentVoucherForm = ({ voucherTypeId, onFormSubmit }: Entertainment
       <FormField
         key={field.name}
         control={form.control}
-        name={field.name as keyof EntertainmentVoucherFormData}
+        name={field.name as keyof z.infer<typeof formSchema>} // Use z.infer<typeof formSchema> for type safety
         render={({ field: formHookField }) => (
           <FormItem className="flex flex-col">
             <FormLabel className="text-gray-700 font-semibold">{field.label} {field.mandatory && <span className="text-red-500">*</span>}</FormLabel>
@@ -177,8 +211,8 @@ const EntertainmentVoucherForm = ({ voucherTypeId, onFormSubmit }: Entertainment
                   type="number"
                   placeholder={field.placeholder}
                   {...formHookField}
-                  value={formHookField.value || ""}
-                  onChange={(e) => formHookField.onChange(e.target.value ? parseFloat(e.target.value) : "")}
+                  value={formHookField.value === undefined || formHookField.value === null ? "" : formHookField.value}
+                  onChange={(e) => formHookField.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
                   className="border-blue-300 focus:border-blue-500 focus:ring-blue-500"
                 />
               )}
@@ -190,8 +224,22 @@ const EntertainmentVoucherForm = ({ voucherTypeId, onFormSubmit }: Entertainment
                   className="border-blue-300 focus:border-blue-500 focus:ring-blue-500"
                 />
               )}
-              {field.type === "dropdown" && (
-                <Select onValueChange={formHookField.onChange} value={formHookField.value}>
+              {field.type === "dropdown" && field.name === "branchId" && (
+                <Select onValueChange={formHookField.onChange} value={formHookField.value || ""}>
+                  <SelectTrigger className="border-blue-300 focus:border-blue-500 focus:ring-blue-500">
+                    <SelectValue placeholder={field.label} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {branchOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+              {field.type === "dropdown" && field.name !== "branchId" && (
+                <Select onValueChange={formHookField.onChange} value={formHookField.value || ""}>
                   <SelectTrigger className="border-blue-300 focus:border-blue-500 focus:ring-blue-500">
                     <SelectValue placeholder={field.label} />
                   </SelectTrigger>
@@ -239,7 +287,7 @@ const EntertainmentVoucherForm = ({ voucherTypeId, onFormSubmit }: Entertainment
               {field.type === "file" && (
                 <Input
                   type="file"
-                  onChange={(e) => formHookField.onChange(e.target.files ? e.target.files[0] : null)}
+                  onChange={(e) => formHookField.onChange(e.target.files ? e.target.files[0] : undefined)}
                   className="border-blue-300 focus:border-blue-500 focus:ring-blue-500"
                 />
               )}
