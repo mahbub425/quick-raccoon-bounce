@@ -3,7 +3,7 @@ import { useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { DUMMY_VOUCHER_TYPES } from "@/data/dummyData";
 import { toast } from "sonner";
-import EntertainmentVoucherForm from "@/components/forms/EntertainmentVoucherForm"; // Import the new form component
+import DynamicVoucherForm from "@/components/forms/DynamicVoucherForm"; // Import the generic form component
 
 const SelectedVouchers = () => {
   const location = useLocation();
@@ -63,12 +63,7 @@ const SelectedVouchers = () => {
             সংশ্লিষ্ট ফর্ম দেখতে যে কোনো একটি ভাউচার বোতামে ক্লিক করুন।
           </div>
         ) : (
-          <>
-            {activeFormId === "entertainment" && (
-              <EntertainmentVoucherForm voucherTypeId="entertainment" onFormSubmit={handleFormSubmissionComplete} />
-            )}
-            {/* Other forms will be rendered here based on activeFormId */}
-          </>
+          <DynamicVoucherForm voucherTypeId={activeFormId} onFormSubmit={handleFormSubmissionComplete} />
         )}
       </div>
     </div>

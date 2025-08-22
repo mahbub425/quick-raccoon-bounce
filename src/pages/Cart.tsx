@@ -11,6 +11,7 @@ const Cart = () => {
   const { cartItems, removeFromCart } = useCart();
 
   const entertainmentVouchers = cartItems.filter(item => item.voucherTypeId === 'entertainment');
+  const conveyanceVouchers = cartItems.filter(item => item.voucherTypeId === 'conveyance');
   // Add filters for other voucher types as they are implemented
 
   const getInstitutionName = (id: string) => DUMMY_INSTITUTIONS.find(inst => inst.id === id)?.name || "N/A";
@@ -37,7 +38,7 @@ const Cart = () => {
     return items.map((item, index) => (
       <TableRow key={item.id}>
         <TableCell className="font-medium">{index + 1}</TableCell>
-        <TableCell>{item.data.date ? format(new Date(item.data.date), "PPP") : "N/A"}</TableCell>
+        <TableCell>{item.data.date ? format(new Date(item.data.date), "dd MMM, yyyy") : "N/A"}</TableCell>
         <TableCell>{getInstitutionName(item.data.institutionId)}</TableCell>
         <TableCell>{getBranchName(item.data.institutionId, item.data.branchId)}</TableCell>
         <TableCell>{item.data.expenseTitle || "N/A"}</TableCell>
@@ -51,6 +52,46 @@ const Cart = () => {
         </TableCell>
         <TableCell className="text-right">{item.data.amount || 0}</TableCell>
         <TableCell>{item.data.description || "N/A"}</TableCell>
+        <TableCell>{item.data.attachment ? "আছে" : "নেই"}</TableCell>
+        <TableCell className="flex justify-center space-x-2">
+          <Button variant="outline" size="sm" onClick={() => toast.info("এডিট ক্লিক করা হয়েছে")}>এডিট</Button>
+          <Button variant="destructive" size="sm" onClick={() => removeFromCart(item.id)}>মুছে ফেলুন</Button>
+        </TableCell>
+      </TableRow>
+    ));
+  };
+
+  const renderConveyanceTable = (items: CartItem[]) => {
+    if (items.length === 0) {
+      return (
+        <TableRow>
+          <TableCell colSpan={11} className="text-center text-gray-500">
+            কোনো কনভেয়েন্স ভাউচার নেই।
+          </TableCell>
+        </TableRow>
+      );
+    }
+
+    return items.map((item, index) => (
+      <TableRow key={item.id}>
+        <TableCell className="font-medium">{index + 1}</TableCell>
+        <TableCell>{item.data.date ? format(new Date(item.data.date), "dd MMM, yyyy") : "N/A"}</TableCell>
+        <TableCell>{getInstitutionName(item.data.institutionId)}</TableCell>
+        <TableCell>{getBranchName(item.data.institutionId, item.data.branchId)}</TableCell>
+        <TableCell>{item.data.applicableFor || "N/A"}</TableCell>
+        <TableCell>
+          {item.data.teacherPins && item.data.teacherPins.length > 0 && `(শিক্ষক পিন: ${getPinNames(item.data.teacherPins)})`}
+          {item.data.otherPins && item.data.otherPins.length > 0 && `(অন্যান্য পিন: ${getPinNames(item.data.otherPins)})`}
+          {!item.data.teacherPins?.length && !item.data.otherPins?.length && "N/A"}
+        </TableCell>
+        <TableCell>{item.data.from || "N/A"}</TableCell>
+        <TableCell>{item.data.to || "N/A"}</TableCell>
+        <TableCell>
+          {item.data.vehicleName || "N/A"}
+          {item.data.specialApproverPin && ` (অনুমোদনকারী পিন: ${item.data.specialApproverPin})`}
+        </TableCell>
+        <TableCell className="text-right">{item.data.amount || 0}</TableCell>
+        <TableCell>{item.data.purpose || "N/A"}</TableCell>
         <TableCell>{item.data.attachment ? "আছে" : "নেই"}</TableCell>
         <TableCell className="flex justify-center space-x-2">
           <Button variant="outline" size="sm" onClick={() => toast.info("এডিট ক্লিক করা হয়েছে")}>এডিট</Button>
@@ -98,9 +139,37 @@ const Cart = () => {
             </div>
           )}
 
-          {/* Other voucher type tables will follow a similar structure */}
+          {/* Conveyance Voucher Table */}
+          {conveyanceVouchers.length > 0 && (
+            <div className="bg-white p-6 rounded-xl shadow-lg border border-blue-200">
+              <h2 className="text-2xl font-bold text-blue-700 mb-4">কনভেয়েন্স ভাউচার</h2>
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-blue-100">
+                    <TableHead className="w-[50px]">ক্রমিক</TableHead>
+                    <TableHead>তারিখ</TableHead>
+                    <TableHead>প্রতিষ্ঠানের নাম</TableHead>
+                    <TableHead>শাখার নাম</TableHead>
+                    <TableHead>যাহার জন্য প্রযোজ্য</TableHead>
+                    <TableHead>পিন</TableHead>
+                    <TableHead>হইতে</TableHead>
+                    <TableHead>পর্যন্ত</TableHead>
+                    <TableHead>বাহনের নাম</TableHead>
+                    <TableHead className="text-right">টাকার পরিমাণ</TableHead>
+                    <TableHead>উদ্দেশ্য</TableHead>
+                    <TableHead>সংযুক্তি</TableHead>
+                    <TableHead className="text-center">অ্যাকশন</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {renderConveyanceTable(conveyanceVouchers)}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+
           {/* For now, if there are other types, just show a generic message */}
-          {cartItems.filter(item => item.voucherTypeId !== 'entertainment').length > 0 && (
+          {cartItems.filter(item => item.voucherTypeId !== 'entertainment' && item.voucherTypeId !== 'conveyance').length > 0 && (
             <div className="text-center text-xl text-gray-600 p-8 bg-white rounded-lg shadow-inner border border-gray-200">
               অন্যান্য ভাউচার প্রকারের আইটেম কার্টে আছে।
             </div>
