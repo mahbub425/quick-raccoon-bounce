@@ -32,10 +32,10 @@ const getVoucherDetails = (id: string): VoucherType | undefined => {
 
 // Dynamic Zod schema generation
 const createSchema = (fields: FormFieldType[]) => {
-  const schemaFields: { [key: string]: z.ZodTypeAny } = {}; // Changed to z.ZodTypeAny
+  const schemaFields: { [key: string]: z.ZodTypeAny } = {};
 
   fields.forEach(field => {
-    let fieldSchema: z.ZodTypeAny; // Changed to z.ZodTypeAny
+    let fieldSchema: z.ZodTypeAny;
 
     switch (field.type) {
       case "date":
@@ -83,7 +83,7 @@ const createSchema = (fields: FormFieldType[]) => {
     if (field.conditionalFields) {
       field.conditionalFields.forEach(cond => {
         cond.fields.forEach(condField => {
-          let condFieldSchema: z.ZodTypeAny; // Changed to z.ZodTypeAny
+          let condFieldSchema: z.ZodTypeAny;
           switch (condField.type) {
             case "date": condFieldSchema = z.date(); break;
             case "number": condFieldSchema = z.coerce.number(); break;
