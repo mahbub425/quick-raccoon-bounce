@@ -9,11 +9,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon } from "lucide-react";
-import { format, isWithinInterval, parseISO, endOfDay } from "date-fns"; // Added endOfDay
+import { format, isWithinInterval, parseISO, endOfDay } from "date-fns";
 import { DUMMY_INSTITUTIONS, DUMMY_VOUCHER_TYPES } from "@/data/dummyData";
 import { cn } from "@/lib/utils";
 import { SubmittedVoucher } from "@/types";
-import VoucherDetailsPopup from "@/components/VoucherDetailsPopup"; // Will create this next
+import VoucherDetailsPopup from "@/components/VoucherDetailsPopup";
 
 const MentorVoucherDetails = () => {
   const { userPin } = useParams<{ userPin: string }>();
@@ -148,14 +148,12 @@ const MentorVoucherDetails = () => {
   return (
     <div className="min-h-[calc(100vh-80px)] bg-gradient-to-br from-purple-50 to-pink-50 p-6">
       <h1 className="text-4xl font-extrabold text-center text-purple-800 mb-8">
-        মেন্টর অ্যাপ্রুভাল - ভাউচার বিস্তারিত
+        মেন্টর অ্যাপ্রুভাল
       </h1>
 
-      {/* Filter Section (retained from main approval page) */}
+      {/* Filter Section */}
       <Card className="mb-8 p-6 shadow-lg border-purple-300 bg-white">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-2xl font-bold text-purple-700">ফিল্টার অপশন</CardTitle>
-        </CardHeader>
+        {/* Removed CardHeader with "ফিল্টার অপশন" */}
         <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {/* Start Date */}
           <div className="flex flex-col space-y-1">
@@ -266,7 +264,7 @@ const MentorVoucherDetails = () => {
       {/* User Details Section */}
       <Card className="mb-8 p-6 shadow-lg border-blue-300 bg-white">
         <CardHeader className="pb-4">
-          <CardTitle className="text-2xl font-bold text-blue-700">ব্যবহারকারীর তথ্য</CardTitle>
+          <CardTitle className="text-2xl font-bold text-blue-700">ভাউচার জমাদানকারীর তথ্য</CardTitle>
         </CardHeader>
         <CardContent className="text-gray-700 space-y-2">
           <p className="text-lg"><strong>নাম:</strong> {currentUser.name} (PIN: {currentUser.pin})</p>
