@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon } from "lucide-react";
-import { format, isWithinInterval, parseISO } from "date-fns";
+import { format, isWithinInterval, parseISO, endOfDay } from "date-fns"; // Added endOfDay
 import { DUMMY_INSTITUTIONS, DUMMY_VOUCHER_TYPES } from "@/data/dummyData";
 import { cn } from "@/lib/utils";
 import { SubmittedVoucher } from "@/types";
@@ -50,9 +50,19 @@ const MentorApproval = () => {
     const filteredVouchers = submittedVouchers.filter(voucher => {
       // Filter by date range
       const voucherDate = parseISO(voucher.createdAt); // Assuming createdAt is the submission date
-      if (startDate && endDate && !isWithinInterval(voucherDate, { start: startDate, end: endDate })) {
-        return false;
+      if (startDate && endDate) {
+        // Adjust endDate to include the entire day
+        const adjustedEndDate = endOfDay(endDate);
+        if (!isWithinInterval(voucherDate, { start: startDate, end: adjustedEndDate })) {
+          return false;
+        }
+      } else if (startDate && !endDate) { // Only start date selected
+        if (voucherDate < startDate) return false;
+      } else if (!startDate && endDate) { // Only end date selected
+        const adjustedEndDate = endOfDay(endDate);
+        if (voucherDate > adjustedEndDate) return false;
       }
+
 
       // Filter by voucher type
       if (selectedVoucherType !== "all" && voucher.voucherTypeId !== selectedVoucherType) {
