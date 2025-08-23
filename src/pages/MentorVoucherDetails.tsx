@@ -23,15 +23,15 @@ const MentorVoucherDetails = () => {
 
   // Filter states, initialized from location state or defaults
   const initialFilters = location.state?.filters || {};
-  const [startDate, setStartDate] = useState<Date | undefined>(
-    initialFilters.startDate ? parseISO(initialFilters.startDate) : undefined
-  );
-  const [endDate, setEndDate] = useState<Date | undefined>(
-    initialFilters.endDate ? parseISO(initialFilters.endDate) : undefined
-  );
+  // const [startDate, setStartDate] = useState<Date | undefined>( // Removed
+  //   initialFilters.startDate ? parseISO(initialFilters.startDate) : undefined
+  // );
+  // const [endDate, setEndDate] = useState<Date | undefined>( // Removed
+  //   initialFilters.endDate ? parseISO(initialFilters.endDate) : undefined
+  // );
   const [selectedVoucherType, setSelectedVoucherType] = useState<string>(initialFilters.selectedVoucherType || "all");
-  const [selectedInstitutionId, setSelectedInstitutionId] = useState<string>(initialFilters.selectedInstitutionId || "all");
-  const [selectedBranchId, setSelectedBranchId] = useState<string>(initialFilters.selectedBranchId || "all");
+  // const [selectedInstitutionId, setSelectedInstitutionId] = useState<string>(initialFilters.selectedInstitutionId || "all"); // Removed
+  // const [selectedBranchId, setSelectedBranchId] = useState<string>(initialFilters.selectedBranchId || "all"); // Removed
 
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [selectedVoucherForPopup, setSelectedVoucherForPopup] = useState<SubmittedVoucher | null>(null);
@@ -56,8 +56,8 @@ const MentorVoucherDetails = () => {
     });
   }, []);
 
-  const institutionOptions = DUMMY_INSTITUTIONS.map(inst => ({ value: inst.id, label: inst.name }));
-  const branchOptions = [{ value: "bogura", label: "Bogura (বগুড়া)" }]; // Fixed as per requirement
+  // const institutionOptions = DUMMY_INSTITUTIONS.map(inst => ({ value: inst.id, label: inst.name })); // Removed
+  // const branchOptions = [{ value: "bogura", label: "Bogura (বগুড়া)" }]; // Removed
 
   // Get the user details for the current userPin
   const currentUser = useMemo(() => {
@@ -83,40 +83,40 @@ const MentorVoucherDetails = () => {
         return false;
       }
 
-      // Filter by date range
-      const voucherDate = parseISO(voucher.createdAt);
-      if (startDate && endDate) {
-        // Adjust endDate to include the entire day
-        const adjustedEndDate = endOfDay(endDate);
-        if (!isWithinInterval(voucherDate, { start: startDate, end: adjustedEndDate })) {
-          return false;
-        }
-      } else if (startDate && !endDate) { // Only start date selected
-        if (voucherDate < startDate) return false;
-      } else if (!startDate && endDate) { // Only end date selected
-        const adjustedEndDate = endOfDay(endDate);
-        if (voucherDate > adjustedEndDate) return false;
-      }
+      // Filter by date range (Removed)
+      // const voucherDate = parseISO(voucher.createdAt);
+      // if (startDate && endDate) {
+      //   // Adjust endDate to include the entire day
+      //   const adjustedEndDate = endOfDay(endDate);
+      //   if (!isWithinInterval(voucherDate, { start: startDate, end: adjustedEndDate })) {
+      //     return false;
+      //   }
+      // } else if (startDate && !endDate) { // Only start date selected
+      //   if (voucherDate < startDate) return false;
+      // } else if (!startDate && endDate) { // Only end date selected
+      //   const adjustedEndDate = endOfDay(endDate);
+      //   if (voucherDate > adjustedEndDate) return false;
+      // }
 
       // Filter by voucher type
       if (selectedVoucherType !== "all" && voucher.voucherTypeId !== selectedVoucherType) {
         return false;
       }
 
-      // Filter by institution
-      if (selectedInstitutionId !== "all" && voucher.data.institutionId !== selectedInstitutionId) {
-        return false;
-      }
+      // Filter by institution (Removed)
+      // if (selectedInstitutionId !== "all" && voucher.data.institutionId !== selectedInstitutionId) {
+      //   return false;
+      // }
 
-      // Filter by branch
-      if (selectedBranchId !== "all" && voucher.data.branchId !== selectedBranchId) {
-        return false;
-      }
+      // Filter by branch (Removed)
+      // if (selectedBranchId !== "all" && voucher.data.branchId !== selectedBranchId) {
+      //   return false;
+      // }
 
       // Only show pending vouchers in this table
       return voucher.status === 'pending';
     });
-  }, [submittedVouchers, userPin, startDate, endDate, selectedVoucherType, selectedInstitutionId, selectedBranchId]);
+  }, [submittedVouchers, userPin, selectedVoucherType]); // Removed startDate, endDate, selectedInstitutionId, selectedBranchId from dependencies
 
   const totalAmountForUserVouchers = useMemo(() => filteredUserVouchers.reduce((sum, voucher) => sum + (voucher.data.amount || 0), 0), [filteredUserVouchers]);
 
@@ -153,64 +153,7 @@ const MentorVoucherDetails = () => {
 
       {/* Filter Section */}
       <Card className="mb-8 p-6 shadow-lg border-purple-300 bg-white">
-        {/* Removed CardHeader with "ফিল্টার অপশন" */}
         <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {/* Start Date */}
-          <div className="flex flex-col space-y-1">
-            <label htmlFor="startDate" className="text-sm font-medium text-gray-700">শুরু তারিখ</label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant={"outline"}
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !startDate && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {startDate ? format(startDate, "dd MMM, yyyy") : <span>তারিখ নির্বাচন করুন</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={startDate}
-                  onSelect={setStartDate}
-                  initialFocus
-                  toDate={new Date()}
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-
-          {/* End Date */}
-          <div className="flex flex-col space-y-1">
-            <label htmlFor="endDate" className="text-sm font-medium text-gray-700">শেষ তারিখ</label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant={"outline"}
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !endDate && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {endDate ? format(endDate, "dd MMM, yyyy") : <span>তারিখ নির্বাচন করুন</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={endDate}
-                  onSelect={setEndDate}
-                  initialFocus
-                  toDate={new Date()}
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-
           {/* Voucher Type */}
           <div className="flex flex-col space-y-1">
             <label htmlFor="voucherType" className="text-sm font-medium text-gray-700">ভাউচারের ধরন নির্বাচন করুন</label>
@@ -221,38 +164,6 @@ const MentorVoucherDetails = () => {
               <SelectContent>
                 <SelectItem value="all">সকল ভাউচার টাইপ</SelectItem>
                 {voucherTypeOptions.map(option => (
-                  <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Institution Select */}
-          <div className="flex flex-col space-y-1">
-            <label htmlFor="institutionSelect" className="text-sm font-medium text-gray-700">প্রতিষ্ঠান নির্বাচন করুন</label>
-            <Select value={selectedInstitutionId} onValueChange={setSelectedInstitutionId}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="সকল প্রতিষ্ঠান" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">সকল প্রতিষ্ঠান</SelectItem>
-                {institutionOptions.map(option => (
-                  <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Branch Select */}
-          <div className="flex flex-col space-y-1">
-            <label htmlFor="branchSelect" className="text-sm font-medium text-gray-700">শাখা নির্বাচন করুন</label>
-            <Select value={selectedBranchId} onValueChange={setSelectedBranchId}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="সকল শাখা" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">সকল শাখা</SelectItem>
-                {branchOptions.map(option => (
                   <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
                 ))}
               </SelectContent>
