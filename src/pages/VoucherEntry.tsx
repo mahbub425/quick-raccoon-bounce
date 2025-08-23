@@ -10,18 +10,12 @@ const VoucherEntry = () => {
   const [selectedVoucherIds, setSelectedVoucherIds] = useState<string[]>([]);
   const [collapsedMultiTypes, setCollapsedMultiTypes] = useState<string[]>([]);
 
-  // IDs of the vouchers that are sub-types and should NOT appear as top-level cards in VoucherEntry.tsx
+  // IDs of the vouchers that are special sub-forms and should NOT appear as selectable cards
+  // in the main VoucherEntry list, but are handled within other forms (e.g., Publicity main form).
   const hiddenVoucherIds = [
-    "entertainment", // Sub-type of entertainment-conveyance-multi
-    "conveyance",    // Sub-type of entertainment-conveyance-multi
-    "publicity",     // Sub-type of publicity-students-inspiration-multi
-    "publicity-students-inspiration", // Sub-type of publicity-students-inspiration-multi
-    "office-supplies-stationery", // Sub-type of stationery-maintenance-multi
-    "cleaning-supplies", // Sub-type of stationery-maintenance-multi
-    "kitchen-household-items", // Sub-type of stationery-maintenance-multi
-    "publicity-conveyance", // Special sub-form, not top-level
-    "publicity-entertainment", // Special sub-form, not top-level
-    "publicity-publicist-bill", // Special sub-form, not top-level
+    "publicity-conveyance", 
+    "publicity-entertainment", 
+    "publicity-publicist-bill", 
   ];
 
   const handleSelectVoucher = (id: string, isSelected: boolean) => {
@@ -68,8 +62,7 @@ const VoucherEntry = () => {
                   {!collapsedMultiTypes.includes(voucher.id) && voucher.subTypes && (
                     <div className="grid grid-cols-1 gap-4 mt-4 pl-4 border-l-4 border-purple-300">
                       {voucher.subTypes
-                        .filter(subV => !hiddenVoucherIds.includes(subV.id)) // Filter out hidden sub-vouchers if any
-                        .map((subVoucher) => (
+                        .map((subVoucher) => ( // Removed filtering here to always show sub-types
                           <VoucherCard
                             key={subVoucher.id}
                             voucher={subVoucher}
