@@ -46,6 +46,10 @@ const MentorVoucherDetails = () => {
         vt.subTypes.forEach(subType => uniqueTypes.add(subType.id));
       }
     });
+
+    // Explicitly remove 'publicity' if it was added, as its sub-types are now listed separately
+    uniqueTypes.delete('publicity');
+
     return Array.from(uniqueTypes).map(id => {
       const voucher = DUMMY_VOUCHER_TYPES.flatMap(v => v.type === 'multi' && v.subTypes ? [v, ...v.subTypes] : [v]).find(v => v.id === id);
       return { value: id, label: voucher?.heading || id };
