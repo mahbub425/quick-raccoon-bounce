@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { useCart } from "@/context/CartContext";
 import { useSubmittedVouchers } from "@/context/SubmittedVouchersContext";
 import { CartItem } from "@/types";
-import { DUMMY_INSTITUTIONS, DUMMY_PINS, DUMMY_PROGRAM_SESSIONS } from "@/data/dummyData";
+import { DUMMY_INSTITUTIONS, DUMMY_PINS, DUMMY_PROGRAM_SESSIONS, DUMMY_VOUCHER_TYPES, OFFICE_SUPPLIES_ITEM_OPTIONS, CLEANING_SUPPLIES_ITEM_OPTIONS, KITCHEN_HOUSEHOLD_ITEM_OPTIONS } from "@/data/dummyData";
 import { format } from "date-fns";
 import { useAuth } from "@/context/AuthContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -46,6 +46,59 @@ const Cart = () => {
   const getPinNames = (pins: string[]) => {
     if (!pins || pins.length === 0) return "N/A";
     return pins.map(pin => DUMMY_PINS.find(p => p.pin === pin)?.name || pin).join(", ");
+  };
+
+  // Helper function to get the full label for a dropdown value
+  const getDropdownLabel = (voucherTypeId: string, fieldName: string, fieldValue: string, itemData: any = {}) => {
+    if (!fieldValue) return "N/A";
+
+    const allVouchers = DUMMY_VOUCHER_TYPES.flatMap(v => v.type === 'multi' && v.subTypes ? [v, ...v.subTypes] : [v]);
+    const voucher = allVouchers.find(v => v.id === voucherTypeId);
+    if (!voucher || !voucher.formFields) return fieldValue;
+
+    const field = voucher.formFields.find(f => f.name === fieldName);
+    if (!field) return fieldValue;
+
+    let options: { value: string; label: string }[] = [];
+
+    if (fieldName === "institutionId") {
+      options = DUMMY_INSTITUTIONS.map(inst => ({ value: inst.id, label: inst.name }));
+    } else if (fieldName === "branchId") {
+      const institution = DUMMY_INSTITUTIONS.find(inst => inst.id === itemData.institutionId);
+      options = institution ? institution.branches.map(branch => ({ value: branch.id, label: branch.name })) : [];
+    } else if (fieldName === "programSessionId") {
+      options = itemData.institutionId && DUMMY_PROGRAM_SESSIONS[itemData.institutionId]
+                ? DUMMY_PROGRAM_SESSIONS[itemData.institutionId].map(session => ({ value: session.id, label: session.name }))
+                : [];
+    } else if (fieldName === "expenseTitle") {
+      options = field.options || [];
+    } else if (fieldName === "itemName") {
+      const currentExpenseTitle = itemData.expenseTitle;
+      if (voucherTypeId === "office-supplies-stationery") {
+        options = currentExpenseTitle ? OFFICE_SUPPLIES_ITEM_OPTIONS[currentExpenseTitle] || [] : [];
+      } else if (voucherTypeId === "cleaning-supplies") {
+        options = currentExpenseTitle ? CLEANING_SUPPLIES_ITEM_OPTIONS[currentExpenseTitle] || [] : [];
+      } else if (voucherTypeId === "kitchen-household-items") {
+        options = currentExpenseTitle ? KITCHEN_HOUSEHOLD_ITEM_OPTIONS[currentExpenseTitle] || [] : [];
+      }
+    } else if (fieldName === "expenseCategory" && voucherTypeId === "entertainment" && itemData.expenseTitle) {
+      const expenseTitleField = voucher.formFields.find(f => f.name === 'expenseTitle');
+      const matchingConditionalField = expenseTitleField?.conditionalFields?.find(cf => cf.value === itemData.expenseTitle);
+      const expenseCategoryField = matchingConditionalField?.fields.find(f => f.name === 'expenseCategory');
+      options = expenseCategoryField?.options || [];
+    } else if (fieldName === "applicableFor") {
+      options = field.options || [];
+    } else if (fieldName === "vehicleName") {
+      options = field.options || [];
+    } else if (fieldName === "type" && voucherTypeId === "publicity-entertainment") {
+      options = field.options || [];
+    } else if (fieldName === "shift" && voucherTypeId === "publicity-publicist-bill") {
+      options = field.options || [];
+    } else {
+      options = field.options || []; // Fallback for other dropdowns
+    }
+
+    return options.find(opt => opt.value === fieldValue)?.label || fieldValue;
   };
 
   const handleEdit = (item: CartItem) => {
@@ -90,9 +143,9 @@ const Cart = () => {
         <TableCell>{item.data.date ? format(new Date(item.data.date), "dd MMM, yyyy") : "N/A"}</TableCell>
         <TableCell>{getInstitutionName(item.data.institutionId)}</TableCell>
         <TableCell>{getBranchName(item.data.institutionId, item.data.branchId)}</TableCell>
-        <TableCell>{item.data.expenseTitle || "N/A"}</TableCell>
+        <TableCell>{getDropdownLabel(item.voucherTypeId, 'expenseTitle', item.data.expenseTitle, item.data) || "N/A"}</TableCell>
         <TableCell>
-          {item.data.expenseCategory || "N/A"}
+          {getDropdownLabel(item.voucherTypeId, 'expenseCategory', item.data.expenseCategory, item.data) || "N/A"}
           {item.data.guestName && ` (অতিথি: ${item.data.guestName})`}
           {item.data.studentName && ` (শিক্ষার্থী: ${item.data.studentName})`}
           {item.data.guardianName && ` (অভিভাবক: ${item.data.guardianName})`}
@@ -127,7 +180,7 @@ const Cart = () => {
         <TableCell>{item.data.date ? format(new Date(item.data.date), "dd MMM, yyyy") : "N/A"}</TableCell>
         <TableCell>{getInstitutionName(item.data.institutionId)}</TableCell>
         <TableCell>{getBranchName(item.data.institutionId, item.data.branchId)}</TableCell>
-        <TableCell>{item.data.applicableFor || "N/A"}</TableCell>
+        <TableCell>{getDropdownLabel(item.voucherTypeId, 'applicableFor', item.data.applicableFor, item.data) || "N/A"}</TableCell>
         <TableCell>
           {item.data.applicableFor === 'Myself' ? (user?.pin || 'N/A') :
            (item.data.teacherPins && item.data.teacherPins.length > 0 && `(শিক্ষক পিন: ${getPinNames(item.data.teacherPins)})`) ||
@@ -136,7 +189,7 @@ const Cart = () => {
         <TableCell>{item.data.from || "N/A"}</TableCell>
         <TableCell>{item.data.to || "N/A"}</TableCell>
         <TableCell>
-          {item.data.vehicleName || "N/A"}
+          {getDropdownLabel(item.voucherTypeId, 'vehicleName', item.data.vehicleName, item.data) || "N/A"}
           {item.data.specialApproverPin && ` (অনুমোদনকারী পিন: ${item.data.specialApproverPin})`}
         </TableCell>
         <TableCell className="text-right">{item.data.amount || 0}</TableCell>
@@ -173,7 +226,7 @@ const Cart = () => {
         <TableCell>{item.data.from || "N/A"}</TableCell>
         <TableCell>{item.data.to || "N/A"}</TableCell>
         <TableCell>
-          {item.data.vehicleName || "N/A"}
+          {getDropdownLabel(item.voucherTypeId, 'vehicleName', item.data.vehicleName, item.data) || "N/A"}
           {item.data.specialApproverPin && ` (অনুমোদনকারী পিন: ${item.data.specialApproverPin})`}
         </TableCell>
         <TableCell>{item.data.numberOfPersons || 0}</TableCell>
@@ -208,13 +261,13 @@ const Cart = () => {
         <TableCell>{getProgramSessionName(item.data.institutionId, item.data.programSessionId)}</TableCell>
         <TableCell>{item.data.publicityLocation || "N/A"}</TableCell>
         <TableCell>{item.data.startTime || "N/A"} - {item.data.endTime || "N/A"}</TableCell>
-        <TableCell>{item.data.applicableFor || "N/A"}</TableCell>
+        <TableCell>{getDropdownLabel(item.voucherTypeId, 'applicableFor', item.data.applicableFor, item.data) || "N/A"}</TableCell>
         <TableCell>
           {item.data.pin && `(পিন: ${getPinNames([item.data.pin])})`}
           {item.data.name && `(নাম: ${item.data.name})`}
           {!item.data.pin && !item.data.name && "N/A"}
         </TableCell>
-        <TableCell>{item.data.type || "N/A"}</TableCell>
+        <TableCell>{getDropdownLabel(item.voucherTypeId, 'type', item.data.type, item.data) || "N/A"}</TableCell>
         <TableCell className="text-right">{item.data.amount || 0}</TableCell>
         <TableCell>{item.data.description || "N/A"}</TableCell>
         <TableCell>{item.data.attachment ? "আছে" : "নেই"}</TableCell>
@@ -248,7 +301,7 @@ const Cart = () => {
         <TableCell>{item.data.startTime || "N/A"} - {item.data.endTime || "N/A"}</TableCell>
         <TableCell>{item.data.publicistName || "N/A"}</TableCell>
         <TableCell>{item.data.mobileNumber || "N/A"}</TableCell>
-        <TableCell>{item.data.shift || "N/A"}</TableCell>
+        <TableCell>{getDropdownLabel(item.voucherTypeId, 'shift', item.data.shift, item.data) || "N/A"}</TableCell>
         <TableCell className="text-right">{item.data.amount || 0}</TableCell>
         <TableCell>{item.data.attachment ? "আছে" : "নেই"}</TableCell>
         <TableCell className="flex justify-center space-x-2">
@@ -276,8 +329,8 @@ const Cart = () => {
         <TableCell>{item.data.date ? format(new Date(item.data.date), "dd MMM, yyyy") : "N/A"}</TableCell>
         <TableCell>{getInstitutionName(item.data.institutionId)}</TableCell>
         <TableCell>{getBranchName(item.data.institutionId, item.data.branchId)}</TableCell>
-        <TableCell>{item.data.expenseTitle || "N/A"}</TableCell>
-        <TableCell>{item.data.itemName || "N/A"}</TableCell>
+        <TableCell>{getDropdownLabel(item.voucherTypeId, 'expenseTitle', item.data.expenseTitle, item.data) || "N/A"}</TableCell>
+        <TableCell>{getDropdownLabel(item.voucherTypeId, 'itemName', item.data.itemName, item.data) || "N/A"}</TableCell>
         <TableCell>{item.data.quantityUnit?.quantity || "N/A"} {item.data.quantityUnit?.unit || ""}</TableCell>
         <TableCell className="text-right">{item.data.amount || 0}</TableCell>
         <TableCell>{item.data.description || "N/A"}</TableCell>
@@ -307,8 +360,8 @@ const Cart = () => {
         <TableCell>{item.data.date ? format(new Date(item.data.date), "dd MMM, yyyy") : "N/A"}</TableCell>
         <TableCell>{getInstitutionName(item.data.institutionId)}</TableCell>
         <TableCell>{getBranchName(item.data.institutionId, item.data.branchId)}</TableCell>
-        <TableCell>{item.data.expenseTitle || "N/A"}</TableCell>
-        <TableCell>{item.data.itemName || "N/A"}</TableCell>
+        <TableCell>{getDropdownLabel(item.voucherTypeId, 'expenseTitle', item.data.expenseTitle, item.data) || "N/A"}</TableCell>
+        <TableCell>{getDropdownLabel(item.voucherTypeId, 'itemName', item.data.itemName, item.data) || "N/A"}</TableCell>
         <TableCell>{item.data.quantityUnit?.quantity || "N/A"} {item.data.quantityUnit?.unit || ""}</TableCell>
         <TableCell className="text-right">{item.data.amount || 0}</TableCell>
         <TableCell>{item.data.description || "N/A"}</TableCell>
@@ -338,8 +391,8 @@ const Cart = () => {
         <TableCell>{item.data.date ? format(new Date(item.data.date), "dd MMM, yyyy") : "N/A"}</TableCell>
         <TableCell>{getInstitutionName(item.data.institutionId)}</TableCell>
         <TableCell>{getBranchName(item.data.institutionId, item.data.branchId)}</TableCell>
-        <TableCell>{item.data.expenseTitle || "N/A"}</TableCell>
-        <TableCell>{item.data.itemName || "N/A"}</TableCell>
+        <TableCell>{getDropdownLabel(item.voucherTypeId, 'expenseTitle', item.data.expenseTitle, item.data) || "N/A"}</TableCell>
+        <TableCell>{getDropdownLabel(item.voucherTypeId, 'itemName', item.data.itemName, item.data) || "N/A"}</TableCell>
         <TableCell>{item.data.quantityUnit?.quantity || "N/A"} {item.data.quantityUnit?.unit || ""}</TableCell>
         <TableCell className="text-right">{item.data.amount || 0}</TableCell>
         <TableCell>{item.data.description || "N/A"}</TableCell>
