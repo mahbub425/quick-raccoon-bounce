@@ -12,7 +12,7 @@ import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { DUMMY_INSTITUTIONS, DUMMY_PROGRAM_SESSIONS, DUMMY_PUBLICITY_LOCATIONS, DUMMY_VOUCHER_TYPES } from "@/data/dummyData";
+import { DUMMY_INSTITUTIONS, DUMMY_PROGRAM_SESSIONS, DUMMY_PUBLICITY_LOCATIONS, DUMMY_VOUCHER_TYPES, OFFICE_SUPPLIES_ITEM_OPTIONS } from "@/data/dummyData";
 import { cn } from "@/lib/utils";
 import { FormField as FormFieldType, VoucherType } from "@/types";
 import PinSelector from "@/components/PinSelector";
@@ -74,7 +74,7 @@ const generateDefaultValues = (formFields: FormFieldType[]) => {
 };
 
 // Dynamic Zod schema generation (recursive)
-const createSchema = (fields: FormFieldType[], currentFormValues: any) => {
+const createSchema = (fields: FormFieldType[], currentFormValues: any, voucherTypeId: string) => {
   const schemaFields: { [key: string]: z.ZodTypeAny } = {};
 
   const addFieldToSchema = (field: FormFieldType) => {
@@ -118,6 +118,19 @@ const createSchema = (fields: FormFieldType[], currentFormValues: any) => {
           currentFieldSchema = (currentFieldSchema as z.ZodString).min(1, { message: `${field.label} আবশ্যক` });
         } else {
           currentFieldSchema = (currentFieldSchema as z.ZodString).optional().or(z.literal(""));
+        }
+
+        // Dynamic validation for itemName in office-supplies-stationery
+        if (voucherTypeId === "office-supplies-stationery" && field.name === "itemName") {
+          const currentExpenseTitle = currentFormValues.expenseTitle;
+          const dynamicItemOptions = currentExpenseTitle ? OFFICE_SUPPLIES_ITEM_OPTIONS[currentExpenseTitle] || [] : [];
+          const allowedValues = dynamicItemOptions.map(opt => opt.value);
+
+          if (field.mandatory) {
+            currentFieldSchema = (currentFieldSchema as z.ZodString)
+              .min(1, { message: `${field.label} আবশ্যক` })
+              .refine(val => allowedValues.includes(val), { message: `${field.label} একটি বৈধ অপশন হতে হবে` });
+          }
         }
         break;
       case "file":
@@ -190,7 +203,7 @@ const DynamicVoucherForm = forwardRef<DynamicVoucherFormRef, DynamicVoucherFormP
         date: initialData.date ? new Date(initialData.date) : null,
       } : defaultFormValues,
       resolver: (values, context, options) => {
-        const dynamicSchema = createSchema(voucherDetails.formFields, values);
+        const dynamicSchema = createSchema(voucherDetails.formFields, values, voucherTypeId);
         return zodResolver(dynamicSchema)(values, context, options);
       },
     });
@@ -214,6 +227,7 @@ const DynamicVoucherForm = forwardRef<DynamicVoucherFormRef, DynamicVoucherFormP
     }));
 
     const selectedInstitutionId = form.watch("institutionId");
+    const selectedExpenseTitle = form.watch("expenseTitle"); // Watch expenseTitle for dynamic options
 
     const branchOptions = useMemo(() => {
       if (!selectedInstitutionId) {
@@ -323,6 +337,8 @@ const DynamicVoucherForm = forwardRef<DynamicVoucherFormRef, DynamicVoucherFormP
                       optionsToRender = branchOptions;
                     } else if (field.name === "programSessionId") {
                       optionsToRender = programSessionOptions;
+                    } else if (voucherTypeId === "office-supplies-stationery" && field.name === "itemName") {
+                      optionsToRender = selectedExpenseTitle ? OFFICE_SUPPLIES_ITEM_OPTIONS[selectedExpenseTitle] || [] : [];
                     }
                     return (
                       <Select onValueChange={formHookField.onChange} value={formHookField.value || ""}>
