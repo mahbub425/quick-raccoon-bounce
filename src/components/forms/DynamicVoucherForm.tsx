@@ -12,7 +12,7 @@ import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { DUMMY_INSTITUTIONS, DUMMY_PROGRAM_SESSIONS, DUMMY_PUBLICITY_LOCATIONS, DUMMY_VOUCHER_TYPES, OFFICE_SUPPLIES_ITEM_OPTIONS } from "@/data/dummyData";
+import { DUMMY_INSTITUTIONS, DUMMY_PROGRAM_SESSIONS, DUMMY_PUBLICITY_LOCATIONS, DUMMY_VOUCHER_TYPES, OFFICE_SUPPLIES_ITEM_OPTIONS, CLEANING_SUPPLIES_ITEM_OPTIONS, KITCHEN_HOUSEHOLD_ITEM_OPTIONS } from "@/data/dummyData";
 import { cn } from "@/lib/utils";
 import { FormField as FormFieldType, VoucherType } from "@/types";
 import PinSelector from "@/components/PinSelector";
@@ -120,10 +120,19 @@ const createSchema = (fields: FormFieldType[], currentFormValues: any, voucherTy
           currentFieldSchema = (currentFieldSchema as z.ZodString).optional().or(z.literal(""));
         }
 
-        // Dynamic validation for itemName in office-supplies-stationery
-        if (voucherTypeId === "office-supplies-stationery" && field.name === "itemName") {
+        // Dynamic validation for itemName in office-supplies-stationery, cleaning-supplies, kitchen-household-items
+        if (field.name === "itemName") {
           const currentExpenseTitle = currentFormValues.expenseTitle;
-          const dynamicItemOptions = currentExpenseTitle ? OFFICE_SUPPLIES_ITEM_OPTIONS[currentExpenseTitle] || [] : [];
+          let dynamicItemOptions: { value: string; label: string }[] = [];
+
+          if (voucherTypeId === "office-supplies-stationery") {
+            dynamicItemOptions = currentExpenseTitle ? OFFICE_SUPPLIES_ITEM_OPTIONS[currentExpenseTitle] || [] : [];
+          } else if (voucherTypeId === "cleaning-supplies") {
+            dynamicItemOptions = currentExpenseTitle ? CLEANING_SUPPLIES_ITEM_OPTIONS[currentExpenseTitle] || [] : [];
+          } else if (voucherTypeId === "kitchen-household-items") {
+            dynamicItemOptions = currentExpenseTitle ? KITCHEN_HOUSEHOLD_ITEM_OPTIONS[currentExpenseTitle] || [] : [];
+          }
+          
           const allowedValues = dynamicItemOptions.map(opt => opt.value);
 
           if (field.mandatory) {
@@ -339,6 +348,10 @@ const DynamicVoucherForm = forwardRef<DynamicVoucherFormRef, DynamicVoucherFormP
                       optionsToRender = programSessionOptions;
                     } else if (voucherTypeId === "office-supplies-stationery" && field.name === "itemName") {
                       optionsToRender = selectedExpenseTitle ? OFFICE_SUPPLIES_ITEM_OPTIONS[selectedExpenseTitle] || [] : [];
+                    } else if (voucherTypeId === "cleaning-supplies" && field.name === "itemName") {
+                      optionsToRender = selectedExpenseTitle ? CLEANING_SUPPLIES_ITEM_OPTIONS[selectedExpenseTitle] || [] : [];
+                    } else if (voucherTypeId === "kitchen-household-items" && field.name === "itemName") {
+                      optionsToRender = selectedExpenseTitle ? KITCHEN_HOUSEHOLD_ITEM_OPTIONS[selectedExpenseTitle] || [] : [];
                     }
                     return (
                       <Select onValueChange={formHookField.onChange} value={formHookField.value || ""}>

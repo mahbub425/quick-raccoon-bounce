@@ -30,6 +30,8 @@ const Cart = () => {
   const repairVouchers = cartItems.filter(item => item.voucherTypeId === 'repair');
   const pettyCashVouchers = cartItems.filter(item => item.voucherTypeId === 'petty-cash');
   const officeSuppliesStationeryVouchers = cartItems.filter(item => item.voucherTypeId === 'office-supplies-stationery');
+  const cleaningSuppliesVouchers = cartItems.filter(item => item.voucherTypeId === 'cleaning-supplies');
+  const kitchenHouseholdVouchers = cartItems.filter(item => item.voucherTypeId === 'kitchen-household-items');
 
 
   const getInstitutionName = (id: string) => DUMMY_INSTITUTIONS.find(inst => inst.id === id)?.name || "N/A";
@@ -288,6 +290,68 @@ const Cart = () => {
     ));
   };
 
+  const renderCleaningSuppliesTable = (items: CartItem[]) => {
+    if (items.length === 0) {
+      return (
+        <TableRow>
+          <TableCell colSpan={10} className="text-center text-gray-500">
+            কোনো পরিষ্কার-পরিচ্ছন্নতা সামগ্রী ভাউচার নেই।
+          </TableCell>
+        </TableRow>
+      );
+    }
+
+    return items.map((item, index) => (
+      <TableRow key={item.id}>
+        <TableCell className="font-medium">{index + 1}</TableCell>
+        <TableCell>{item.data.date ? format(new Date(item.data.date), "dd MMM, yyyy") : "N/A"}</TableCell>
+        <TableCell>{getInstitutionName(item.data.institutionId)}</TableCell>
+        <TableCell>{getBranchName(item.data.institutionId, item.data.branchId)}</TableCell>
+        <TableCell>{item.data.expenseTitle || "N/A"}</TableCell>
+        <TableCell>{item.data.itemName || "N/A"}</TableCell>
+        <TableCell>{item.data.quantityUnit?.quantity || "N/A"} {item.data.quantityUnit?.unit || ""}</TableCell>
+        <TableCell className="text-right">{item.data.amount || 0}</TableCell>
+        <TableCell>{item.data.description || "N/A"}</TableCell>
+        <TableCell>{item.data.attachment ? "আছে" : "নেই"}</TableCell>
+        <TableCell className="flex justify-center space-x-2">
+          <Button variant="outline" size="sm" onClick={() => handleEdit(item)}>এডিট</Button>
+          <Button variant="destructive" size="sm" onClick={() => removeFromCart(item.id)}>মুছে ফেলুন</Button>
+        </TableCell>
+      </TableRow>
+    ));
+  };
+
+  const renderKitchenHouseholdTable = (items: CartItem[]) => {
+    if (items.length === 0) {
+      return (
+        <TableRow>
+          <TableCell colSpan={10} className="text-center text-gray-500">
+            কোনো কিচেন ও গৃহস্থালি সামগ্রী ভাউচার নেই।
+          </TableCell>
+        </TableRow>
+      );
+    }
+
+    return items.map((item, index) => (
+      <TableRow key={item.id}>
+        <TableCell className="font-medium">{index + 1}</TableCell>
+        <TableCell>{item.data.date ? format(new Date(item.data.date), "dd MMM, yyyy") : "N/A"}</TableCell>
+        <TableCell>{getInstitutionName(item.data.institutionId)}</TableCell>
+        <TableCell>{getBranchName(item.data.institutionId, item.data.branchId)}</TableCell>
+        <TableCell>{item.data.expenseTitle || "N/A"}</TableCell>
+        <TableCell>{item.data.itemName || "N/A"}</TableCell>
+        <TableCell>{item.data.quantityUnit?.quantity || "N/A"} {item.data.quantityUnit?.unit || ""}</TableCell>
+        <TableCell className="text-right">{item.data.amount || 0}</TableCell>
+        <TableCell>{item.data.description || "N/A"}</TableCell>
+        <TableCell>{item.data.attachment ? "আছে" : "নেই"}</TableCell>
+        <TableCell className="flex justify-center space-x-2">
+          <Button variant="outline" size="sm" onClick={() => handleEdit(item)}>এডিট</Button>
+          <Button variant="destructive" size="sm" onClick={() => removeFromCart(item.id)}>মুছে ফেলুন</Button>
+        </TableCell>
+      </TableRow>
+    ));
+  };
+
   // Helper function for rendering simple voucher tables (rental-utility, mobile-bill, repair, petty-cash)
   const renderGenericSimpleTable = (items: CartItem[], title: string, headerBgClass: string) => {
     if (items.length === 0) {
@@ -449,6 +513,64 @@ const Cart = () => {
                   </TableHeader>
                   <TableBody>
                     {renderOfficeSuppliesStationeryTable(officeSuppliesStationeryVouchers)}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          )}
+
+          {/* Cleaning Supplies Voucher Table */}
+          {cleaningSuppliesVouchers.length > 0 && (
+            <div className="bg-white p-6 rounded-xl shadow-lg border border-pink-200">
+              <h2 className="text-2xl font-bold text-pink-700 mb-4">পরিষ্কার-পরিচ্ছন্নতা সামগ্রী</h2>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-pink-100">
+                      <TableHead className="w-[50px]">ক্রমিক</TableHead>
+                      <TableHead>তারিখ</TableHead>
+                      <TableHead>প্রতিষ্ঠানের নাম</TableHead>
+                      <TableHead>শাখার নাম</TableHead>
+                      <TableHead>ব্যয়ের শিরোনাম</TableHead>
+                      <TableHead>আইটেমের নাম</TableHead>
+                      <TableHead>সংখ্যা</TableHead>
+                      <TableHead className="text-right">টাকার পরিমাণ</TableHead>
+                      <TableHead>বর্ণনা</TableHead>
+                      <TableHead>সংযুক্তি</TableHead>
+                      <TableHead className="text-center">অ্যাকশন</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {renderCleaningSuppliesTable(cleaningSuppliesVouchers)}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          )}
+
+          {/* Kitchen & Household Items Voucher Table */}
+          {kitchenHouseholdVouchers.length > 0 && (
+            <div className="bg-white p-6 rounded-xl shadow-lg border border-yellow-200">
+              <h2 className="text-2xl font-bold text-yellow-700 mb-4">কিচেন ও গৃহস্থালি সামগ্রী</h2>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-yellow-100">
+                      <TableHead className="w-[50px]">ক্রমিক</TableHead>
+                      <TableHead>তারিখ</TableHead>
+                      <TableHead>প্রতিষ্ঠানের নাম</TableHead>
+                      <TableHead>শাখার নাম</TableHead>
+                      <TableHead>ব্যয়ের শিরোনাম</TableHead>
+                      <TableHead>আইটেমের নাম</TableHead>
+                      <TableHead>সংখ্যা</TableHead>
+                      <TableHead className="text-right">টাকার পরিমাণ</TableHead>
+                      <TableHead>বর্ণনা</TableHead>
+                      <TableHead>সংযুক্তি</TableHead>
+                      <TableHead className="text-center">অ্যাকশন</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {renderKitchenHouseholdTable(kitchenHouseholdVouchers)}
                   </TableBody>
                 </Table>
               </div>
