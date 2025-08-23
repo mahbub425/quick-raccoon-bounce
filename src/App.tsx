@@ -37,7 +37,7 @@ const App = () => (
                   <Route path="/voucher-entry" element={<VoucherEntry />} />
                   <Route path="/selected-vouchers" element={<SelectedVouchers />} />
                   <Route path="/cart" element={<Cart />} />
-                  <Route path="/mentor-approval" element={<MentorApproval />} />
+                  <Route path="/mentor" element={<MentorApproval />} /> {/* Updated path */}
                   <Route path="/payment" element={<Payment />} />
                 </Route>
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
