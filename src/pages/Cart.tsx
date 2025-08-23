@@ -3,18 +3,22 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
 import { useCart } from "@/context/CartContext";
+import { useSubmittedVouchers } from "@/context/SubmittedVouchersContext";
 import { CartItem } from "@/types";
 import { DUMMY_INSTITUTIONS, DUMMY_PINS, DUMMY_PROGRAM_SESSIONS } from "@/data/dummyData";
 import { format } from "date-fns";
 import { useAuth } from "@/context/AuthContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import DynamicVoucherForm from "@/components/forms/DynamicVoucherForm";
+import { useNavigate } from "react-router-dom";
 
 const Cart = () => {
   const { cartItems, removeFromCart, updateCartItem, clearCart } = useCart();
+  const { addSubmittedVouchers } = useSubmittedVouchers();
   const { user } = useAuth();
   const [editingItem, setEditingItem] = useState<CartItem | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const navigate = useNavigate();
 
   const entertainmentVouchers = cartItems.filter(item => item.voucherTypeId === 'entertainment');
   const conveyanceVouchers = cartItems.filter(item => item.voucherTypeId === 'conveyance');
@@ -58,10 +62,11 @@ const Cart = () => {
       toast.error("কার্টে কোনো ভাউচার নেই সাবমিট করার জন্য।");
       return;
     }
-    // In a real application, you would send these items to a backend for mentor approval
-    // For now, we just show a message and clear the cart.
-    toast.success("মেন্টরের কাছে রিভিউ এর জন্য পাঠানো হয়েছে!");
-    clearCart();
+    // Forward all cart items to the submitted vouchers context
+    addSubmittedVouchers(cartItems);
+    clearCart(); // Clear the cart after submission
+    toast.success("আপনার ভাউচার সফলভাবে সাবমিট হয়েছে!"); // Updated success message
+    navigate("/mentor-approval"); // Navigate to mentor approval page
   };
 
   const renderEntertainmentTable = (items: CartItem[]) => {
@@ -560,7 +565,7 @@ const Cart = () => {
 
       {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-[700px] p-6 max-h-[90vh] overflow-y-auto"> {/* Added max-h and overflow-y-auto */}
+        <DialogContent className="sm:max-w-[700px] p-6 max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-blue-700">ভাউচার এডিট করুন</DialogTitle>
           </DialogHeader>

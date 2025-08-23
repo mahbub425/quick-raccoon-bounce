@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import { useCart } from "@/context/CartContext"; // Import useCart
+import { useCart } from "@/context/CartContext";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -12,11 +12,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ShoppingCart, User } from "lucide-react";
+import { ShoppingCart, User, CheckCircle, DollarSign } from "lucide-react";
 
 const Header = () => {
   const { user, logout } = useAuth();
-  const { cartItemCount } = useCart(); // Use cartItemCount
+  const { cartItemCount } = useCart();
 
   return (
     <header className="bg-gradient-to-r from-blue-600 to-purple-700 text-white p-4 shadow-lg">
@@ -34,6 +34,12 @@ const Header = () => {
                     {cartItemCount}
                   </span>
                 )}
+              </Link>
+              <Link to="/mentor-approval" className="relative p-2 hover:bg-blue-700 rounded-md transition-colors">
+                <CheckCircle className="h-6 w-6" />
+              </Link>
+              <Link to="/payment" className="relative p-2 hover:bg-blue-700 rounded-md transition-colors">
+                <DollarSign className="h-6 w-6" />
               </Link>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
