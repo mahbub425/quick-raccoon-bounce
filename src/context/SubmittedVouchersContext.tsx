@@ -7,6 +7,7 @@ interface SubmittedVouchersContextType {
   submittedVouchers: SubmittedVoucher[];
   addSubmittedVouchers: (items: CartItem[]) => void;
   updateSubmittedVoucherStatus: (voucherId: string, status: VoucherStatus, comment?: string) => void;
+  updateSubmittedVoucherData: (voucherId: string, newData: any) => void; // New function
   clearSubmittedVouchers: () => void;
 }
 
@@ -42,6 +43,14 @@ export const SubmittedVouchersProvider = ({ children }: { children: ReactNode })
     );
   };
 
+  const updateSubmittedVoucherData = (voucherId: string, newData: any) => { // New function implementation
+    setSubmittedVouchers((prev) =>
+      prev.map((voucher) =>
+        voucher.id === voucherId ? { ...voucher, data: newData, createdAt: new Date().toISOString() } : voucher, // Update data and timestamp
+      ),
+    );
+  };
+
   const clearSubmittedVouchers = () => {
     setSubmittedVouchers([]);
   };
@@ -52,6 +61,7 @@ export const SubmittedVouchersProvider = ({ children }: { children: ReactNode })
         submittedVouchers,
         addSubmittedVouchers,
         updateSubmittedVoucherStatus,
+        updateSubmittedVoucherData, // Add new function to context value
         clearSubmittedVouchers,
       }}
     >

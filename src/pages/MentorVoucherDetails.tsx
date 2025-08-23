@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useMemo, useEffect } from "react";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { useSubmittedVouchers } from "@/context/SubmittedVouchersContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,18 +13,28 @@ import { format, isWithinInterval, parseISO } from "date-fns";
 import { DUMMY_INSTITUTIONS, DUMMY_VOUCHER_TYPES } from "@/data/dummyData";
 import { cn } from "@/lib/utils";
 import { SubmittedVoucher } from "@/types";
+import VoucherDetailsPopup from "@/components/VoucherDetailsPopup"; // Will create this next
 
-const MentorApproval = () => {
-  const { submittedVouchers } = useSubmittedVouchers();
+const MentorVoucherDetails = () => {
+  const { userPin } = useParams<{ userPin: string }>();
+  const location = useLocation();
   const navigate = useNavigate();
+  const { submittedVouchers } = useSubmittedVouchers();
 
-  // Filter states
-  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
-  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
-  const [selectedVoucherType, setSelectedVoucherType] = useState<string>("all");
-  const [pinSearchTerm, setPinSearchTerm] = useState<string>("");
-  const [selectedInstitutionId, setSelectedInstitutionId] = useState<string>("all");
-  const [selectedBranchId, setSelectedBranchId] = useState<string>("all");
+  // Filter states, initialized from location state or defaults
+  const initialFilters = location.state?.filters || {};
+  const [startDate, setStartDate] = useState<Date | undefined>(
+    initialFilters.startDate ? parseISO(initialFilters.startDate) : undefined
+  );
+  const [endDate, setEndDate] = useState<Date | undefined>(
+    initialFilters.endDate ? parseISO(initialFilters.endDate) : undefined
+  );
+  const [selectedVoucherType, setSelectedVoucherType] = useState<string>(initialFilters.selectedVoucherType || "all");
+  const [selectedInstitutionId, setSelectedInstitutionId] = useState<string>(initialFilters.selectedInstitutionId || "all");
+  const [selectedBranchId, setSelectedBranchId] = useState<string>(initialFilters.selectedBranchId || "all");
+
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [selectedVoucherForPopup, setSelectedVoucherForPopup] = useState<SubmittedVoucher | null>(null);
 
   // Options for dropdowns
   const voucherTypeOptions = useMemo(() => {
@@ -45,11 +55,32 @@ const MentorApproval = () => {
   const institutionOptions = DUMMY_INSTITUTIONS.map(inst => ({ value: inst.id, label: inst.name }));
   const branchOptions = [{ value: "bogura", label: "Bogura (বগুড়া)" }]; // Fixed as per requirement
 
-  // Filtered and grouped data
-  const filteredAndGroupedVouchers = useMemo(() => {
-    const filteredVouchers = submittedVouchers.filter(voucher => {
+  // Get the user details for the current userPin
+  const currentUser = useMemo(() => {
+    const userVouchers = submittedVouchers.filter(v => v.submittedByPin === userPin);
+    if (userVouchers.length > 0) {
+      const firstVoucher = userVouchers[0];
+      return {
+        pin: firstVoucher.submittedByPin,
+        name: firstVoucher.submittedByName,
+        mobileNumber: firstVoucher.submittedByMobile,
+        department: firstVoucher.submittedByDepartment,
+        designation: firstVoucher.submittedByDesignation,
+      };
+    }
+    return null;
+  }, [submittedVouchers, userPin]);
+
+  // Filtered vouchers for the specific user
+  const filteredUserVouchers = useMemo(() => {
+    return submittedVouchers.filter(voucher => {
+      // Filter by user PIN
+      if (voucher.submittedByPin !== userPin) {
+        return false;
+      }
+
       // Filter by date range
-      const voucherDate = parseISO(voucher.createdAt); // Assuming createdAt is the submission date
+      const voucherDate = parseISO(voucher.createdAt);
       if (startDate && endDate && !isWithinInterval(voucherDate, { start: startDate, end: endDate })) {
         return false;
       }
@@ -59,80 +90,55 @@ const MentorApproval = () => {
         return false;
       }
 
-      // Filter by PIN
-      if (pinSearchTerm && !voucher.submittedByPin.includes(pinSearchTerm)) {
-        return false;
-      }
-
       // Filter by institution
       if (selectedInstitutionId !== "all" && voucher.data.institutionId !== selectedInstitutionId) {
         return false;
       }
 
-      // Filter by branch (Bogura is fixed, so this might not be very dynamic unless other branches are added)
+      // Filter by branch
       if (selectedBranchId !== "all" && voucher.data.branchId !== selectedBranchId) {
         return false;
       }
 
-      // Only show pending vouchers in the main table
+      // Only show pending vouchers in this table
       return voucher.status === 'pending';
     });
+  }, [submittedVouchers, userPin, startDate, endDate, selectedVoucherType, selectedInstitutionId, selectedBranchId]);
 
-    // Group by user (submittedByPin)
-    const groupedByUser: {
-      [pin: string]: {
-        user: { pin: string; name: string; mobileNumber: string; department: string; designation: string; };
-        pendingCount: number;
-        totalAmount: number;
-      };
-    } = {};
+  const totalAmountForUserVouchers = useMemo(() => filteredUserVouchers.reduce((sum, voucher) => sum + (voucher.data.amount || 0), 0), [filteredUserVouchers]);
 
-    filteredVouchers.forEach(voucher => {
-      if (!groupedByUser[voucher.submittedByPin]) {
-        groupedByUser[voucher.submittedByPin] = {
-          user: {
-            pin: voucher.submittedByPin,
-            name: voucher.submittedByName,
-            mobileNumber: voucher.submittedByMobile,
-            department: voucher.submittedByDepartment,
-            designation: voucher.submittedByDesignation,
-          },
-          pendingCount: 0,
-          totalAmount: 0,
-        };
-      }
-      groupedByUser[voucher.submittedByPin].pendingCount += 1;
-      groupedByUser[voucher.submittedByPin].totalAmount += (voucher.data.amount || 0);
-    });
-
-    return Object.values(groupedByUser);
-  }, [submittedVouchers, startDate, endDate, selectedVoucherType, pinSearchTerm, selectedInstitutionId, selectedBranchId]);
-
-  const totalPendingVouchers = useMemo(() => filteredAndGroupedVouchers.reduce((sum, user) => sum + user.pendingCount, 0), [filteredAndGroupedVouchers]);
-  const grandTotalAmount = useMemo(() => filteredAndGroupedVouchers.reduce((sum, user) => sum + user.totalAmount, 0), [filteredAndGroupedVouchers]);
-
-  const handleViewUserVouchers = (userPin: string) => {
-    navigate(`/mentor-approval/${userPin}`, {
-      state: {
-        filters: {
-          startDate: startDate?.toISOString(),
-          endDate: endDate?.toISOString(),
-          selectedVoucherType,
-          pinSearchTerm, // This will be the userPin for the details page
-          selectedInstitutionId,
-          selectedBranchId,
-        }
-      }
-    });
+  const getVoucherHeadingById = (id: string) => {
+    const voucher = DUMMY_VOUCHER_TYPES.flatMap(v => v.type === 'multi' && v.subTypes ? [v, ...v.subTypes] : [v]).find(v => v.id === id);
+    return voucher?.heading || id;
   };
+
+  const handleViewVoucherDetails = (voucher: SubmittedVoucher) => {
+    setSelectedVoucherForPopup(voucher);
+    setIsPopupOpen(true);
+  };
+
+  if (!currentUser) {
+    return (
+      <div className="min-h-[calc(100vh-80px)] flex items-center justify-center bg-gray-100 p-6">
+        <div className="text-center text-xl text-gray-600 p-8 bg-white rounded-lg shadow-inner border border-gray-200">
+          এই পিনের জন্য কোনো ব্যবহারকারী বা ভাউচার পাওয়া যায়নি।
+          <div className="mt-6">
+            <Button onClick={() => navigate("/mentor-approval")} className="bg-blue-600 hover:bg-blue-700 text-white text-lg py-2 px-6 rounded-md shadow-md">
+              মেন্টর অ্যাপ্রুভালে ফিরে যান
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-[calc(100vh-80px)] bg-gradient-to-br from-purple-50 to-pink-50 p-6">
       <h1 className="text-4xl font-extrabold text-center text-purple-800 mb-8">
-        মেন্টর অ্যাপ্রুভাল
+        মেন্টর অ্যাপ্রুভাল - ভাউচার বিস্তারিত
       </h1>
 
-      {/* Filter Section */}
+      {/* Filter Section (retained from main approval page) */}
       <Card className="mb-8 p-6 shadow-lg border-purple-300 bg-white">
         <CardHeader className="pb-4">
           <CardTitle className="text-2xl font-bold text-purple-700">ফিল্টার অপশন</CardTitle>
@@ -210,17 +216,6 @@ const MentorApproval = () => {
             </Select>
           </div>
 
-          {/* PIN Search */}
-          <div className="flex flex-col space-y-1">
-            <label htmlFor="pinSearch" className="text-sm font-medium text-gray-700">পিন লিখুন</label>
-            <Input
-              id="pinSearch"
-              placeholder="পিন দিয়ে সার্চ করুন"
-              value={pinSearchTerm}
-              onChange={(e) => setPinSearchTerm(e.target.value)}
-            />
-          </div>
-
           {/* Institution Select */}
           <div className="flex flex-col space-y-1">
             <label htmlFor="institutionSelect" className="text-sm font-medium text-gray-700">প্রতিষ্ঠান নির্বাচন করুন</label>
@@ -255,37 +250,52 @@ const MentorApproval = () => {
         </CardContent>
       </Card>
 
-      {/* Main Table Section */}
-      {filteredAndGroupedVouchers.length === 0 ? (
+      {/* User Details Section */}
+      <Card className="mb-8 p-6 shadow-lg border-blue-300 bg-white">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-2xl font-bold text-blue-700">ব্যবহারকারীর তথ্য</CardTitle>
+        </CardHeader>
+        <CardContent className="text-gray-700 space-y-2">
+          <p className="text-lg"><strong>নাম:</strong> {currentUser.name} (PIN: {currentUser.pin})</p>
+          <p><strong>ডিপার্টমেন্ট:</strong> {currentUser.department}</p>
+          <p><strong>পদবী:</strong> {currentUser.designation}</p>
+          <p><strong>মোবাইল নম্বর:</strong> {currentUser.mobileNumber}</p>
+        </CardContent>
+      </Card>
+
+      {/* User's Vouchers Table */}
+      {filteredUserVouchers.length === 0 ? (
         <div className="text-center text-xl text-gray-600 p-8 bg-white rounded-lg shadow-inner border border-gray-200">
-          কোনো ভাউচার অ্যাপ্রুভালের জন্য অপেক্ষমাণ নেই।
+          এই ব্যবহারকারীর জন্য কোনো অপেক্ষমাণ ভাউচার নেই।
         </div>
       ) : (
-        <div className="bg-white p-6 rounded-xl shadow-lg border border-purple-200">
+        <div className="bg-white p-6 rounded-xl shadow-lg border border-blue-200">
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="bg-purple-100">
+                <TableRow className="bg-blue-100">
                   <TableHead className="w-[50px]">ক্রমিক</TableHead>
-                  <TableHead>পিন</TableHead>
-                  <TableHead>নাম</TableHead>
-                  <TableHead>মোবাইল নম্বর</TableHead>
-                  <TableHead>অনুমোদন বাকি আছে</TableHead>
+                  <TableHead>ভাউচার নাম্বার</TableHead>
+                  <TableHead>জমাদানের তারিখ</TableHead>
+                  <TableHead>প্রতিষ্ঠানের নাম</TableHead>
+                  <TableHead>শাখার নাম</TableHead>
+                  <TableHead>ভাউচারের ধরন</TableHead>
                   <TableHead className="text-right">টাকার পরিমাণ</TableHead>
                   <TableHead className="text-center">অ্যাকশন</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredAndGroupedVouchers.map((userGroup, index) => (
-                  <TableRow key={userGroup.user.pin}>
+                {filteredUserVouchers.map((voucher, index) => (
+                  <TableRow key={voucher.id}>
                     <TableCell className="font-medium">{index + 1}</TableCell>
-                    <TableCell>{userGroup.user.pin}</TableCell>
-                    <TableCell>{userGroup.user.name}</TableCell>
-                    <TableCell>{userGroup.user.mobileNumber}</TableCell>
-                    <TableCell>{userGroup.pendingCount}</TableCell>
-                    <TableCell className="text-right">{userGroup.totalAmount.toLocaleString('bn-BD', { style: 'currency', currency: 'BDT' })}</TableCell>
+                    <TableCell>{voucher.voucherNumber}</TableCell>
+                    <TableCell>{format(parseISO(voucher.createdAt), "dd MMM, yyyy")}</TableCell>
+                    <TableCell>{DUMMY_INSTITUTIONS.find(inst => inst.id === voucher.data.institutionId)?.name || "N/A"}</TableCell>
+                    <TableCell>{DUMMY_INSTITUTIONS.find(inst => inst.id === voucher.data.institutionId)?.branches.find(b => b.id === voucher.data.branchId)?.name || "N/A"}</TableCell>
+                    <TableCell>{getVoucherHeadingById(voucher.voucherTypeId)}</TableCell>
+                    <TableCell className="text-right">{(voucher.data.amount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT' })}</TableCell>
                     <TableCell className="text-center">
-                      <Button variant="outline" size="sm" onClick={() => handleViewUserVouchers(userGroup.user.pin)}>
+                      <Button variant="outline" size="sm" onClick={() => handleViewVoucherDetails(voucher)}>
                         দেখুন
                       </Button>
                     </TableCell>
@@ -293,10 +303,9 @@ const MentorApproval = () => {
                 ))}
               </TableBody>
               <TableFooter>
-                <TableRow className="bg-purple-50 font-bold">
-                  <TableCell colSpan={4}>মোট</TableCell>
-                  <TableCell>{totalPendingVouchers}</TableCell>
-                  <TableCell className="text-right">{grandTotalAmount.toLocaleString('bn-BD', { style: 'currency', currency: 'BDT' })}</TableCell>
+                <TableRow className="bg-blue-50 font-bold">
+                  <TableCell colSpan={6}>মোট</TableCell>
+                  <TableCell className="text-right">{totalAmountForUserVouchers.toLocaleString('bn-BD', { style: 'currency', currency: 'BDT' })}</TableCell>
                   <TableCell></TableCell> {/* Empty cell for action column */}
                 </TableRow>
               </TableFooter>
@@ -304,8 +313,16 @@ const MentorApproval = () => {
           </div>
         </div>
       )}
+
+      {selectedVoucherForPopup && (
+        <VoucherDetailsPopup
+          isOpen={isPopupOpen}
+          onOpenChange={setIsPopupOpen}
+          voucher={selectedVoucherForPopup}
+        />
+      )}
     </div>
   );
 };
 
-export default MentorApproval;
+export default MentorVoucherDetails;

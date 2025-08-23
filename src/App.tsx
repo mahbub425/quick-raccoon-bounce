@@ -10,6 +10,7 @@ import VoucherEntry from "./pages/VoucherEntry";
 import SelectedVouchers from "./pages/SelectedVouchers";
 import Cart from "./pages/Cart";
 import MentorApproval from "./pages/MentorApproval";
+import MentorVoucherDetails from "./pages/MentorVoucherDetails"; // New import
 import Payment from "./pages/Payment";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
@@ -45,6 +46,7 @@ const App = () => (
                     <Route path="/selected-vouchers" element={<SelectedVouchers />} />
                     <Route path="/cart" element={<Cart />} />
                     <Route path="/mentor-approval" element={<MentorApproval />} />
+                    <Route path="/mentor-approval/:userPin" element={<MentorVoucherDetails />} /> {/* New Route */}
                     <Route path="/payment" element={<Payment />} />
                     <Route path="/final-check-approval" element={<FinalCheckApproval />} />
                     <Route path="/report" element={<Report />} />
