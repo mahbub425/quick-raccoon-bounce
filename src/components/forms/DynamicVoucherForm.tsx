@@ -268,8 +268,12 @@ const DynamicVoucherForm = forwardRef<DynamicVoucherFormRef, DynamicVoucherFormP
 
       if (!isVisible) return null;
 
+      // Determine if the field should span two columns
+      const shouldSpanTwoColumns = field.type === "textarea" || field.type === "file";
+      const colSpanClass = shouldSpanTwoColumns ? "md:col-span-2" : "md:col-span-1";
+
       return (
-        <div key={field.name} className="space-y-4">
+        <div key={field.name} className={colSpanClass}>
           <FormField
             control={form.control}
             name={field.name as Path<z.infer<z.ZodObject<any>>>}
@@ -446,11 +450,11 @@ const DynamicVoucherForm = forwardRef<DynamicVoucherFormRef, DynamicVoucherFormP
 
     return (
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit, onError)} className="space-y-6 p-6 bg-white rounded-lg shadow-lg border border-blue-200">
-          <h2 className="text-3xl font-bold text-blue-800 mb-6 text-center">{voucherDetails.heading}</h2>
+        <form onSubmit={form.handleSubmit(onSubmit, onError)} className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-white rounded-lg shadow-lg border border-blue-200">
+          <h2 className="text-3xl font-bold text-blue-800 mb-6 text-center md:col-span-2">{voucherDetails.heading}</h2>
           {voucherDetails.formFields.map((field) => renderField(field))}
           {!hideSubmitButton && ( // Conditionally render submit button
-            <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-700 hover:to-purple-800 text-white text-lg py-3 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105">
+            <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-700 hover:to-purple-800 text-white text-lg py-3 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105 md:col-span-2">
               {initialData ? "আপডেট করুন" : "কার্টে যোগ করুন"}
             </Button>
           )}
