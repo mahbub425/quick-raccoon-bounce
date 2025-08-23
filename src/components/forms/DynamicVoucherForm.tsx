@@ -434,35 +434,102 @@ const DynamicVoucherForm = forwardRef<DynamicVoucherFormRef, DynamicVoucherFormP
     };
 
     // This is the main rendering function for a field, including its container and conditional children
-    const renderField = (field: FormFieldType, index: number | null, array: FormFieldType[] | null) => {
+    const renderField = (field: FormFieldType, index: number, array: FormFieldType[]) => {
       const isVisible = !field.dependency || (form.watch(field.dependency.field) === field.dependency.value || field.dependency.value === "*");
       if (!isVisible) return null;
 
-      // Special handling for startTime and endTime pair, ONLY at the top level (index !== null)
-      if (index !== null && array && field.name === "startTime" && array[index + 1]?.name === "endTime") {
-        const endTimeField = array[index + 1];
-        const isEndTimeVisible = !endTimeField.dependency || (form.watch(endTimeField.dependency.field) === endTimeField.dependency.value || endTimeField.dependency.value === "*");
+      // Special handling for "publicityLocation" followed by "startTime" and "endTime"
+      if (field.name === "publicityLocation" && array[index + 1]?.name === "startTime" && array[index + 2]?.name === "endTime") {
+        const startTimeField = array[index + 1];
+        const endTimeField = array[index + 2];
 
-        if (!isEndTimeVisible) return null;
+        const isStartTimeVisible = !startTimeField.mandatory || (form.watch(startTimeField.dependency?.field || "") === startTimeField.dependency?.value || startTimeField.dependency?.value === "*");
+        const isEndTimeVisible = !endTimeField.mandatory || (form.watch(endTimeField.dependency?.field || "") === endTimeField.dependency?.value || endTimeField.dependency?.value === "*");
 
         return (
-          <div key={field.name + "-pair"} className="md:col-span-2 flex gap-4">
-            <div className="flex-1">
+          <>
+            {/* Publicity Location field */}
+            <div key={field.name} className="md:col-span-1">
               {renderSingleFormFieldComponent(field)}
+              {field.conditionalFields &&
+                field.conditionalFields.map((cond) =>
+                  form.watch(field.name) === cond.value
+                    ? cond.fields.map((nestedCondField) => (
+                        <div key={nestedCondField.name} className="mt-4">
+                          {renderField(nestedCondField, -1, [])} {/* Recursive call for nested fields, use dummy index/array */}
+                        </div>
+                      ))
+                    : null
+                )}
             </div>
-            <div className="flex-1">
-              {renderSingleFormFieldComponent(endTimeField)}
+
+            {/* Publicity Time Period group */}
+            <div key="publicity-time-group" className="md:col-span-1 flex flex-col">
+              <FormLabel className="text-gray-700 font-semibold">প্রচারণা সময়কাল {startTimeField.mandatory && <span className="text-red-500">*</span>}</FormLabel>
+              <div className="flex gap-2 mt-2"> {/* Added mt-2 for spacing from label */}
+                {isStartTimeVisible && (
+                  <div className="flex-1">
+                    <FormField
+                      control={form.control}
+                      name={startTimeField.name as Path<z.infer<z.ZodObject<any>>>}
+                      render={({ field: formHookField }) => (
+                        <FormItem className="flex flex-col space-y-0"> {/* space-y-0 to reduce vertical gap */}
+                          <FormControl>
+                            <Input
+                              type="time"
+                              placeholder="শুরু"
+                              {...formHookField}
+                              value={formHookField.value || ""}
+                              className="border-blue-300 focus:border-blue-500 focus:ring-blue-500"
+                            />
+                          </FormControl>
+                          <FormMessage className="pt-1" /> {/* pt-1 to give a little space */}
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                )}
+                {isEndTimeVisible && (
+                  <div className="flex-1">
+                    <FormField
+                      control={form.control}
+                      name={endTimeField.name as Path<z.infer<z.ZodObject<any>>>}
+                      render={({ field: formHookField }) => (
+                        <FormItem className="flex flex-col space-y-0">
+                          <FormControl>
+                            <Input
+                              type="time"
+                              placeholder="শেষ"
+                              {...formHookField}
+                              value={formHookField.value || ""}
+                              className="border-blue-300 focus:border-blue-500 focus:ring-blue-500"
+                            />
+                          </FormControl>
+                          <FormMessage className="pt-1" />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          </>
         );
       }
 
-      // If it's endTime and it was already handled by startTime, skip (ONLY at top level)
-      if (index !== null && array && field.name === "endTime" && array[index - 1]?.name === "startTime") {
-        return null;
+      // If it's startTime or endTime and it was already handled by publicityLocation, skip
+      if (field.name === "startTime" || field.name === "endTime") {
+        // Check if the previous field was publicityLocation and this is part of the handled group
+        if (index > 0 && array[index - 1]?.name === "publicityLocation") {
+            return null; // Already rendered as part of the group
+        }
+        // Also check if it's endTime and startTime was handled
+        if (index > 1 && array[index - 2]?.name === "publicityLocation" && array[index - 1]?.name === "startTime") {
+            return null; // Already rendered as part of the group
+        }
       }
 
-      // For all other fields, or if startTime is not paired with endTime, or if it's a nested field
+      // For all other fields, or if the special handling didn't apply
       const shouldSpanTwoColumns = field.type === "textarea" || field.type === "file";
       const colSpanClass = shouldSpanTwoColumns ? "md:col-span-2" : "md:col-span-1";
 
@@ -474,7 +541,7 @@ const DynamicVoucherForm = forwardRef<DynamicVoucherFormRef, DynamicVoucherFormP
               form.watch(field.name) === cond.value
                 ? cond.fields.map((nestedCondField) => (
                     <div key={nestedCondField.name} className="mt-4">
-                      {renderField(nestedCondField, null, null)} {/* Recursive call for nested fields */}
+                      {renderField(nestedCondField, -1, [])} {/* Recursive call for nested fields */}
                     </div>
                   ))
                 : null
