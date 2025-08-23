@@ -11,7 +11,16 @@ const VoucherEntry = () => {
   const [selectedVoucherIds, setSelectedVoucherIds] = useState<string[]>([]);
   const [collapsedMultiTypes, setCollapsedMultiTypes] = useState<string[]>([]);
 
-  const singleTypeVouchers = DUMMY_VOUCHER_TYPES.filter((v) => v.type === "single");
+  // IDs of the vouchers to hide from the single type section
+  const hiddenSingleTypeVoucherIds = [
+    "publicity-publicist-bill",
+    "publicity-entertainment",
+    "publicity-conveyance",
+  ];
+
+  const singleTypeVouchers = DUMMY_VOUCHER_TYPES.filter(
+    (v) => v.type === "single" && !hiddenSingleTypeVoucherIds.includes(v.id)
+  );
   const multiTypeVouchers = DUMMY_VOUCHER_TYPES.filter((v) => v.type === "multi");
 
   const handleSelectVoucher = (id: string, isSelected: boolean) => {
