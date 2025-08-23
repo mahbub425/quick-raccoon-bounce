@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import VoucherCard from "@/components/VoucherCard";
 import { DUMMY_VOUCHER_TYPES } from "@/data/dummyData";
-import { VoucherType } from "@/types";
 import { cn } from "@/lib/utils";
 
 const VoucherEntry = () => {
@@ -11,17 +10,19 @@ const VoucherEntry = () => {
   const [selectedVoucherIds, setSelectedVoucherIds] = useState<string[]>([]);
   const [collapsedMultiTypes, setCollapsedMultiTypes] = useState<string[]>([]);
 
-  // IDs of the vouchers to hide from the single type section
-  const hiddenSingleTypeVoucherIds = [
-    "publicity-publicist-bill",
-    "publicity-entertainment",
-    "publicity-conveyance",
+  // IDs of the vouchers that are sub-types and should NOT appear as top-level cards in VoucherEntry.tsx
+  const hiddenVoucherIds = [
+    "entertainment", // Sub-type of entertainment-conveyance-multi
+    "conveyance",    // Sub-type of entertainment-conveyance-multi
+    "publicity",     // Sub-type of publicity-students-inspiration-multi
+    "publicity-students-inspiration", // Sub-type of publicity-students-inspiration-multi
+    "office-supplies-stationery", // Sub-type of stationery-maintenance-multi
+    "cleaning-supplies", // Sub-type of stationery-maintenance-multi
+    "kitchen-household-items", // Sub-type of stationery-maintenance-multi
+    "publicity-conveyance", // Special sub-form, not top-level
+    "publicity-entertainment", // Special sub-form, not top-level
+    "publicity-publicist-bill", // Special sub-form, not top-level
   ];
-
-  const singleTypeVouchers = DUMMY_VOUCHER_TYPES.filter(
-    (v) => v.type === "single" && !hiddenSingleTypeVoucherIds.includes(v.id)
-  );
-  const multiTypeVouchers = DUMMY_VOUCHER_TYPES.filter((v) => v.type === "multi");
 
   const handleSelectVoucher = (id: string, isSelected: boolean) => {
     setSelectedVoucherIds((prev) =>
@@ -49,56 +50,45 @@ const VoucherEntry = () => {
         ভাউচার টাইপ নির্বাচন করুন
       </h1>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
-        {/* Multi Type Vouchers (Left Section) */}
-        <div className="bg-white p-6 rounded-xl shadow-lg border border-purple-200">
-          <h2 className="text-2xl font-bold text-purple-700 mb-6 border-b pb-3 border-purple-300">
-            মাল্টি টাইপ ভাউচার
-          </h2>
-          <div className="space-y-4">
-            {multiTypeVouchers.map((multiVoucher) => (
-              <div key={multiVoucher.id} className="border border-purple-100 rounded-lg p-2 bg-purple-50">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-6xl mx-auto">
+        {DUMMY_VOUCHER_TYPES
+          .filter(v => !hiddenVoucherIds.includes(v.id)) // Filter out explicitly hidden top-level vouchers
+          .map((voucher) => (
+            <div key={voucher.id} className="col-span-1">
+              {voucher.type === "multi" ? (
+                <div className="border border-gray-200 rounded-lg p-2 bg-white shadow-sm"> {/* Added a container for multi-type card and its sub-types */}
+                  <VoucherCard
+                    voucher={voucher}
+                    isSelected={false} // Multi-type cards themselves are not "selected" for submission
+                    onSelect={() => {}}
+                    isMultiType
+                    onToggleCollapse={handleToggleCollapse}
+                    isCollapsed={collapsedMultiTypes.includes(voucher.id)}
+                  />
+                  {!collapsedMultiTypes.includes(voucher.id) && voucher.subTypes && (
+                    <div className="grid grid-cols-1 gap-4 mt-4 pl-4 border-l-4 border-purple-300">
+                      {voucher.subTypes
+                        .filter(subV => !hiddenVoucherIds.includes(subV.id)) // Filter out hidden sub-vouchers if any
+                        .map((subVoucher) => (
+                          <VoucherCard
+                            key={subVoucher.id}
+                            voucher={subVoucher}
+                            isSelected={selectedVoucherIds.includes(subVoucher.id)}
+                            onSelect={handleSelectVoucher}
+                          />
+                        ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
                 <VoucherCard
-                  voucher={multiVoucher}
-                  isSelected={false} // Multi-type cards themselves are not "selected" for submission
-                  onSelect={() => {}}
-                  isMultiType
-                  onToggleCollapse={handleToggleCollapse}
-                  isCollapsed={collapsedMultiTypes.includes(multiVoucher.id)}
+                  voucher={voucher}
+                  isSelected={selectedVoucherIds.includes(voucher.id)}
+                  onSelect={handleSelectVoucher}
                 />
-                {!collapsedMultiTypes.includes(multiVoucher.id) && multiVoucher.subTypes && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pl-4 border-l-4 border-purple-300">
-                    {multiVoucher.subTypes.map((subVoucher) => (
-                      <VoucherCard
-                        key={subVoucher.id}
-                        voucher={subVoucher}
-                        isSelected={selectedVoucherIds.includes(subVoucher.id)}
-                        onSelect={handleSelectVoucher}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Single Type Vouchers (Right Section) */}
-        <div className="bg-white p-6 rounded-xl shadow-lg border border-green-200">
-          <h2 className="text-2xl font-bold text-green-700 mb-6 border-b pb-3 border-green-300">
-            সিঙ্গেল টাইপ ভাউচার
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {singleTypeVouchers.map((voucher) => (
-              <VoucherCard
-                key={voucher.id}
-                voucher={voucher}
-                isSelected={selectedVoucherIds.includes(voucher.id)}
-                onSelect={handleSelectVoucher}
-              />
-            ))}
-          </div>
-        </div>
+              )}
+            </div>
+          ))}
       </div>
 
       <div className="text-center mt-10">
