@@ -19,47 +19,41 @@ const Layout = () => {
     setIsSheetOpen(false);
   }, [location.pathname]);
 
-  if (!user) {
-    // If not logged in, only render the header and outlet (which will be login page)
-    return (
-      <div className="flex flex-col min-h-screen">
-        <Header />
+  return (
+    <div className="flex flex-col min-h-screen bg-background">
+      <Header>
+        {/* Mobile Sidebar Trigger in Header */}
+        {isMobile && user && (
+          <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="mr-2 text-white">
+                <Menu className="h-6 w-6" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-64 p-0">
+              <Sidebar onLinkClick={() => setIsSheetOpen(false)} />
+            </SheetContent>
+          </Sheet>
+        )}
+      </Header>
+
+      {user ? ( // Only show sidebar and main content if logged in
+        <div className="flex flex-1">
+          {/* Desktop Sidebar */}
+          {!isMobile && (
+            <aside className="w-64 bg-sidebar border-r border-sidebar-border shadow-md">
+              <Sidebar />
+            </aside>
+          )}
+          <main className="flex-1 overflow-auto">
+            <Outlet />
+          </main>
+        </div>
+      ) : ( // If not logged in, just show the outlet (login page)
         <main className="flex-1">
           <Outlet />
         </main>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex min-h-screen bg-background">
-      {/* Desktop Sidebar */}
-      {!isMobile && user && (
-        <aside className="w-64 bg-sidebar border-r border-sidebar-border shadow-md">
-          <Sidebar />
-        </aside>
       )}
-
-      <div className="flex-1 flex flex-col">
-        <Header>
-          {/* Mobile Sidebar Trigger in Header */}
-          {isMobile && user && (
-            <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="mr-2 text-white">
-                  <Menu className="h-6 w-6" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-64 p-0">
-                <Sidebar onLinkClick={() => setIsSheetOpen(false)} />
-              </SheetContent>
-            </Sheet>
-          )}
-        </Header>
-        <main className="flex-1 overflow-auto">
-          <Outlet />
-        </main>
-      </div>
     </div>
   );
 };
