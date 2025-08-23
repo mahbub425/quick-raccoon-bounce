@@ -120,7 +120,7 @@ const SelectedVouchers = () => {
 
             {activeFormId === 'publicity' && (
               <div className="mt-8 p-6 bg-white rounded-lg shadow-lg border border-blue-200">
-                <h3 className="text-2xl font-bold text-blue-800 mb-4 text-center">প্রচারণার উপ-ভাউচার যোগ করুন</h3>
+                {/* Removed: <h3 className="text-2xl font-bold text-blue-800 mb-4 text-center">প্রচারণার উপ-ভাউচার যোগ করুন</h3> */}
                 <div className="flex flex-wrap justify-center gap-4">
                   <Button
                     variant={activeSubFormId === 'publicity-conveyance' ? "default" : "outline"}
