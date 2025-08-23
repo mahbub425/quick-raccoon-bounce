@@ -66,7 +66,7 @@ const Cart = () => {
     addSubmittedVouchers(cartItems);
     clearCart(); // Clear the cart after submission
     toast.success("আপনার ভাউচার সফলভাবে সাবমিট হয়েছে!"); // Updated success message
-    navigate("/mentor-approval"); // Navigate to mentor approval page
+    // Removed: navigate("/mentor-approval"); // No longer navigate to mentor approval page
   };
 
   const renderEntertainmentTable = (items: CartItem[]) => {
