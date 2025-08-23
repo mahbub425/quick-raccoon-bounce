@@ -149,7 +149,7 @@ const Cart = () => {
           {item.data.guestName && ` (অতিথি: ${item.data.guestName})`}
           {item.data.studentName && ` (শিক্ষার্থী: ${item.data.studentName})`}
           {item.data.guardianName && ` (অভিভাবক: ${item.data.guardianName})`}
-          {item.data.selectedPins && item.data.selectedPins.length > 0 && ` (পিন: ${getPinNames(item.data.selectedPins)})`}
+          {item.data.selectedPins && item.data.selectedPins.length > 0 && ` (পিন: ${item.data.selectedPins.length} জন)`} {/* Updated line */}
           {item.data.quantityUnit?.quantity && item.data.quantityUnit?.unit && ` (${item.data.quantityUnit.quantity} ${item.data.quantityUnit.unit})`}
         </TableCell>
         <TableCell className="text-right">{item.data.amount || 0}</TableCell>

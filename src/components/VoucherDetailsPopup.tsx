@@ -152,7 +152,7 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
                 {itemData.guestName && ` (অতিথি: ${itemData.guestName})`}
                 {itemData.studentName && ` (শিক্ষার্থী: ${itemData.studentName})`}
                 {itemData.guardianName && ` (অভিভাবক: ${itemData.guardianName})`}
-                {itemData.selectedPins && itemData.selectedPins.length > 0 && ` (পিন: ${getPinNames(itemData.selectedPins)})`}
+                {itemData.selectedPins && itemData.selectedPins.length > 0 && ` (পিন: ${itemData.selectedPins.length} জন)`} {/* Updated line */}
                 {itemData.quantityUnit?.quantity && itemData.quantityUnit?.unit && ` (${itemData.quantityUnit.quantity} ${itemData.quantityUnit.unit})`}
               </TableCell>
               <TableCell className="text-right">{(itemData.amount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT' })}</TableCell>
