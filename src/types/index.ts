@@ -84,8 +84,21 @@ export type CartItem = {
   id: string; // Unique ID for the cart item
   voucherTypeId: string; // ID of the voucher type (e.g., 'entertainment', 'conveyance')
   voucherHeading: string; // Heading of the voucher type
+  voucherNumber: string; // Auto-generated unique voucher number
   data: any; // The actual form data for this item
   createdAt: string; // Timestamp for when it was added
+};
+
+export type VoucherStatus = 'pending' | 'approved' | 'sent_back' | 'rejected';
+
+export type SubmittedVoucher = CartItem & {
+  status: VoucherStatus;
+  comment?: string; // For send back/reject reasons
+  submittedByPin: string; // To link to the user who submitted it
+  submittedByName: string;
+  submittedByMobile: string;
+  submittedByDepartment: string;
+  submittedByDesignation: string;
 };
 
 // Specific form data types for better type safety (optional, can be inferred from FormField definitions)

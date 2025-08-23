@@ -4,7 +4,7 @@ import { toast } from "sonner";
 
 interface CartContextType {
   cartItems: CartItem[];
-  addToCart: (item: Omit<CartItem, 'id' | 'createdAt'>) => void;
+  addToCart: (item: Omit<CartItem, 'id' | 'createdAt' | 'voucherNumber'>) => void;
   removeFromCart: (id: string) => void;
   updateCartItem: (id: string, updatedData: any) => void;
   clearCart: () => void;
@@ -16,11 +16,18 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
-  const addToCart = (item: Omit<CartItem, 'id' | 'createdAt'>) => {
+  const generateVoucherNumber = (voucherTypeId: string) => {
+    // A simple unique ID for now. In a real app, this would be more robust.
+    const prefix = voucherTypeId.substring(0, 3).toUpperCase();
+    return `${prefix}${Date.now().toString().slice(-6)}`;
+  };
+
+  const addToCart = (item: Omit<CartItem, 'id' | 'createdAt' | 'voucherNumber'>) => {
     const newItem: CartItem = {
       ...item,
       id: Date.now().toString(), // Simple unique ID for now
       createdAt: new Date().toISOString(),
+      voucherNumber: generateVoucherNumber(item.voucherTypeId),
     };
     setCartItems((prev) => [...prev, newItem]);
     toast.success(`${item.voucherHeading} কার্টে যোগ করা হয়েছে!`);
