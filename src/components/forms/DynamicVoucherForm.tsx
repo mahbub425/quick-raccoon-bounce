@@ -103,7 +103,7 @@ const createSchema = (fields: FormFieldType[], currentFormValues: any) => {
             currentFieldSchema = (currentFieldSchema as z.ZodNumber).refine(
               (val) => val === undefined || val <= maxAmount,
               {
-                message: `সর্বোচ্চ টাকার পরিমাণ ${maxAmount} টাকা।`,
+                message: `আপনি টাকার পরিমান বেশি দেখিয়েছেন`, // Updated message
               }
             );
           }
