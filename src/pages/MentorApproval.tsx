@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon } from "lucide-react";
-import { format, isWithinInterval, parseISO, endOfDay } from "date-fns"; // Added endOfDay
+import { format, isWithinInterval, parseISO, endOfDay } from "date-fns";
 import { DUMMY_INSTITUTIONS, DUMMY_VOUCHER_TYPES } from "@/data/dummyData";
 import { cn } from "@/lib/utils";
 import { SubmittedVoucher } from "@/types";
@@ -19,12 +19,12 @@ const MentorApproval = () => {
   const navigate = useNavigate();
 
   // Filter states
-  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
-  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  // const [startDate, setStartDate] = useState<Date | undefined>(undefined); // Removed
+  // const [endDate, setEndDate] = useState<Date | undefined>(undefined); // Removed
   const [selectedVoucherType, setSelectedVoucherType] = useState<string>("all");
   const [pinSearchTerm, setPinSearchTerm] = useState<string>("");
-  const [selectedInstitutionId, setSelectedInstitutionId] = useState<string>("all");
-  const [selectedBranchId, setSelectedBranchId] = useState<string>("all");
+  // const [selectedInstitutionId, setSelectedInstitutionId] = useState<string>("all"); // Removed
+  // const [selectedBranchId, setSelectedBranchId] = useState<string>("all"); // Removed
 
   // Options for dropdowns
   const voucherTypeOptions = useMemo(() => {
@@ -46,26 +46,25 @@ const MentorApproval = () => {
     });
   }, []);
 
-  const institutionOptions = DUMMY_INSTITUTIONS.map(inst => ({ value: inst.id, label: inst.name }));
-  const branchOptions = [{ value: "bogura", label: "Bogura (বগুড়া)" }]; // Fixed as per requirement
+  // const institutionOptions = DUMMY_INSTITUTIONS.map(inst => ({ value: inst.id, label: inst.name })); // Removed
+  // const branchOptions = [{ value: "bogura", label: "Bogura (বগুড়া)" }]; // Removed
 
   // Filtered and grouped data
   const filteredAndGroupedVouchers = useMemo(() => {
     const filteredVouchers = submittedVouchers.filter(voucher => {
-      // Filter by date range
-      const voucherDate = parseISO(voucher.createdAt); // Assuming createdAt is the submission date
-      if (startDate && endDate) {
-        // Adjust endDate to include the entire day
-        const adjustedEndDate = endOfDay(endDate);
-        if (!isWithinInterval(voucherDate, { start: startDate, end: adjustedEndDate })) {
-          return false;
-        }
-      } else if (startDate && !endDate) { // Only start date selected
-        if (voucherDate < startDate) return false;
-      } else if (!startDate && endDate) { // Only end date selected
-        const adjustedEndDate = endOfDay(endDate);
-        if (voucherDate > adjustedEndDate) return false;
-      }
+      // Filter by date range (Removed)
+      // const voucherDate = parseISO(voucher.createdAt);
+      // if (startDate && endDate) {
+      //   const adjustedEndDate = endOfDay(endDate);
+      //   if (!isWithinInterval(voucherDate, { start: startDate, end: adjustedEndDate })) {
+      //     return false;
+      //   }
+      // } else if (startDate && !endDate) {
+      //   if (voucherDate < startDate) return false;
+      // } else if (!startDate && endDate) {
+      //   const adjustedEndDate = endOfDay(endDate);
+      //   if (voucherDate > adjustedEndDate) return false;
+      // }
 
 
       // Filter by voucher type
@@ -78,15 +77,15 @@ const MentorApproval = () => {
         return false;
       }
 
-      // Filter by institution
-      if (selectedInstitutionId !== "all" && voucher.data.institutionId !== selectedInstitutionId) {
-        return false;
-      }
+      // Filter by institution (Removed)
+      // if (selectedInstitutionId !== "all" && voucher.data.institutionId !== selectedInstitutionId) {
+      //   return false;
+      // }
 
-      // Filter by branch (Bogura is fixed, so this might not be very dynamic unless other branches are added)
-      if (selectedBranchId !== "all" && voucher.data.branchId !== selectedBranchId) {
-        return false;
-      }
+      // Filter by branch (Removed)
+      // if (selectedBranchId !== "all" && voucher.data.branchId !== selectedBranchId) {
+      //   return false;
+      // }
 
       // Only show pending vouchers in the main table
       return voucher.status === 'pending';
@@ -120,7 +119,7 @@ const MentorApproval = () => {
     });
 
     return Object.values(groupedByUser);
-  }, [submittedVouchers, startDate, endDate, selectedVoucherType, pinSearchTerm, selectedInstitutionId, selectedBranchId]);
+  }, [submittedVouchers, selectedVoucherType, pinSearchTerm]); // Removed startDate, endDate, selectedInstitutionId, selectedBranchId from dependencies
 
   const totalPendingVouchers = useMemo(() => filteredAndGroupedVouchers.reduce((sum, user) => sum + user.pendingCount, 0), [filteredAndGroupedVouchers]);
   const grandTotalAmount = useMemo(() => filteredAndGroupedVouchers.reduce((sum, user) => sum + user.totalAmount, 0), [filteredAndGroupedVouchers]);
@@ -129,12 +128,12 @@ const MentorApproval = () => {
     navigate(`/mentor-approval/${userPin}`, {
       state: {
         filters: {
-          startDate: startDate?.toISOString(),
-          endDate: endDate?.toISOString(),
+          // startDate: startDate?.toISOString(), // Removed
+          // endDate: endDate?.toISOString(), // Removed
           selectedVoucherType,
           pinSearchTerm, // This will be the userPin for the details page
-          selectedInstitutionId,
-          selectedBranchId,
+          // selectedInstitutionId, // Removed
+          // selectedBranchId, // Removed
         }
       }
     });
@@ -148,12 +147,9 @@ const MentorApproval = () => {
 
       {/* Filter Section */}
       <Card className="mb-8 p-6 shadow-lg border-purple-300 bg-white">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-2xl font-bold text-purple-700">ফিল্টার অপশন</CardTitle>
-        </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {/* Start Date */}
-          <div className="flex flex-col space-y-1">
+          {/* Start Date (Removed) */}
+          {/* <div className="flex flex-col space-y-1">
             <label htmlFor="startDate" className="text-sm font-medium text-gray-700">শুরু তারিখ</label>
             <Popover>
               <PopoverTrigger asChild>
@@ -178,10 +174,10 @@ const MentorApproval = () => {
                 />
               </PopoverContent>
             </Popover>
-          </div>
+          </div> */}
 
-          {/* End Date */}
-          <div className="flex flex-col space-y-1">
+          {/* End Date (Removed) */}
+          {/* <div className="flex flex-col space-y-1">
             <label htmlFor="endDate" className="text-sm font-medium text-gray-700">শেষ তারিখ</label>
             <Popover>
               <PopoverTrigger asChild>
@@ -206,7 +202,7 @@ const MentorApproval = () => {
                 />
               </PopoverContent>
             </Popover>
-          </div>
+          </div> */}
 
           {/* Voucher Type */}
           <div className="flex flex-col space-y-1">
@@ -235,8 +231,8 @@ const MentorApproval = () => {
             />
           </div>
 
-          {/* Institution Select */}
-          <div className="flex flex-col space-y-1">
+          {/* Institution Select (Removed) */}
+          {/* <div className="flex flex-col space-y-1">
             <label htmlFor="institutionSelect" className="text-sm font-medium text-gray-700">প্রতিষ্ঠান নির্বাচন করুন</label>
             <Select value={selectedInstitutionId} onValueChange={setSelectedInstitutionId}>
               <SelectTrigger className="w-full">
@@ -249,10 +245,10 @@ const MentorApproval = () => {
                 ))}
               </SelectContent>
             </Select>
-          </div>
+          </div> */}
 
-          {/* Branch Select */}
-          <div className="flex flex-col space-y-1">
+          {/* Branch Select (Removed) */}
+          {/* <div className="flex flex-col space-y-1">
             <label htmlFor="branchSelect" className="text-sm font-medium text-gray-700">শাখা নির্বাচন করুন</label>
             <Select value={selectedBranchId} onValueChange={setSelectedBranchId}>
               <SelectTrigger className="w-full">
@@ -265,7 +261,7 @@ const MentorApproval = () => {
                 ))}
               </SelectContent>
             </Select>
-          </div>
+          </div> */}
         </CardContent>
       </Card>
 
