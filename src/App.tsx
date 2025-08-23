@@ -32,14 +32,13 @@ const App = () => (
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/login" element={<Login />} />
-                {/* Public Routes for Mentor Approval and Payment */}
-                <Route path="/mentor" element={<MentorApproval />} />
-                <Route path="/payment" element={<Payment />} />
                 {/* Protected Routes */}
                 <Route element={<ProtectedRoute />}>
                   <Route path="/voucher-entry" element={<VoucherEntry />} />
                   <Route path="/selected-vouchers" element={<SelectedVouchers />} />
                   <Route path="/cart" element={<Cart />} />
+                  <Route path="/mentor-approval" element={<MentorApproval />} />
+                  <Route path="/payment" element={<Payment />} />
                 </Route>
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />

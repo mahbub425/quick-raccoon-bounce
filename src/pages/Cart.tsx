@@ -18,7 +18,7 @@ const Cart = () => {
   const { user } = useAuth();
   const [editingItem, setEditingItem] = useState<CartItem | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const navigate = useNavigate(); // Keep navigate for other potential uses, though not for submission here
+  const navigate = useNavigate();
 
   const entertainmentVouchers = cartItems.filter(item => item.voucherTypeId === 'entertainment');
   const conveyanceVouchers = cartItems.filter(item => item.voucherTypeId === 'conveyance');
@@ -66,7 +66,7 @@ const Cart = () => {
     addSubmittedVouchers(cartItems);
     clearCart(); // Clear the cart after submission
     toast.success("আপনার ভাউচার সফলভাবে সাবমিট হয়েছে!"); // Updated success message
-    // Removed navigation to /mentor-approval as per user request
+    navigate("/mentor-approval"); // Navigate to mentor approval page
   };
 
   const renderEntertainmentTable = (items: CartItem[]) => {

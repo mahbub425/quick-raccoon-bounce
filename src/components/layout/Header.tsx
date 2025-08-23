@@ -35,7 +35,12 @@ const Header = () => {
                   </span>
                 )}
               </Link>
-              {/* Mentor Approval and Payment links removed as per user request */}
+              <Link to="/mentor-approval" className="relative p-2 hover:bg-blue-700 rounded-md transition-colors">
+                <CheckCircle className="h-6 w-6" />
+              </Link>
+              <Link to="/payment" className="relative p-2 hover:bg-blue-700 rounded-md transition-colors">
+                <DollarSign className="h-6 w-6" />
+              </Link>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-9 w-9 rounded-full">
