@@ -12,18 +12,25 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ShoppingCart, User, CheckCircle, DollarSign } from "lucide-react";
+import { ShoppingCart, User } from "lucide-react"; // Removed CheckCircle, DollarSign
 
-const Header = () => {
+interface HeaderProps {
+  children?: React.ReactNode; // To allow passing mobile menu trigger
+}
+
+const Header = ({ children }: HeaderProps) => {
   const { user, logout } = useAuth();
   const { cartItemCount } = useCart();
 
   return (
     <header className="bg-gradient-to-r from-blue-600 to-purple-700 text-white p-4 shadow-lg">
       <div className="container mx-auto flex justify-between items-center">
-        <Link to="/" className="text-2xl font-bold tracking-wide">
-          ভাউচার এন্ট্রি সিস্টেম
-        </Link>
+        <div className="flex items-center">
+          {children} {/* Mobile menu trigger will be rendered here */}
+          <Link to="/" className="text-2xl font-bold tracking-wide">
+            ভাউচার এন্ট্রি সিস্টেম
+          </Link>
+        </div>
         <nav className="flex items-center space-x-4">
           {user ? (
             <>
@@ -34,12 +41,6 @@ const Header = () => {
                     {cartItemCount}
                   </span>
                 )}
-              </Link>
-              <Link to="/mentor-approval" className="relative p-2 hover:bg-blue-700 rounded-md transition-colors">
-                <CheckCircle className="h-6 w-6" />
-              </Link>
-              <Link to="/payment" className="relative p-2 hover:bg-blue-700 rounded-md transition-colors">
-                <DollarSign className="h-6 w-6" />
               </Link>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

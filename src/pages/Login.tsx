@@ -16,7 +16,7 @@ const Login = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (login(name, password)) {
-      navigate("/voucher-entry");
+      navigate("/home"); // Changed from /voucher-entry to /home
     }
   };
 
