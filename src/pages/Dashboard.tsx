@@ -11,12 +11,15 @@ import DynamicVoucherForm from "@/components/forms/DynamicVoucherForm";
 import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext"; // Import useAuth
+import AttachmentViewerPopup from "@/components/AttachmentViewerPopup"; // Import the new component
 
 const Dashboard = () => {
   const { submittedVouchers, updateSubmittedVoucherStatus, updateSubmittedVoucherData } = useSubmittedVouchers();
   const { user } = useAuth(); // Get current user
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingVoucher, setEditingVoucher] = useState<SubmittedVoucher | null>(null);
+  const [isAttachmentPopupOpen, setIsAttachmentPopupOpen] = useState(false); // State for attachment popup
+  const [attachmentToView, setAttachmentToView] = useState(""); // State for filename to view
 
   const userSpecificVouchers = useMemo(() => {
     if (!user) return [];
@@ -112,6 +115,30 @@ const Dashboard = () => {
     }
   };
 
+  const handleViewAttachment = (filename: string) => {
+    setAttachmentToView(filename);
+    setIsAttachmentPopupOpen(true);
+  };
+
+  const renderAttachmentCell = (itemData: any) => (
+    <TableCell>
+      {itemData.attachment ? (
+        <Button
+          variant="link"
+          className="p-0 h-auto text-blue-600 hover:text-blue-800"
+          onClick={(e) => {
+            e.stopPropagation(); // Prevent row click if any
+            handleViewAttachment(itemData.attachment);
+          }}
+        >
+          {itemData.attachment}
+        </Button>
+      ) : (
+        "নেই"
+      )}
+    </TableCell>
+  );
+
   const renderVoucherRow = (voucher: SubmittedVoucher, index: number, isEditable: boolean) => (
     <TableRow key={voucher.id}>
       <TableCell className="font-medium">{index + 1}</TableCell>
@@ -122,6 +149,7 @@ const Dashboard = () => {
       <TableCell>{getBranchName(voucher.data.institutionId, voucher.data.branchId)}</TableCell>
       <TableCell className="text-right">{(voucher.data.amount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT' })}</TableCell>
       <TableCell>{voucher.comment || "N/A"}</TableCell>
+      {renderAttachmentCell(voucher.data)} {/* Added attachment cell */}
       <TableCell className="text-center">
         {isEditable ? (
           <Button variant="outline" size="sm" onClick={() => handleEditSentBackVoucher(voucher)}>
@@ -168,6 +196,7 @@ const Dashboard = () => {
                         <TableHead>শাখার নাম</TableHead>
                         <TableHead className="text-right">টাকার পরিমাণ</TableHead>
                         <TableHead>মন্তব্য</TableHead>
+                        <TableHead>সংযুক্তি</TableHead> {/* Added attachment header */}
                         <TableHead className="text-center">অ্যাকশন</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -200,6 +229,7 @@ const Dashboard = () => {
                         <TableHead>শাখার নাম</TableHead>
                         <TableHead className="text-right">টাকার পরিমাণ</TableHead>
                         <TableHead>মন্তব্য</TableHead>
+                        <TableHead>সংযুক্তি</TableHead> {/* Added attachment header */}
                         <TableHead className="text-center">অ্যাকশন</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -229,6 +259,15 @@ const Dashboard = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Attachment Viewer Popup */}
+      {isAttachmentPopupOpen && (
+        <AttachmentViewerPopup
+          isOpen={isAttachmentPopupOpen}
+          onOpenChange={setIsAttachmentPopupOpen}
+          filename={attachmentToView}
+        />
+      )}
     </div>
   );
 };
