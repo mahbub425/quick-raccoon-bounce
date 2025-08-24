@@ -40,9 +40,9 @@ const App = () => (
               <Routes>
                 {/* Public Login Routes */}
                 <Route path="/login" element={<Login />} />
-                <Route path="/mentor" element={<MentorLogin />} /> {/* Updated path */}
-                <Route path="/payment" element={<PaymentLogin />} /> {/* Updated path */}
-                <Route path="/audit" element={<AuditLogin />} /> {/* Updated path */}
+                <Route path="/mentor" element={<MentorLogin />} />
+                <Route path="/payment" element={<PaymentLogin />} />
+                <Route path="/audit" element={<AuditLogin />} />
                 
                 {/* Initial redirect based on login status */}
                 <Route path="/" element={<Index />} />
@@ -55,11 +55,12 @@ const App = () => (
                     <Route path="/voucher-entry" element={<VoucherEntry />} />
                     <Route path="/selected-vouchers" element={<SelectedVouchers />} />
                     <Route path="/cart" element={<Cart />} />
+                    <Route path="/report" element={<Report />} /> {/* Added for user role */}
                   </Route>
                 </Route>
 
                 {/* Protected Routes for 'mentor' role */}
-                <Route element={<ProtectedRoute requiredRole="mentor" redirectTo="/mentor" />}> {/* Updated redirectTo */}
+                <Route element={<ProtectedRoute requiredRole="mentor" redirectTo="/mentor" />}>
                   <Route element={<Layout />}>
                     <Route path="/mentor/home" element={<Home />} />
                     <Route path="/mentor/dashboard" element={<Dashboard />} />
@@ -68,11 +69,12 @@ const App = () => (
                     <Route path="/mentor/cart" element={<Cart />} />
                     <Route path="/mentor-approval" element={<MentorApproval />} />
                     <Route path="/mentor-approval/:userPin" element={<MentorVoucherDetails />} />
+                    <Route path="/mentor/report" element={<Report />} /> {/* Added for mentor role */}
                   </Route>
                 </Route>
 
                 {/* Protected Routes for 'payment' role */}
-                <Route element={<ProtectedRoute requiredRole="payment" redirectTo="/payment" />}> {/* Updated redirectTo */}
+                <Route element={<ProtectedRoute requiredRole="payment" redirectTo="/payment" />}>
                   <Route element={<Layout />}>
                     <Route path="/payment/home" element={<Home />} />
                     <Route path="/payment/dashboard" element={<Dashboard />} />
@@ -80,11 +82,12 @@ const App = () => (
                     <Route path="/payment/selected-vouchers" element={<SelectedVouchers />} />
                     <Route path="/payment/cart" element={<Cart />} />
                     <Route path="/payment" element={<Payment />} />
+                    <Route path="/payment/report" element={<Report />} /> {/* Added for payment role */}
                   </Route>
                 </Route>
 
                 {/* Protected Routes for 'audit' role */}
-                <Route element={<ProtectedRoute requiredRole="audit" redirectTo="/audit" />}> {/* Updated redirectTo */}
+                <Route element={<ProtectedRoute requiredRole="audit" redirectTo="/audit" />}>
                   <Route element={<Layout />}>
                     <Route path="/audit/home" element={<Home />} />
                     <Route path="/audit/dashboard" element={<Dashboard />} />
@@ -92,7 +95,8 @@ const App = () => (
                     <Route path="/audit/selected-vouchers" element={<SelectedVouchers />} />
                     <Route path="/audit/cart" element={<Cart />} />
                     <Route path="/final-check-approval" element={<FinalCheckApproval />} />
-                    <Route path="/report" element={<Report />} />
+                    <Route path="/report" element={<Report />} /> {/* Already present, but ensuring it's in the correct block */}
+                    <Route path="/audit/report" element={<Report />} /> {/* Added for audit role */}
                   </Route>
                 </Route>
 
