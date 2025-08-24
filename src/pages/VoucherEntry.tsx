@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import VoucherCard from "@/components/VoucherCard";
-import { DUMMY_VOUCHER_TYPES } from "@/data/dummyData";
+import { DUMMY_VOUCHER_TYPES, SUPPORT_STAFF_ALLOWED_VOUCHER_TYPES_IDS } from "@/data/dummyData";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext"; // Import useAuth
 
@@ -46,6 +46,16 @@ const VoucherEntry = () => {
     navigate(selectedVouchersPath, { state: { selectedVoucherIds } });
   };
 
+  // Filter vouchers based on user designation
+  const visibleVoucherTypes = DUMMY_VOUCHER_TYPES
+    .filter(v => !hiddenVoucherIds.includes(v.id)) // Existing filter for sub-types
+    .filter(v => {
+      if (user?.designation === "Support Staff") {
+        return SUPPORT_STAFF_ALLOWED_VOUCHER_TYPES_IDS.includes(v.id);
+      }
+      return true; // All other designations see all non-hidden vouchers
+    });
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-6">
       <h1 className="text-4xl font-extrabold text-center text-blue-800 mb-8">
@@ -53,8 +63,7 @@ const VoucherEntry = () => {
       </h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-6xl mx-auto">
-        {DUMMY_VOUCHER_TYPES
-          .filter(v => !hiddenVoucherIds.includes(v.id)) // Filter out explicitly hidden top-level vouchers
+        {visibleVoucherTypes // Use the filtered list here
           .map((voucher) => (
             <div key={voucher.id} className="col-span-1">
               {voucher.type === "multi" ? (

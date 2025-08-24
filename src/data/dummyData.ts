@@ -129,7 +129,7 @@ export const DUMMY_USERS: UserProfile[] = [
     username: "kamrul",
     mobileNumber: "01710000006",
     department: "Operations",
-    designation: "Support Staff",
+    designation: "Support Staff", // This user will be used for testing
     password: "123456",
     role: "user",
   },
@@ -233,6 +233,15 @@ export const DUMMY_PINS = [
   { sl: 14, pin: "29", name: "mkpasha" },
   { sl: 15, pin: "115", name: "rafiq" },
   { sl: 16, pin: "4170", name: "abdullah" },
+];
+
+// New constant for allowed voucher types for "Support Staff"
+export const SUPPORT_STAFF_ALLOWED_VOUCHER_TYPES_IDS = [
+  "entertainment-conveyance-multi", // এন্টারটেইনমেন্ট ও কনভেয়েন্স ভাউচার (parent for entertainment, conveyance)
+  "publicity-students-inspiration-multi", // পাবলিসিটি ও স্টুডেন্টস ইন্সপাইরেশন ভাউচার (parent for publicity, publicity-students-inspiration)
+  "stationery-maintenance-multi", // স্টেশনারি ও রক্ষণাবেক্ষণ সম্পর্কিত ভাউচার (parent for office-supplies-stationery, cleaning-supplies, kitchen-household-items)
+  "mobile-bill", // মোবাইল বিল
+  "petty-cash", // পেটি ক্যাশ
 ];
 
 export const OFFICE_SUPPLIES_ITEM_OPTIONS: { [key: string]: { value: string; label: string }[] } = {
