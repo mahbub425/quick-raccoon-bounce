@@ -6,9 +6,9 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
-import MentorLogin from "./pages/MentorLogin"; // New import
-import PaymentLogin from "./pages/PaymentLogin"; // New import
-import AuditLogin from "./pages/AuditLogin"; // New import
+import MentorLogin from "./pages/MentorLogin";
+import PaymentLogin from "./pages/PaymentLogin";
+import AuditLogin from "./pages/AuditLogin";
 import VoucherEntry from "./pages/VoucherEntry";
 import SelectedVouchers from "./pages/SelectedVouchers";
 import Cart from "./pages/Cart";
@@ -24,7 +24,7 @@ import { CartProvider } from "./context/CartContext";
 import { SubmittedVouchersProvider } from "./context/SubmittedVouchersContext";
 import Layout from "./components/layout/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
-import { UserProfile } from "./types"; // Import UserProfile type
+import { UserProfile } from "./types";
 
 const queryClient = new QueryClient();
 
@@ -40,9 +40,9 @@ const App = () => (
               <Routes>
                 {/* Public Login Routes */}
                 <Route path="/login" element={<Login />} />
-                <Route path="/mentor/login" element={<MentorLogin />} />
-                <Route path="/payment/login" element={<PaymentLogin />} />
-                <Route path="/audit/login" element={<AuditLogin />} />
+                <Route path="/mentor" element={<MentorLogin />} /> {/* Updated path */}
+                <Route path="/payment" element={<PaymentLogin />} /> {/* Updated path */}
+                <Route path="/audit" element={<AuditLogin />} /> {/* Updated path */}
                 
                 {/* Initial redirect based on login status */}
                 <Route path="/" element={<Index />} />
@@ -59,7 +59,7 @@ const App = () => (
                 </Route>
 
                 {/* Protected Routes for 'mentor' role */}
-                <Route element={<ProtectedRoute requiredRole="mentor" redirectTo="/mentor/login" />}>
+                <Route element={<ProtectedRoute requiredRole="mentor" redirectTo="/mentor" />}> {/* Updated redirectTo */}
                   <Route element={<Layout />}>
                     <Route path="/mentor/home" element={<Home />} />
                     <Route path="/mentor/dashboard" element={<Dashboard />} />
@@ -72,7 +72,7 @@ const App = () => (
                 </Route>
 
                 {/* Protected Routes for 'payment' role */}
-                <Route element={<ProtectedRoute requiredRole="payment" redirectTo="/payment/login" />}>
+                <Route element={<ProtectedRoute requiredRole="payment" redirectTo="/payment" />}> {/* Updated redirectTo */}
                   <Route element={<Layout />}>
                     <Route path="/payment/home" element={<Home />} />
                     <Route path="/payment/dashboard" element={<Dashboard />} />
@@ -84,7 +84,7 @@ const App = () => (
                 </Route>
 
                 {/* Protected Routes for 'audit' role */}
-                <Route element={<ProtectedRoute requiredRole="audit" redirectTo="/audit/login" />}>
+                <Route element={<ProtectedRoute requiredRole="audit" redirectTo="/audit" />}> {/* Updated redirectTo */}
                   <Route element={<Layout />}>
                     <Route path="/audit/home" element={<Home />} />
                     <Route path="/audit/dashboard" element={<Dashboard />} />
