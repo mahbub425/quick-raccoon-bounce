@@ -1,31 +1,31 @@
 import { UserProfile, Institution, VoucherType, FormField } from "@/types";
 
 export const DUMMY_USERS: UserProfile[] = [
+  // Existing users
   {
     pin: "203",
     name: "Tanzir",
-    username: "tanzir", // Added username
+    username: "tanzir",
     mobileNumber: "01713236989",
     department: "Finance & Accounts",
     designation: "Deputy Manager",
     password: "123456",
-    role: "user", // User role
+    role: "user",
   },
   {
     pin: "204",
     name: "Rahim",
-    username: "rahim", // Added username
+    username: "rahim",
     mobileNumber: "01712345678",
     department: "HR",
     designation: "Manager",
-    password: "123456", // Updated for consistency
-    role: "user", // User role
+    password: "123456",
+    role: "user",
   },
-  // New users from Excel data (hypothetical parsing)
   {
     pin: "1001",
     name: "Akram Hossain",
-    username: "akram.hossain", // Added username
+    username: "akram.hossain",
     mobileNumber: "01700000001",
     department: "Sales",
     designation: "Sales Executive",
@@ -35,7 +35,7 @@ export const DUMMY_USERS: UserProfile[] = [
   {
     pin: "1002",
     name: "Farhana Islam",
-    username: "farhana.islam", // Added username
+    username: "farhana.islam",
     mobileNumber: "01700000002",
     department: "Marketing",
     designation: "Marketing Officer",
@@ -45,7 +45,7 @@ export const DUMMY_USERS: UserProfile[] = [
   {
     pin: "1003",
     name: "Kamal Ahmed",
-    username: "kamal.ahmed", // Added username
+    username: "kamal.ahmed",
     mobileNumber: "01700000003",
     department: "IT",
     designation: "Software Engineer",
@@ -55,7 +55,7 @@ export const DUMMY_USERS: UserProfile[] = [
   {
     pin: "1004",
     name: "Nabila Rahman",
-    username: "nabila.rahman", // Added username
+    username: "nabila.rahman",
     mobileNumber: "01700000004",
     department: "Customer Service",
     designation: "Support Agent",
@@ -65,45 +65,104 @@ export const DUMMY_USERS: UserProfile[] = [
   {
     pin: "1005",
     name: "Omar Faruk",
-    username: "omar.faruk", // Added username
+    username: "omar.faruk",
     mobileNumber: "01700000005",
     department: "Operations",
     designation: "Operations Lead",
     password: "123456",
     role: "user",
   },
-  // Mentor User
+  // New users from screenshot
+  {
+    pin: "1199",
+    name: "Zia-Ur Rahman",
+    username: "ziaur",
+    mobileNumber: "01710000001",
+    department: "Marketing",
+    designation: "Executive",
+    password: "123456",
+    role: "user",
+  },
+  {
+    pin: "2181",
+    name: "Mahedi Hasan",
+    username: "mahedi",
+    mobileNumber: "01710000002",
+    department: "Teacher",
+    designation: "Senior Teacher",
+    password: "123456",
+    role: "user",
+  },
+  {
+    pin: "634",
+    name: "Sadnan Saeb",
+    username: "sadnan",
+    mobileNumber: "01710000003",
+    department: "Accounts",
+    designation: "Assistant Manage",
+    password: "123456",
+    role: "user",
+  },
+  {
+    pin: "16",
+    name: "Uzzal Hossain",
+    username: "uzzal",
+    mobileNumber: "01710000004",
+    department: "Finance & Account",
+    designation: "Manager & Br. Inc",
+    password: "123456",
+    role: "user",
+  },
+  {
+    pin: "6384",
+    name: "Md Mahbub",
+    username: "mahbub",
+    mobileNumber: "01710000005",
+    department: "Administration",
+    designation: "Assistant Executiv",
+    password: "123456",
+    role: "user",
+  },
+  {
+    pin: "67",
+    name: "Kamrul Mollah",
+    username: "kamrul",
+    mobileNumber: "01710000006",
+    department: "Operations",
+    designation: "Support Staff",
+    password: "123456",
+    role: "user",
+  },
+  // Special role users
   {
     pin: "29",
     name: "mkpasha",
-    username: "mkpasha", // Added username
+    username: "mkpasha",
     mobileNumber: "01811415103",
     department: "Finance & Accounts",
     designation: "General Manager",
     password: "123456",
-    role: "mentor", // Mentor role
+    role: "mentor",
   },
-  // Payment User
   {
     pin: "115",
     name: "rafiq",
-    username: "rafiq", // Added username
+    username: "rafiq",
     mobileNumber: "01811415147",
     department: "Finance & Accounts",
     designation: "Deputy Manager",
     password: "123456",
-    role: "payment", // Payment role
+    role: "payment",
   },
-  // Audit User (Final Check & Approval)
   {
     pin: "4170",
     name: "abdullah",
-    username: "abdullah", // Added username
+    username: "abdullah",
     mobileNumber: "01518647186",
     department: "Finance & Accounts",
     designation: "Executive",
     password: "123456",
-    role: "audit", // Audit role
+    role: "audit",
   },
 ];
 
@@ -163,9 +222,17 @@ export const DUMMY_PINS = [
   { sl: 5, pin: "1003", name: "Kamal Ahmed" },
   { sl: 6, pin: "1004", name: "Nabila Rahman" },
   { sl: 7, pin: "1005", name: "Omar Faruk" },
-  { sl: 8, pin: "29", name: "mkpasha" }, // Mentor PIN
-  { sl: 9, pin: "115", name: "rafiq" }, // Payment PIN
-  { sl: 10, pin: "4170", name: "abdullah" }, // Audit PIN
+  // New pins from screenshot
+  { sl: 8, pin: "1199", name: "Zia-Ur Rahman" },
+  { sl: 9, pin: "2181", name: "Mahedi Hasan" },
+  { sl: 10, pin: "634", name: "Sadnan Saeb" },
+  { sl: 11, pin: "16", name: "Uzzal Hossain" },
+  { sl: 12, pin: "6384", name: "Md Mahbub" },
+  { sl: 13, pin: "67", name: "Kamrul Mollah" },
+  // Special role pins
+  { sl: 14, pin: "29", name: "mkpasha" },
+  { sl: 15, pin: "115", name: "rafiq" },
+  { sl: 16, pin: "4170", name: "abdullah" },
 ];
 
 export const OFFICE_SUPPLIES_ITEM_OPTIONS: { [key: string]: { value: string; label: string }[] } = {
