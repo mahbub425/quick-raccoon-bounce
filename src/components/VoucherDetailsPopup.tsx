@@ -545,7 +545,7 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
                   className="ml-2 text-sm text-purple-600 cursor-pointer hover:underline"
                   onClick={handleViewOriginalVoucher}
                 >
-                  (সংশোধিত)
+                  (প্রথম জমা দেওয়া ভাউচার দেখুন)
                 </span>
               )}
             </DialogTitle>
