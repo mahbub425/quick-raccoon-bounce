@@ -4,7 +4,7 @@ import { toast } from "sonner";
 
 interface CartContextType {
   cartItems: CartItem[];
-  addToCart: (item: Omit<CartItem, 'id' | 'createdAt'> & { originalVoucherId?: string; voucherNumber?: string }) => void;
+  addToCart: (item: Omit<CartItem, 'id' | 'createdAt'>) => void;
   removeFromCart: (id: string) => void;
   updateCartItem: (id: string, updatedData: any) => void;
   clearCart: () => void;
@@ -19,16 +19,17 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const generateVoucherNumber = (voucherTypeId: string) => {
     // A simple unique ID for now. In a real app, this would be more robust.
     const prefix = voucherTypeId.substring(0, 3).toUpperCase();
-    return `${prefix}${Date.now().toString().slice(-6)}`;
+    return `${Date.now().toString().slice(-6)}`;
   };
 
-  const addToCart = (item: Omit<CartItem, 'id' | 'createdAt'> & { originalVoucherId?: string; voucherNumber?: string }) => {
+  const addToCart = (item: Omit<CartItem, 'id' | 'createdAt'>) => {
     const newItem: CartItem = {
       ...item,
       id: Date.now().toString(), // Simple unique ID for now
       createdAt: new Date().toISOString(),
       voucherNumber: item.voucherNumber || generateVoucherNumber(item.voucherTypeId), // Use provided voucherNumber or generate new
       originalVoucherId: item.originalVoucherId, // Pass originalVoucherId if present
+      correctionCount: item.correctionCount || 0, // Initialize or pass correctionCount
     };
     setCartItems((prev) => [...prev, newItem]);
     toast.success(`${item.voucherHeading} কার্টে যোগ করা হয়েছে!`);
@@ -45,7 +46,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         item.id === id ? { ...item, data: { ...item.data, ...updatedData } } : item,
       ),
     );
-    toast.success("কার্ট আইtem আপডেট করা হয়েছে!");
+    toast.success("কার্ট আইটেম আপডেট করা হয়েছে!");
   };
 
   const clearCart = () => {

@@ -541,6 +541,11 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
             <DialogTitle className="text-2xl font-bold text-blue-700">
               {getVoucherHeadingById(voucher.voucherTypeId)}
               {voucher.originalVoucherId && (
+                <span className="ml-2 text-sm text-purple-600">
+                  ({voucher.correctionCount === 1 ? 'সংশোধিত' : `${voucher.correctionCount}য় বার সংশোধিত`})
+                </span>
+              )}
+              {voucher.originalVoucherId && (
                 <span
                   className="ml-2 text-sm text-purple-600 cursor-pointer hover:underline"
                   onClick={handleViewOriginalVoucher}

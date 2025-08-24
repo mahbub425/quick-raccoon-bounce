@@ -180,7 +180,9 @@ const MentorVoucherDetails = () => {
                     <TableCell>
                       {voucher.voucherNumber}
                       {voucher.originalVoucherId && (
-                        <span className="ml-2 text-sm text-purple-600">(সংশোধিত)</span>
+                        <span className="ml-2 text-sm text-purple-600">
+                          ({voucher.correctionCount === 1 ? 'সংশোধিত' : `${voucher.correctionCount}য় বার সংশোধিত`})
+                        </span>
                       )}
                     </TableCell>
                     <TableCell>{format(parseISO(voucher.createdAt), "dd MMM, yyyy")}</TableCell>

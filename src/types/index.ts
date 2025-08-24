@@ -90,6 +90,7 @@ export type CartItem = {
   data: any; // The actual form data for this item
   createdAt: string; // Timestamp for when it was added
   originalVoucherId?: string; // NEW: ID of the voucher this one is a correction of
+  correctionCount?: number; // NEW: How many times this voucher has been corrected
 };
 
 export type VoucherStatus = 'pending' | 'approved' | 'sent_back' | 'rejected' | 'paid' | 'corrected_by_user'; // Added 'corrected_by_user' status
@@ -103,7 +104,7 @@ export type SubmittedVoucher = CartItem & {
   submittedByDepartment: string;
   submittedByDesignation: string;
   submittedByRole: UserProfile['role']; // Added submittedByRole
-  // originalVoucherId is now part of CartItem
+  // originalVoucherId and correctionCount are now part of CartItem
 };
 
 // Specific form data types for better type safety (optional, can be inferred from FormField definitions)

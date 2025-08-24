@@ -118,6 +118,7 @@ const Dashboard = () => {
         data: updatedData,
         voucherNumber: editingVoucher.voucherNumber, // Keep the same voucher number
         originalVoucherId: editingVoucher.id, // Link to the original voucher
+        correctionCount: (editingVoucher.correctionCount || 0) + 1, // Increment correction count
       };
 
       // 3. Add the new voucher to submittedVouchers

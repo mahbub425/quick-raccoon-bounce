@@ -5,7 +5,7 @@ import { toast } from "sonner";
 
 interface SubmittedVouchersContextType {
   submittedVouchers: SubmittedVoucher[];
-  addSubmittedVouchers: (items: (Omit<CartItem, 'id' | 'createdAt'> & { originalVoucherId?: string; voucherNumber?: string })[]) => void;
+  addSubmittedVouchers: (items: Omit<CartItem, 'id' | 'createdAt'>[]) => void;
   updateSubmittedVoucherStatus: (voucherId: string, status: VoucherStatus, comment?: string) => void;
   updateSubmittedVoucherData: (voucherId: string, newData: any) => void;
   markVoucherAsCorrected: (voucherId: string) => void; // New function
@@ -39,7 +39,7 @@ export const SubmittedVouchersProvider = ({ children }: { children: ReactNode })
     }
   }, [submittedVouchers]);
 
-  const addSubmittedVouchers = (items: (Omit<CartItem, 'id' | 'createdAt'> & { originalVoucherId?: string; voucherNumber?: string })[]) => {
+  const addSubmittedVouchers = (items: Omit<CartItem, 'id' | 'createdAt'>[]) => {
     if (!user) {
       toast.error("ভাউচার সাবমিট করার জন্য লগইন করুন।");
       return;
@@ -56,7 +56,8 @@ export const SubmittedVouchersProvider = ({ children }: { children: ReactNode })
       submittedByDepartment: user.department,
       submittedByDesignation: user.designation,
       submittedByRole: user.role,
-      // originalVoucherId is already in `item` if provided, or undefined
+      originalVoucherId: item.originalVoucherId, // Pass originalVoucherId if present
+      correctionCount: item.correctionCount || 0, // Pass correctionCount if present, otherwise 0
     }));
     setSubmittedVouchers((prev) => [...prev, ...newSubmittedItems]);
   };
