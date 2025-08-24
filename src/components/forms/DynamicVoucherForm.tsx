@@ -90,12 +90,12 @@ const createSchema = (fields: FormFieldType[], currentFormValues: any, voucherTy
         }
         break;
       case "number":
-        let baseNumberSchema = z.coerce.number({ invalid_type_error: `${field.label} অবশ্যই একটি সংখ্যা হতে হবে` });
+        let baseNumberSchema;
 
         if (field.mandatory) {
-          baseNumberSchema = baseNumberSchema.min(1, { message: `${field.label} অবশ্যই 0 এর বেশি হতে হবে` });
+          baseNumberSchema = z.coerce.number({ invalid_type_error: `${field.label} অবশ্যই একটি সংখ্যা হতে হবে` }).min(1, { message: `${field.label} অবশ্যই 0 এর বেশি হতে হবে` });
         } else {
-          baseNumberSchema = baseNumberSchema.nullable(); // Make it nullable if not mandatory
+          baseNumberSchema = z.coerce.number({ invalid_type_error: `${field.label} অবশ্যই একটি সংখ্যা হতে হবে` }).nullable();
         }
 
         if (field.maxAmountRules && field.name === "amount" && currentFormValues.shift) {
