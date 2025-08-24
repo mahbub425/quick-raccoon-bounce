@@ -1,11 +1,11 @@
 import React, { createContext, useState, useContext, ReactNode } from "react";
-import { UserProfile } from "@/types"; // Corrected import for UserProfile
-import { DUMMY_USERS } from "@/data/dummyData"; // DUMMY_USERS is correctly imported from dummyData
+import { UserProfile } from "@/types";
+import { DUMMY_USERS } from "@/data/dummyData";
 import { toast } from "sonner";
 
 interface AuthContextType {
   user: UserProfile | null;
-  login: (name: string, password: string) => boolean;
+  login: (name: string, password: string, requiredRole?: UserProfile['role']) => boolean;
   logout: () => void;
 }
 
@@ -14,11 +14,16 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
 
-  const login = (name: string, password: string): boolean => {
+  const login = (name: string, password: string, requiredRole?: UserProfile['role']): boolean => {
     const foundUser = DUMMY_USERS.find(
       (u) => u.name === name && u.password === password,
     );
+
     if (foundUser) {
+      if (requiredRole && foundUser.role !== requiredRole) {
+        toast.error(`এই পোর্টালে লগইন করার অনুমতি নেই।`);
+        return false;
+      }
       setUser(foundUser);
       toast.success("লগইন সফল হয়েছে!");
       return true;

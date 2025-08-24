@@ -6,11 +6,14 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
+import MentorLogin from "./pages/MentorLogin"; // New import
+import PaymentLogin from "./pages/PaymentLogin"; // New import
+import AuditLogin from "./pages/AuditLogin"; // New import
 import VoucherEntry from "./pages/VoucherEntry";
 import SelectedVouchers from "./pages/SelectedVouchers";
 import Cart from "./pages/Cart";
 import MentorApproval from "./pages/MentorApproval";
-import MentorVoucherDetails from "./pages/MentorVoucherDetails"; // New import
+import MentorVoucherDetails from "./pages/MentorVoucherDetails";
 import Payment from "./pages/Payment";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
@@ -21,6 +24,7 @@ import { CartProvider } from "./context/CartContext";
 import { SubmittedVouchersProvider } from "./context/SubmittedVouchersContext";
 import Layout from "./components/layout/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
+import { UserProfile } from "./types"; // Import UserProfile type
 
 const queryClient = new QueryClient();
 
@@ -34,25 +38,65 @@ const App = () => (
           <CartProvider>
             <SubmittedVouchersProvider>
               <Routes>
+                {/* Public Login Routes */}
                 <Route path="/login" element={<Login />} />
+                <Route path="/mentor/login" element={<MentorLogin />} />
+                <Route path="/payment/login" element={<PaymentLogin />} />
+                <Route path="/audit/login" element={<AuditLogin />} />
+                
+                {/* Initial redirect based on login status */}
                 <Route path="/" element={<Index />} />
                 
-                {/* Protected Routes wrapped by Layout */}
-                <Route element={<ProtectedRoute />}>
+                {/* Protected Routes for 'user' role */}
+                <Route element={<ProtectedRoute requiredRole="user" redirectTo="/login" />}>
                   <Route element={<Layout />}>
                     <Route path="/home" element={<Home />} />
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/voucher-entry" element={<VoucherEntry />} />
                     <Route path="/selected-vouchers" element={<SelectedVouchers />} />
                     <Route path="/cart" element={<Cart />} />
+                  </Route>
+                </Route>
+
+                {/* Protected Routes for 'mentor' role */}
+                <Route element={<ProtectedRoute requiredRole="mentor" redirectTo="/mentor/login" />}>
+                  <Route element={<Layout />}>
+                    <Route path="/mentor/home" element={<Home />} />
+                    <Route path="/mentor/dashboard" element={<Dashboard />} />
+                    <Route path="/mentor/voucher-entry" element={<VoucherEntry />} />
+                    <Route path="/mentor/selected-vouchers" element={<SelectedVouchers />} />
+                    <Route path="/mentor/cart" element={<Cart />} />
                     <Route path="/mentor-approval" element={<MentorApproval />} />
-                    <Route path="/mentor-approval/:userPin" element={<MentorVoucherDetails />} /> {/* New Route */}
+                    <Route path="/mentor-approval/:userPin" element={<MentorVoucherDetails />} />
+                  </Route>
+                </Route>
+
+                {/* Protected Routes for 'payment' role */}
+                <Route element={<ProtectedRoute requiredRole="payment" redirectTo="/payment/login" />}>
+                  <Route element={<Layout />}>
+                    <Route path="/payment/home" element={<Home />} />
+                    <Route path="/payment/dashboard" element={<Dashboard />} />
+                    <Route path="/payment/voucher-entry" element={<VoucherEntry />} />
+                    <Route path="/payment/selected-vouchers" element={<SelectedVouchers />} />
+                    <Route path="/payment/cart" element={<Cart />} />
                     <Route path="/payment" element={<Payment />} />
+                  </Route>
+                </Route>
+
+                {/* Protected Routes for 'audit' role */}
+                <Route element={<ProtectedRoute requiredRole="audit" redirectTo="/audit/login" />}>
+                  <Route element={<Layout />}>
+                    <Route path="/audit/home" element={<Home />} />
+                    <Route path="/audit/dashboard" element={<Dashboard />} />
+                    <Route path="/audit/voucher-entry" element={<VoucherEntry />} />
+                    <Route path="/audit/selected-vouchers" element={<SelectedVouchers />} />
+                    <Route path="/audit/cart" element={<Cart />} />
                     <Route path="/final-check-approval" element={<FinalCheckApproval />} />
                     <Route path="/report" element={<Report />} />
                   </Route>
                 </Route>
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+
+                {/* Catch-all route */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </SubmittedVouchersProvider>

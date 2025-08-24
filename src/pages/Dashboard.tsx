@@ -10,17 +10,22 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import DynamicVoucherForm from "@/components/forms/DynamicVoucherForm";
 import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
+import { useAuth } from "@/context/AuthContext"; // Import useAuth
 
 const Dashboard = () => {
-  const { submittedVouchers, updateSubmittedVoucherStatus, updateSubmittedVoucherData } = useSubmittedVouchers(); // Added updateSubmittedVoucherData
-  const { addToCart, removeFromCart } = useCart();
+  const { submittedVouchers, updateSubmittedVoucherStatus, updateSubmittedVoucherData } = useSubmittedVouchers();
+  const { user } = useAuth(); // Get current user
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingVoucher, setEditingVoucher] = useState<SubmittedVoucher | null>(null);
 
-  const sentBackVouchers = useMemo(() => submittedVouchers.filter(v => v.status === 'sent_back'), [submittedVouchers]);
-  const rejectedVouchers = useMemo(() => submittedVouchers.filter(v => v.status === 'rejected'), [submittedVouchers]);
+  const userSpecificVouchers = useMemo(() => {
+    if (!user) return [];
+    return submittedVouchers.filter(v => v.submittedByPin === user.pin);
+  }, [submittedVouchers, user]);
 
-  // Helper functions (copied/adapted from Cart.tsx and VoucherDetailsPopup.tsx)
+  const sentBackVouchers = useMemo(() => userSpecificVouchers.filter(v => v.status === 'sent_back'), [userSpecificVouchers]);
+  const rejectedVouchers = useMemo(() => userSpecificVouchers.filter(v => v.status === 'rejected'), [userSpecificVouchers]);
+
   const getInstitutionName = (id: string) => DUMMY_INSTITUTIONS.find(inst => inst.id === id)?.name || "N/A";
   const getBranchName = (institutionId: string, branchId: string) => {
     const institution = DUMMY_INSTITUTIONS.find(inst => inst.id === institutionId);
@@ -39,7 +44,6 @@ const Dashboard = () => {
     return voucherType?.heading || id;
   };
 
-  // Helper function to get the full label for a dropdown value (adapted from Cart.tsx)
   const getDropdownLabel = (voucherTypeId: string, fieldName: string, fieldValue: string, itemData: any = {}) => {
     if (!fieldValue) return "N/A";
 
@@ -86,7 +90,7 @@ const Dashboard = () => {
     } else if (fieldName === "shift" && voucherTypeId === "publicity-publicist-bill") {
       options = field.options || [];
     } else {
-      options = field.options || []; // Fallback for other dropdowns
+      options = field.options || [];
     }
 
     return options.find(opt => opt.value === fieldValue)?.label || fieldValue;
@@ -99,9 +103,7 @@ const Dashboard = () => {
 
   const handleResubmitVoucher = (updatedData: any) => {
     if (editingVoucher) {
-      // Update the data of the existing submitted voucher
       updateSubmittedVoucherData(editingVoucher.id, updatedData);
-      // Change its status back to pending and clear the comment
       updateSubmittedVoucherStatus(editingVoucher.id, 'pending', undefined);
       
       toast.success("ভাউচার সফলভাবে পুনরায় সাবমিট করা হয়েছে!");

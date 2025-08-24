@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 
-const Login = () => {
+const AuditLogin = () => {
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
@@ -15,17 +15,17 @@ const Login = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (login(name, password, 'user')) { // Specify 'user' role for this login page
-      navigate("/home");
+    if (login(name, password, 'audit')) { // Specify 'audit' role for this login page
+      navigate("/audit/home");
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 p-4">
-      <Card className="w-full max-w-md shadow-xl border-blue-300">
-        <CardHeader className="text-center bg-blue-500 text-white rounded-t-lg py-6">
-          <CardTitle className="text-3xl font-extrabold">ইউজার লগইন</CardTitle>
-          <CardDescription className="text-blue-100">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-100 via-red-100 to-yellow-100 p-4">
+      <Card className="w-full max-w-md shadow-xl border-orange-300">
+        <CardHeader className="text-center bg-orange-500 text-white rounded-t-lg py-6">
+          <CardTitle className="text-3xl font-extrabold">ফাইনাল চেক ও অ্যাপ্রুভাল লগইন</CardTitle>
+          <CardDescription className="text-orange-100">
             আপনার ইউজার নেম এবং পাসওয়ার্ড দিয়ে প্রবেশ করুন
           </CardDescription>
         </CardHeader>
@@ -38,11 +38,11 @@ const Login = () => {
               <Input
                 id="name"
                 type="text"
-                placeholder="আপনার নাম লিখুন"
+                placeholder="Abdullah"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
-                className="mt-2 p-3 border-blue-300 focus:border-blue-500 focus:ring-blue-500"
+                className="mt-2 p-3 border-orange-300 focus:border-orange-500 focus:ring-orange-500"
               />
             </div>
             <div>
@@ -56,10 +56,10 @@ const Login = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="mt-2 p-3 border-blue-300 focus:border-blue-500 focus:ring-blue-500"
+                className="mt-2 p-3 border-orange-300 focus:border-orange-500 focus:ring-orange-500"
               />
             </div>
-            <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-700 hover:to-purple-800 text-white text-lg py-3 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105">
+            <Button type="submit" className="w-full bg-gradient-to-r from-orange-600 to-red-700 hover:from-orange-700 hover:to-red-800 text-white text-lg py-3 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105">
               লগইন করুন
             </Button>
           </form>
@@ -69,4 +69,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default AuditLogin;

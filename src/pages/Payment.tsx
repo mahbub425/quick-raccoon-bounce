@@ -10,6 +10,9 @@ const Payment = () => {
   const { submittedVouchers } = useSubmittedVouchers();
   const navigate = useNavigate();
 
+  // Filter for vouchers that are 'approved' by a mentor
+  const approvedVouchersForPayment = submittedVouchers.filter(v => v.status === 'approved');
+
   const getInstitutionName = (id: string) => DUMMY_INSTITUTIONS.find(inst => inst.id === id)?.name || "N/A";
   const getBranchName = (institutionId: string, branchId: string) => {
     const institution = DUMMY_INSTITUTIONS.find(inst => inst.id === institutionId);
@@ -36,18 +39,18 @@ const Payment = () => {
         পেমেন্ট
       </h1>
 
-      {submittedVouchers.length === 0 ? (
+      {approvedVouchersForPayment.length === 0 ? (
         <div className="text-center text-xl text-gray-600 p-8 bg-white rounded-lg shadow-inner border border-gray-200">
           কোনো ভাউচার পেমেন্টের জন্য অপেক্ষমাণ নেই।
           <div className="mt-6">
-            <Button onClick={() => navigate("/cart")} className="bg-blue-600 hover:bg-blue-700 text-white text-lg py-2 px-6 rounded-md shadow-md">
-              কার্টে ফিরে যান
+            <Button onClick={() => navigate("/payment/home")} className="bg-blue-600 hover:bg-blue-700 text-white text-lg py-2 px-6 rounded-md shadow-md">
+              হোম পেজে ফিরে যান
             </Button>
           </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
-          {submittedVouchers.map((item) => (
+          {approvedVouchersForPayment.map((item) => (
             <Card key={item.id} className="shadow-lg border-teal-300">
               <CardHeader className="bg-teal-100 rounded-t-lg p-4">
                 <CardTitle className="text-xl font-bold text-teal-800">{item.voucherHeading}</CardTitle>

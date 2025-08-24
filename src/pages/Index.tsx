@@ -8,9 +8,18 @@ const Index = () => {
 
   useEffect(() => {
     if (user) {
-      navigate("/home");
+      // Redirect based on user role
+      if (user.role === 'mentor') {
+        navigate("/mentor/home");
+      } else if (user.role === 'payment') {
+        navigate("/payment/home");
+      } else if (user.role === 'audit') {
+        navigate("/audit/home");
+      } else {
+        navigate("/home"); // Default for 'user' role
+      }
     } else {
-      navigate("/login");
+      navigate("/login"); // Default login for unauthenticated users
     }
   }, [navigate, user]);
 

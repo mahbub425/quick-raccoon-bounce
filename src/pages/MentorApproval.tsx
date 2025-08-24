@@ -18,15 +18,9 @@ const MentorApproval = () => {
   const { submittedVouchers } = useSubmittedVouchers();
   const navigate = useNavigate();
 
-  // Filter states
-  // const [startDate, setStartDate] = useState<Date | undefined>(undefined); // Removed
-  // const [endDate, setEndDate] = useState<Date | undefined>(undefined); // Removed
   const [selectedVoucherType, setSelectedVoucherType] = useState<string>("all");
   const [pinSearchTerm, setPinSearchTerm] = useState<string>("");
-  // const [selectedInstitutionId, setSelectedInstitutionId] = useState<string>("all"); // Removed
-  // const [selectedBranchId, setSelectedBranchId] = useState<string>("all"); // Removed
 
-  // Options for dropdowns
   const voucherTypeOptions = useMemo(() => {
     const uniqueTypes = new Set<string>();
     DUMMY_VOUCHER_TYPES.forEach(vt => {
@@ -37,7 +31,6 @@ const MentorApproval = () => {
       }
     });
 
-    // Explicitly remove 'publicity' if it was added, as its sub-types are now listed separately
     uniqueTypes.delete('publicity');
 
     return Array.from(uniqueTypes).map(id => {
@@ -46,26 +39,12 @@ const MentorApproval = () => {
     });
   }, []);
 
-  // const institutionOptions = DUMMY_INSTITUTIONS.map(inst => ({ value: inst.id, label: inst.name })); // Removed
-  // const branchOptions = [{ value: "bogura", label: "Bogura (বগুড়া)" }]; // Removed
-
-  // Filtered and grouped data
   const filteredAndGroupedVouchers = useMemo(() => {
     const filteredVouchers = submittedVouchers.filter(voucher => {
-      // Filter by date range (Removed)
-      // const voucherDate = parseISO(voucher.createdAt);
-      // if (startDate && endDate) {
-      //   const adjustedEndDate = endOfDay(endDate);
-      //   if (!isWithinInterval(voucherDate, { start: startDate, end: adjustedEndDate })) {
-      //     return false;
-      //   }
-      // } else if (startDate && !endDate) {
-      //   if (voucherDate < startDate) return false;
-      // } else if (!startDate && endDate) {
-      //   const adjustedEndDate = endOfDay(endDate);
-      //   if (voucherDate > adjustedEndDate) return false;
-      // }
-
+      // Only show pending vouchers in the main table
+      if (voucher.status !== 'pending') {
+        return false;
+      }
 
       // Filter by voucher type
       if (selectedVoucherType !== "all" && voucher.voucherTypeId !== selectedVoucherType) {
@@ -77,18 +56,7 @@ const MentorApproval = () => {
         return false;
       }
 
-      // Filter by institution (Removed)
-      // if (selectedInstitutionId !== "all" && voucher.data.institutionId !== selectedInstitutionId) {
-      //   return false;
-      // }
-
-      // Filter by branch (Removed)
-      // if (selectedBranchId !== "all" && voucher.data.branchId !== selectedBranchId) {
-      //   return false;
-      // }
-
-      // Only show pending vouchers in the main table
-      return voucher.status === 'pending';
+      return true;
     });
 
     // Group by user (submittedByPin)
@@ -119,7 +87,7 @@ const MentorApproval = () => {
     });
 
     return Object.values(groupedByUser);
-  }, [submittedVouchers, selectedVoucherType, pinSearchTerm]); // Removed startDate, endDate, selectedInstitutionId, selectedBranchId from dependencies
+  }, [submittedVouchers, selectedVoucherType, pinSearchTerm]);
 
   const totalPendingVouchers = useMemo(() => filteredAndGroupedVouchers.reduce((sum, user) => sum + user.pendingCount, 0), [filteredAndGroupedVouchers]);
   const grandTotalAmount = useMemo(() => filteredAndGroupedVouchers.reduce((sum, user) => sum + user.totalAmount, 0), [filteredAndGroupedVouchers]);
@@ -128,12 +96,8 @@ const MentorApproval = () => {
     navigate(`/mentor-approval/${userPin}`, {
       state: {
         filters: {
-          // startDate: startDate?.toISOString(), // Removed
-          // endDate: endDate?.toISOString(), // Removed
           selectedVoucherType,
-          pinSearchTerm, // This will be the userPin for the details page
-          // selectedInstitutionId, // Removed
-          // selectedBranchId, // Removed
+          pinSearchTerm: userPin, // This will be the userPin for the details page
         }
       }
     });
@@ -148,62 +112,6 @@ const MentorApproval = () => {
       {/* Filter Section */}
       <Card className="mb-8 p-6 shadow-lg border-purple-300 bg-white">
         <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {/* Start Date (Removed) */}
-          {/* <div className="flex flex-col space-y-1">
-            <label htmlFor="startDate" className="text-sm font-medium text-gray-700">শুরু তারিখ</label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant={"outline"}
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !startDate && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {startDate ? format(startDate, "dd MMM, yyyy") : <span>তারিখ নির্বাচন করুন</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={startDate}
-                  onSelect={setStartDate}
-                  initialFocus
-                  toDate={new Date()}
-                />
-              </PopoverContent>
-            </Popover>
-          </div> */}
-
-          {/* End Date (Removed) */}
-          {/* <div className="flex flex-col space-y-1">
-            <label htmlFor="endDate" className="text-sm font-medium text-gray-700">শেষ তারিখ</label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant={"outline"}
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !endDate && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {endDate ? format(endDate, "dd MMM, yyyy") : <span>তারিখ নির্বাচন করুন</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={endDate}
-                  onSelect={setEndDate}
-                  initialFocus
-                  toDate={new Date()}
-                />
-              </PopoverContent>
-            </Popover>
-          </div> */}
-
           {/* Voucher Type */}
           <div className="flex flex-col space-y-1">
             <label htmlFor="voucherType" className="text-sm font-medium text-gray-700">ভাউচারের ধরন নির্বাচন করুন</label>
@@ -230,38 +138,6 @@ const MentorApproval = () => {
               onChange={(e) => setPinSearchTerm(e.target.value)}
             />
           </div>
-
-          {/* Institution Select (Removed) */}
-          {/* <div className="flex flex-col space-y-1">
-            <label htmlFor="institutionSelect" className="text-sm font-medium text-gray-700">প্রতিষ্ঠান নির্বাচন করুন</label>
-            <Select value={selectedInstitutionId} onValueChange={setSelectedInstitutionId}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="সকল প্রতিষ্ঠান" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">সকল প্রতিষ্ঠান</SelectItem>
-                {institutionOptions.map(option => (
-                  <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div> */}
-
-          {/* Branch Select (Removed) */}
-          {/* <div className="flex flex-col space-y-1">
-            <label htmlFor="branchSelect" className="text-sm font-medium text-gray-700">শাখা নির্বাচন করুন</label>
-            <Select value={selectedBranchId} onValueChange={setSelectedBranchId}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="সকল শাখা" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">সকল শাখা</SelectItem>
-                {branchOptions.map(option => (
-                  <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div> */}
         </CardContent>
       </Card>
 
