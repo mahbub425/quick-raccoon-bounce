@@ -9,6 +9,17 @@ import { SubmittedVoucher } from "@/types";
 import VoucherDetailsPopup from "@/components/VoucherDetailsPopup"; // Assuming this popup is reusable for viewing details
 import { toast } from "sonner"; // Added toast import
 
+// Helper function to get correction text
+const getCorrectionText = (count: number | undefined) => {
+  const actualCount = count ?? 0; // Treat undefined/null as 0
+  if (actualCount === 1) {
+    return 'সংশোধিত';
+  } else if (actualCount > 1) {
+    return `${actualCount}য় বার সংশোধিত`;
+  }
+  return 'সংশোধিত'; // Fallback for unexpected 0 or negative count with originalVoucherId
+};
+
 const FinalCheckApproval = () => {
   const { submittedVouchers, updateSubmittedVoucherStatus } = useSubmittedVouchers();
   const [isPopupOpen, setIsPopupOpen] = useState(false);
@@ -80,7 +91,7 @@ const FinalCheckApproval = () => {
                       {voucher.voucherNumber}
                       {voucher.originalVoucherId && (
                         <span className="ml-2 text-sm text-purple-600">
-                          ({voucher.correctionCount === 1 ? 'সংশোধিত' : `${voucher.correctionCount}য় বার সংশোধিত`})
+                          ({getCorrectionText(voucher.correctionCount)})
                         </span>
                       )}
                     </TableCell>

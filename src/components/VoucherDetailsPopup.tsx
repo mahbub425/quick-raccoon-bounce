@@ -18,6 +18,17 @@ interface VoucherDetailsPopupProps {
   voucher: SubmittedVoucher;
 }
 
+// Helper function to get correction text
+const getCorrectionText = (count: number | undefined) => {
+  const actualCount = count ?? 0; // Treat undefined/null as 0
+  if (actualCount === 1) {
+    return 'সংশোধিত';
+  } else if (actualCount > 1) {
+    return `${actualCount}য় বার সংশোধিত`;
+  }
+  return 'সংশোধিত'; // Fallback for unexpected 0 or negative count with originalVoucherId
+};
+
 const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPopupProps) => {
   const { submittedVouchers, updateSubmittedVoucherStatus } = useSubmittedVouchers();
   const navigate = useNavigate();
@@ -542,7 +553,7 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
               {getVoucherHeadingById(voucher.voucherTypeId)}
               {voucher.originalVoucherId && (
                 <span className="ml-2 text-sm text-purple-600">
-                  ({voucher.correctionCount === 1 ? 'সংশোধিত' : `${voucher.correctionCount}য় বার সংশোধিত`})
+                  ({getCorrectionText(voucher.correctionCount)})
                 </span>
               )}
               {voucher.originalVoucherId && (
