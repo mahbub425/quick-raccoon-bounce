@@ -1,21 +1,37 @@
-import React, { createContext, useState, useContext, ReactNode } from "react";
+import React, { createContext, useState, useContext, ReactNode, useEffect } from "react";
 import { CartItem, SubmittedVoucher, VoucherStatus } from "@/types";
-import { useAuth } from "./AuthContext"; // Import useAuth to get current user info
+import { useAuth } from "./AuthContext";
 import { toast } from "sonner";
 
 interface SubmittedVouchersContextType {
   submittedVouchers: SubmittedVoucher[];
   addSubmittedVouchers: (items: CartItem[]) => void;
   updateSubmittedVoucherStatus: (voucherId: string, status: VoucherStatus, comment?: string) => void;
-  updateSubmittedVoucherData: (voucherId: string, newData: any) => void; // New function
+  updateSubmittedVoucherData: (voucherId: string, newData: any) => void;
   clearSubmittedVouchers: () => void;
 }
 
 const SubmittedVouchersContext = createContext<SubmittedVouchersContextType | undefined>(undefined);
 
+const LOCAL_STORAGE_KEY = "submittedVouchers";
+
 export const SubmittedVouchersProvider = ({ children }: { children: ReactNode }) => {
-  const [submittedVouchers, setSubmittedVouchers] = useState<SubmittedVoucher[]>([]);
-  const { user } = useAuth(); // Get current user from AuthContext
+  const [submittedVouchers, setSubmittedVouchers] = useState<SubmittedVoucher[]>(() => {
+    // Load initial state from localStorage
+    if (typeof window !== "undefined") {
+      const savedVouchers = localStorage.getItem(LOCAL_STORAGE_KEY);
+      return savedVouchers ? JSON.parse(savedVouchers) : [];
+    }
+    return [];
+  });
+  const { user } = useAuth();
+
+  // Save submittedVouchers to localStorage whenever it changes
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(submittedVouchers));
+    }
+  }, [submittedVouchers]);
 
   const addSubmittedVouchers = (items: CartItem[]) => {
     if (!user) {
@@ -25,13 +41,13 @@ export const SubmittedVouchersProvider = ({ children }: { children: ReactNode })
 
     const newSubmittedItems: SubmittedVoucher[] = items.map(item => ({
       ...item,
-      status: 'pending', // Default status
+      status: 'pending',
       submittedByPin: user.pin,
       submittedByName: user.name,
       submittedByMobile: user.mobileNumber,
       submittedByDepartment: user.department,
       submittedByDesignation: user.designation,
-      submittedByRole: user.role, // Added the missing property
+      submittedByRole: user.role,
     }));
     setSubmittedVouchers((prev) => [...prev, ...newSubmittedItems]);
   };
@@ -44,10 +60,10 @@ export const SubmittedVouchersProvider = ({ children }: { children: ReactNode })
     );
   };
 
-  const updateSubmittedVoucherData = (voucherId: string, newData: any) => { // New function implementation
+  const updateSubmittedVoucherData = (voucherId: string, newData: any) => {
     setSubmittedVouchers((prev) =>
       prev.map((voucher) =>
-        voucher.id === voucherId ? { ...voucher, data: newData, createdAt: new Date().toISOString() } : voucher, // Update data and timestamp
+        voucher.id === voucherId ? { ...voucher, data: newData, createdAt: new Date().toISOString() } : voucher,
       ),
     );
   };
@@ -62,7 +78,7 @@ export const SubmittedVouchersProvider = ({ children }: { children: ReactNode })
         submittedVouchers,
         addSubmittedVouchers,
         updateSubmittedVoucherStatus,
-        updateSubmittedVoucherData, // Add new function to context value
+        updateSubmittedVoucherData,
         clearSubmittedVouchers,
       }}
     >
