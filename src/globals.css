@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -95,6 +95,6 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Inter', sans-serif; /* Added Inter font */
+    font-family: 'Noto Sans Bengali', 'Inter', sans-serif; /* Added Noto Sans Bengali for Bengali text */
   }
 }
