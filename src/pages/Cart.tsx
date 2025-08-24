@@ -11,6 +11,7 @@ import { useAuth } from "@/context/AuthContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import DynamicVoucherForm from "@/components/forms/DynamicVoucherForm";
 import { useNavigate } from "react-router-dom";
+import AttachmentViewerPopup from "@/components/AttachmentViewerPopup"; // Import the new component
 
 const Cart = () => {
   const { cartItems, removeFromCart, updateCartItem, clearCart } = useCart();
@@ -18,6 +19,8 @@ const Cart = () => {
   const { user } = useAuth();
   const [editingItem, setEditingItem] = useState<CartItem | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isAttachmentPopupOpen, setIsAttachmentPopupOpen] = useState(false); // State for attachment popup
+  const [attachmentToView, setAttachmentToView] = useState(""); // State for filename to view
   const navigate = useNavigate();
 
   const entertainmentVouchers = cartItems.filter(item => item.voucherTypeId === 'entertainment');
@@ -126,6 +129,11 @@ const Cart = () => {
     // Removed: navigate("/mentor-approval"); // No longer navigate to mentor approval page
   };
 
+  const handleViewAttachment = (filename: string) => {
+    setAttachmentToView(filename);
+    setIsAttachmentPopupOpen(true);
+  };
+
   const renderAttachmentCell = (item: CartItem) => (
     <TableCell>
       {item.data.attachment ? (
@@ -134,8 +142,7 @@ const Cart = () => {
           className="p-0 h-auto text-blue-600 hover:text-blue-800"
           onClick={(e) => {
             e.stopPropagation(); // Prevent row click if any
-            toast.info(`সংযুক্তি দেখা হচ্ছে: ${item.data.attachment}`);
-            // In a real app, you'd open a new tab with the file URL or trigger a download
+            handleViewAttachment(item.data.attachment);
           }}
         >
           {item.data.attachment}
@@ -835,6 +842,15 @@ const Cart = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Attachment Viewer Popup */}
+      {isAttachmentPopupOpen && (
+        <AttachmentViewerPopup
+          isOpen={isAttachmentPopupOpen}
+          onOpenChange={setIsAttachmentPopupOpen}
+          filename={attachmentToView}
+        />
+      )}
     </div>
   );
 };

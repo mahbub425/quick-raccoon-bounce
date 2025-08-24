@@ -10,6 +10,7 @@ import { SubmittedVoucher, VoucherStatus } from "@/types";
 import { useSubmittedVouchers } from "@/context/SubmittedVouchersContext";
 import { DUMMY_INSTITUTIONS, DUMMY_PINS, DUMMY_PROGRAM_SESSIONS, DUMMY_VOUCHER_TYPES, OFFICE_SUPPLIES_ITEM_OPTIONS, CLEANING_SUPPLIES_ITEM_OPTIONS, KITCHEN_HOUSEHOLD_ITEM_OPTIONS } from "@/data/dummyData";
 import { useNavigate } from "react-router-dom";
+import AttachmentViewerPopup from "@/components/AttachmentViewerPopup"; // Import the new component
 
 interface VoucherDetailsPopupProps {
   isOpen: boolean;
@@ -23,6 +24,8 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
   const [isCommentDialogOpen, setIsCommentDialogOpen] = useState(false);
   const [commentType, setCommentType] = useState<'send_back' | 'reject' | null>(null);
   const [comment, setComment] = useState("");
+  const [isAttachmentPopupOpen, setIsAttachmentPopupOpen] = useState(false); // State for attachment popup
+  const [attachmentToView, setAttachmentToView] = useState(""); // State for filename to view
 
   // Helper functions (copied/adapted from Cart.tsx)
   const getInstitutionName = (id: string) => DUMMY_INSTITUTIONS.find(inst => inst.id === id)?.name || "N/A";
@@ -133,6 +136,11 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
     onOpenChange(false); // Close main popup
   };
 
+  const handleViewAttachment = (filename: string) => {
+    setAttachmentToView(filename);
+    setIsAttachmentPopupOpen(true);
+  };
+
   const renderAttachmentCell = (itemData: any) => (
     <TableCell>
       {itemData.attachment ? (
@@ -141,8 +149,7 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
           className="p-0 h-auto text-blue-600 hover:text-blue-800"
           onClick={(e) => {
             e.stopPropagation(); // Prevent row click if any
-            toast.info(`সংযুক্তি দেখা হচ্ছে: ${itemData.attachment}`);
-            // In a real app, you'd open a new tab with the file URL or trigger a download
+            handleViewAttachment(itemData.attachment);
           }}
         >
           {itemData.attachment}
@@ -582,6 +589,15 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Attachment Viewer Popup */}
+      {isAttachmentPopupOpen && (
+        <AttachmentViewerPopup
+          isOpen={isAttachmentPopupOpen}
+          onOpenChange={setIsAttachmentPopupOpen}
+          filename={attachmentToView}
+        />
+      )}
     </>
   );
 };
