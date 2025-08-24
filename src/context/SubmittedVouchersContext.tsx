@@ -20,7 +20,12 @@ export const SubmittedVouchersProvider = ({ children }: { children: ReactNode })
     // Load initial state from localStorage
     if (typeof window !== "undefined") {
       const savedVouchers = localStorage.getItem(LOCAL_STORAGE_KEY);
-      return savedVouchers ? JSON.parse(savedVouchers) : [];
+      try {
+        return savedVouchers ? JSON.parse(savedVouchers) : [];
+      } catch (e) {
+        console.error("Failed to parse submitted vouchers from localStorage", e);
+        return [];
+      }
     }
     return [];
   });

@@ -189,7 +189,7 @@ const MentorApproval = () => {
                   <TableCell colSpan={4}>মোট</TableCell>
                   <TableCell>{totalPendingVouchers}</TableCell>
                   <TableCell className="text-right">{grandTotalAmount.toLocaleString('bn-BD', { style: 'currency', currency: 'BDT' })}</TableCell>
-                  <TableCell></TableCell> {/* Empty cell for action column */}
+                  <TableCell></TableCell>
                 </TableRow>
               </TableFooter>
             </Table>
