@@ -16,13 +16,59 @@ export const DUMMY_USERS: UserProfile[] = [
     mobileNumber: "01712345678",
     department: "HR",
     designation: "Manager",
-    password: "password",
+    password: "123456", // Updated for consistency
     role: "user", // User role
+  },
+  // New users from Excel data (hypothetical parsing)
+  {
+    pin: "1001",
+    name: "Akram Hossain",
+    mobileNumber: "01700000001",
+    department: "Sales",
+    designation: "Sales Executive",
+    password: "123456",
+    role: "user",
+  },
+  {
+    pin: "1002",
+    name: "Farhana Islam",
+    mobileNumber: "01700000002",
+    department: "Marketing",
+    designation: "Marketing Officer",
+    password: "123456",
+    role: "user",
+  },
+  {
+    pin: "1003",
+    name: "Kamal Ahmed",
+    mobileNumber: "01700000003",
+    department: "IT",
+    designation: "Software Engineer",
+    password: "123456",
+    role: "user",
+  },
+  {
+    pin: "1004",
+    name: "Nabila Rahman",
+    mobileNumber: "01700000004",
+    department: "Customer Service",
+    designation: "Support Agent",
+    password: "123456",
+    role: "user",
+  },
+  {
+    pin: "1005",
+    name: "Omar Faruk",
+    mobileNumber: "01700000005",
+    department: "Operations",
+    designation: "Operations Lead",
+    password: "123456",
+    role: "user",
   },
   // Mentor User
   {
     pin: "29",
-    name: "mkpasha", // Updated username
+    name: "mkpasha",
     mobileNumber: "01811415103",
     department: "Finance & Accounts",
     designation: "General Manager",
@@ -32,7 +78,7 @@ export const DUMMY_USERS: UserProfile[] = [
   // Payment User
   {
     pin: "115",
-    name: "rafiq", // Updated username
+    name: "rafiq",
     mobileNumber: "01811415147",
     department: "Finance & Accounts",
     designation: "Deputy Manager",
@@ -42,7 +88,7 @@ export const DUMMY_USERS: UserProfile[] = [
   // Audit User (Final Check & Approval)
   {
     pin: "4170",
-    name: "abdullah", // Updated username
+    name: "abdullah",
     mobileNumber: "01518647186",
     department: "Finance & Accounts",
     designation: "Executive",
@@ -100,14 +146,16 @@ export const DUMMY_PUBLICITY_LOCATIONS = [
 ];
 
 export const DUMMY_PINS = [
-  { sl: 1, pin: "101", name: "User One" },
-  { sl: 2, pin: "102", name: "User Two" },
-  { sl: 3, pin: "103", name: "User Three" },
-  { sl: 4, pin: "104", name: "User Four" },
-  { sl: 5, pin: "105", name: "User Five" },
-  { sl: 6, pin: "29", name: "K.M Mostafa Kamal" }, // Mentor PIN
-  { sl: 7, pin: "115", name: "Rafiqul Islam" }, // Payment PIN
-  { sl: 8, pin: "4170", name: "Abdullah" }, // Audit PIN
+  { sl: 1, pin: "203", name: "Tanzir" },
+  { sl: 2, pin: "204", name: "Rahim" },
+  { sl: 3, pin: "1001", name: "Akram Hossain" },
+  { sl: 4, pin: "1002", name: "Farhana Islam" },
+  { sl: 5, pin: "1003", name: "Kamal Ahmed" },
+  { sl: 6, pin: "1004", name: "Nabila Rahman" },
+  { sl: 7, pin: "1005", name: "Omar Faruk" },
+  { sl: 8, pin: "29", name: "mkpasha" }, // Mentor PIN
+  { sl: 9, pin: "115", name: "rafiq" }, // Payment PIN
+  { sl: 10, pin: "4170", name: "abdullah" }, // Audit PIN
 ];
 
 export const OFFICE_SUPPLIES_ITEM_OPTIONS: { [key: string]: { value: string; label: string }[] } = {
