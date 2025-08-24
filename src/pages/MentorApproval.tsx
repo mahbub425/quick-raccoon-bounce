@@ -161,7 +161,7 @@ const MentorApproval = () => {
                   <TableHead className="w-[50px]">ক্রমিক</TableHead>
                   <TableHead>পিন</TableHead>
                   <TableHead>নাম</TableHead>
-                  <TableHead>মোবাইল নম্বর</TableHead>
+                  {/* <TableHead>মোবাইল নম্বর</TableHead> Removed Mobile Number column */}
                   <TableHead>অনুমোদন বাকি আছে</TableHead>
                   <TableHead className="text-right">টাকার পরিমাণ</TableHead>
                   <TableHead className="text-center">অ্যাকশন</TableHead>
@@ -173,7 +173,7 @@ const MentorApproval = () => {
                     <TableCell className="font-medium">{index + 1}</TableCell>
                     <TableCell>{userGroup.user.pin}</TableCell>
                     <TableCell>{userGroup.user.name}</TableCell>
-                    <TableCell>{userGroup.user.mobileNumber}</TableCell>
+                    {/* <TableCell>{userGroup.user.mobileNumber}</TableCell> Removed Mobile Number cell */}
                     <TableCell>{userGroup.pendingCount}</TableCell>
                     <TableCell className="text-right">{userGroup.totalAmount.toLocaleString('bn-BD', { style: 'currency', currency: 'BDT' })}</TableCell>
                     <TableCell className="text-center">
@@ -186,10 +186,10 @@ const MentorApproval = () => {
               </TableBody>
               <TableFooter>
                 <TableRow className="bg-purple-50 font-bold">
-                  <TableCell colSpan={4}>মোট</TableCell>
+                  <TableCell colSpan={3}>মোট</TableCell>{/* Adjusted colSpan from 4 to 3 */}
                   <TableCell>{totalPendingVouchers}</TableCell>
                   <TableCell className="text-right">{grandTotalAmount.toLocaleString('bn-BD', { style: 'currency', currency: 'BDT' })}</TableCell>
-                  <TableCell></TableCell>
+                  <TableCell></TableCell> {/* Empty cell for action column */}
                 </TableRow>
               </TableFooter>
             </Table>
