@@ -126,6 +126,26 @@ const Cart = () => {
     // Removed: navigate("/mentor-approval"); // No longer navigate to mentor approval page
   };
 
+  const renderAttachmentCell = (item: CartItem) => (
+    <TableCell>
+      {item.data.attachment ? (
+        <Button
+          variant="link"
+          className="p-0 h-auto text-blue-600 hover:text-blue-800"
+          onClick={(e) => {
+            e.stopPropagation(); // Prevent row click if any
+            toast.info(`সংযুক্তি দেখা হচ্ছে: ${item.data.attachment}`);
+            // In a real app, you'd open a new tab with the file URL or trigger a download
+          }}
+        >
+          {item.data.attachment}
+        </Button>
+      ) : (
+        "নেই"
+      )}
+    </TableCell>
+  );
+
   const renderEntertainmentTable = (items: CartItem[]) => {
     if (items.length === 0) {
       return (
@@ -154,7 +174,7 @@ const Cart = () => {
         </TableCell>
         <TableCell className="text-right">{item.data.amount || 0}</TableCell>
         <TableCell>{item.data.description || "N/A"}</TableCell>
-        <TableCell>{item.data.attachment ? "আছে" : "নেই"}</TableCell>
+        {renderAttachmentCell(item)}
         <TableCell className="flex justify-center space-x-2">
           <Button variant="outline" size="sm" onClick={() => handleEdit(item)}>এডিট</Button>
           <Button variant="destructive" size="sm" onClick={() => removeFromCart(item.id)}>মুছে ফেলুন</Button>
@@ -194,7 +214,7 @@ const Cart = () => {
         </TableCell>
         <TableCell className="text-right">{item.data.amount || 0}</TableCell>
         <TableCell>{item.data.purpose || "N/A"}</TableCell>
-        <TableCell>{item.data.attachment ? "আছে" : "নেই"}</TableCell>
+        {renderAttachmentCell(item)}
         <TableCell className="flex justify-center space-x-2">
           <Button variant="outline" size="sm" onClick={() => handleEdit(item)}>এডিট</Button>
           <Button variant="destructive" size="sm" onClick={() => removeFromCart(item.id)}>মুছে ফেলুন</Button>
@@ -232,7 +252,7 @@ const Cart = () => {
         <TableCell>{item.data.numberOfPersons || 0}</TableCell>
         <TableCell className="text-right">{item.data.amount || 0}</TableCell>
         <TableCell>{item.data.description || "N/A"}</TableCell>
-        <TableCell>{item.data.attachment ? "আছে" : "নেই"}</TableCell>
+        {renderAttachmentCell(item)}
         <TableCell className="flex justify-center space-x-2">
           <Button variant="outline" size="sm" onClick={() => handleEdit(item)}>এডিট</Button>
           <Button variant="destructive" size="sm" onClick={() => removeFromCart(item.id)}>মুছে ফেলুন</Button>
@@ -270,7 +290,7 @@ const Cart = () => {
         <TableCell>{getDropdownLabel(item.voucherTypeId, 'type', item.data.type, item.data) || "N/A"}</TableCell>
         <TableCell className="text-right">{item.data.amount || 0}</TableCell>
         <TableCell>{item.data.description || "N/A"}</TableCell>
-        <TableCell>{item.data.attachment ? "আছে" : "নেই"}</TableCell>
+        {renderAttachmentCell(item)}
         <TableCell className="flex justify-center space-x-2">
           <Button variant="outline" size="sm" onClick={() => handleEdit(item)}>এডিট</Button>
           <Button variant="destructive" size="sm" onClick={() => removeFromCart(item.id)}>মুছে ফেলুন</Button>
@@ -303,7 +323,7 @@ const Cart = () => {
         <TableCell>{item.data.mobileNumber || "N/A"}</TableCell>
         <TableCell>{getDropdownLabel(item.voucherTypeId, 'shift', item.data.shift, item.data) || "N/A"}</TableCell>
         <TableCell className="text-right">{item.data.amount || 0}</TableCell>
-        <TableCell>{item.data.attachment ? "আছে" : "নেই"}</TableCell>
+        {renderAttachmentCell(item)}
         <TableCell className="flex justify-center space-x-2">
           <Button variant="outline" size="sm" onClick={() => handleEdit(item)}>এডিট</Button>
           <Button variant="destructive" size="sm" onClick={() => removeFromCart(item.id)}>মুছে ফেলুন</Button>
@@ -334,7 +354,7 @@ const Cart = () => {
         <TableCell>{item.data.quantityUnit?.quantity || "N/A"} {item.data.quantityUnit?.unit || ""}</TableCell>
         <TableCell className="text-right">{item.data.amount || 0}</TableCell>
         <TableCell>{item.data.description || "N/A"}</TableCell>
-        <TableCell>{item.data.attachment ? "আছে" : "নেই"}</TableCell>
+        {renderAttachmentCell(item)}
         <TableCell className="flex justify-center space-x-2">
           <Button variant="outline" size="sm" onClick={() => handleEdit(item)}>এডিট</Button>
           <Button variant="destructive" size="sm" onClick={() => removeFromCart(item.id)}>মুছে ফেলুন</Button>
@@ -365,7 +385,7 @@ const Cart = () => {
         <TableCell>{item.data.quantityUnit?.quantity || "N/A"} {item.data.quantityUnit?.unit || ""}</TableCell>
         <TableCell className="text-right">{item.data.amount || 0}</TableCell>
         <TableCell>{item.data.description || "N/A"}</TableCell>
-        <TableCell>{item.data.attachment ? "আছে" : "নেই"}</TableCell>
+        {renderAttachmentCell(item)}
         <TableCell className="flex justify-center space-x-2">
           <Button variant="outline" size="sm" onClick={() => handleEdit(item)}>এডিট</Button>
           <Button variant="destructive" size="sm" onClick={() => removeFromCart(item.id)}>মুছে ফেলুন</Button>
@@ -396,7 +416,7 @@ const Cart = () => {
         <TableCell>{item.data.quantityUnit?.quantity || "N/A"} {item.data.quantityUnit?.unit || ""}</TableCell>
         <TableCell className="text-right">{item.data.amount || 0}</TableCell>
         <TableCell>{item.data.description || "N/A"}</TableCell>
-        <TableCell>{item.data.attachment ? "আছে" : "নেই"}</TableCell>
+        {renderAttachmentCell(item)}
         <TableCell className="flex justify-center space-x-2">
           <Button variant="outline" size="sm" onClick={() => handleEdit(item)}>এডিট</Button>
           <Button variant="destructive" size="sm" onClick={() => removeFromCart(item.id)}>মুছে ফেলুন</Button>
@@ -425,7 +445,7 @@ const Cart = () => {
         <TableCell>{getBranchName(item.data.institutionId, item.data.branchId)}</TableCell>
         <TableCell className="text-right">{item.data.amount || 0}</TableCell>
         <TableCell>{item.data.description || "N/A"}</TableCell>
-        <TableCell>{item.data.attachment ? "আছে" : "নেই"}</TableCell>
+        {renderAttachmentCell(item)}
         <TableCell className="flex justify-center space-x-2">
           <Button variant="outline" size="sm" onClick={() => handleEdit(item)}>এডিট</Button>
           <Button variant="destructive" size="sm" onClick={() => removeFromCart(item.id)}>মুছে ফেলুন</Button>

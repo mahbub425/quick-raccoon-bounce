@@ -133,6 +133,26 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
     onOpenChange(false); // Close main popup
   };
 
+  const renderAttachmentCell = (itemData: any) => (
+    <TableCell>
+      {itemData.attachment ? (
+        <Button
+          variant="link"
+          className="p-0 h-auto text-blue-600 hover:text-blue-800"
+          onClick={(e) => {
+            e.stopPropagation(); // Prevent row click if any
+            toast.info(`সংযুক্তি দেখা হচ্ছে: ${itemData.attachment}`);
+            // In a real app, you'd open a new tab with the file URL or trigger a download
+          }}
+        >
+          {itemData.attachment}
+        </Button>
+      ) : (
+        "নেই"
+      )}
+    </TableCell>
+  );
+
   const renderVoucherDetailsTable = (item: SubmittedVoucher) => {
     const itemData = item.data;
     const voucherTypeId = item.voucherTypeId;
@@ -157,7 +177,7 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
               </TableCell>
               <TableCell className="text-right">{(itemData.amount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT' })}</TableCell>
               <TableCell>{itemData.description || "N/A"}</TableCell>
-              <TableCell>{itemData.attachment ? "আছে" : "নেই"}</TableCell>
+              {renderAttachmentCell(itemData)}
             </TableRow>
           </TableBody>
         );
@@ -182,7 +202,7 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
               </TableCell>
               <TableCell className="text-right">{(itemData.amount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT' })}</TableCell>
               <TableCell>{itemData.purpose || "N/A"}</TableCell>
-              <TableCell>{itemData.attachment ? "আছে" : "নেই"}</TableCell>
+              {renderAttachmentCell(itemData)}
             </TableRow>
           </TableBody>
         );
@@ -205,7 +225,7 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
               <TableCell>{itemData.numberOfPersons || 0}</TableCell>
               <TableCell className="text-right">{(itemData.amount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT' })}</TableCell>
               <TableCell>{itemData.description || "N/A"}</TableCell>
-              <TableCell>{itemData.attachment ? "আছে" : "নেই"}</TableCell>
+              {renderAttachmentCell(itemData)}
             </TableRow>
           </TableBody>
         );
@@ -228,7 +248,7 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
               <TableCell>{getDropdownLabel(voucherTypeId, 'type', itemData.type, itemData) || "N/A"}</TableCell>
               <TableCell className="text-right">{(itemData.amount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT' })}</TableCell>
               <TableCell>{itemData.description || "N/A"}</TableCell>
-              <TableCell>{itemData.attachment ? "আছে" : "নেই"}</TableCell>
+              {renderAttachmentCell(itemData)}
             </TableRow>
           </TableBody>
         );
@@ -246,7 +266,7 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
               <TableCell>{itemData.mobileNumber || "N/A"}</TableCell>
               <TableCell>{getDropdownLabel(voucherTypeId, 'shift', itemData.shift, itemData) || "N/A"}</TableCell>
               <TableCell className="text-right">{(itemData.amount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT' })}</TableCell>
-              <TableCell>{itemData.attachment ? "আছে" : "নেই"}</TableCell>
+              {renderAttachmentCell(itemData)}
             </TableRow>
           </TableBody>
         );
@@ -262,7 +282,7 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
               <TableCell>{itemData.quantityUnit?.quantity || "N/A"} {itemData.quantityUnit?.unit || ""}</TableCell>
               <TableCell className="text-right">{(itemData.amount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT' })}</TableCell>
               <TableCell>{itemData.description || "N/A"}</TableCell>
-              <TableCell>{itemData.attachment ? "আছে" : "নেই"}</TableCell>
+              {renderAttachmentCell(itemData)}
             </TableRow>
           </TableBody>
         );
@@ -278,7 +298,7 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
               <TableCell>{itemData.quantityUnit?.quantity || "N/A"} {itemData.quantityUnit?.unit || ""}</TableCell>
               <TableCell className="text-right">{(itemData.amount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT' })}</TableCell>
               <TableCell>{itemData.description || "N/A"}</TableCell>
-              <TableCell>{itemData.attachment ? "আছে" : "নেই"}</TableCell>
+              {renderAttachmentCell(itemData)}
             </TableRow>
           </TableBody>
         );
@@ -294,7 +314,7 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
               <TableCell>{itemData.quantityUnit?.quantity || "N/A"} {itemData.quantityUnit?.unit || ""}</TableCell>
               <TableCell className="text-right">{(itemData.amount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT' })}</TableCell>
               <TableCell>{itemData.description || "N/A"}</TableCell>
-              <TableCell>{itemData.attachment ? "আছে" : "নেই"}</TableCell>
+              {renderAttachmentCell(itemData)}
             </TableRow>
           </TableBody>
         );
@@ -310,7 +330,7 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
               <TableCell>{getBranchName(itemData.institutionId, itemData.branchId)}</TableCell>
               <TableCell className="text-right">{(itemData.amount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT' })}</TableCell>
               <TableCell>{itemData.description || "N/A"}</TableCell>
-              <TableCell>{itemData.attachment ? "আছে" : "নেই"}</TableCell>
+              {renderAttachmentCell(itemData)}
             </TableRow>
           </TableBody>
         );

@@ -56,7 +56,7 @@ const generateDefaultValues = (formFields: FormFieldType[]) => {
       } else if (field.type === 'quantity-unit') {
         defaults[field.name] = { quantity: "", unit: "" };
       } else if (field.type === 'file') {
-        defaults[field.name] = undefined;
+        defaults[field.name] = undefined; // Store filename string or undefined
       } else {
         defaults[field.name] = "";
       }
@@ -143,11 +143,9 @@ const createSchema = (fields: FormFieldType[], currentFormValues: any, voucherTy
         }
         break;
       case "file":
-        currentFieldSchema = z.any();
+        currentFieldSchema = z.string().optional(); // Expecting filename string or undefined
         if (field.mandatory) {
-          currentFieldSchema = (currentFieldSchema as z.ZodAny).refine(file => file !== undefined && file !== null, { message: `${field.label} আবশ্যক` });
-        } else {
-          currentFieldSchema = (currentFieldSchema as z.ZodAny).optional();
+          currentFieldSchema = (currentFieldSchema as z.ZodString).min(1, { message: `${field.label} আবশ্যক` });
         }
         break;
       case "pin-selector":
@@ -409,7 +407,7 @@ const DynamicVoucherForm = forwardRef<DynamicVoucherFormRef, DynamicVoucherFormP
                     return (
                       <Input
                         type="file"
-                        onChange={(e) => formHookField.onChange(e.target.files ? e.target.files[0] : undefined)}
+                        onChange={(e) => formHookField.onChange(e.target.files ? e.target.files[0]?.name : undefined)} // Store filename
                         className="border-blue-300 focus:border-blue-500 focus:ring-blue-500"
                       />
                     );
