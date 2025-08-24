@@ -552,7 +552,7 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
 
           <DialogFooter className="flex flex-col sm:flex-row sm:justify-center gap-4 mt-6">
             <Button className="bg-green-600 hover:bg-green-700 text-white" onClick={handleApprove}>
-              অনুমোদন করুন
+              অনুমোদিত
             </Button>
             <Button className="bg-blue-600 hover:bg-blue-700 text-white" onClick={handleSendBack}>
               ফেরত পাঠান
