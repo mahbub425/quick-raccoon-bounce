@@ -197,9 +197,9 @@ const MentorVoucherDetails = () => {
               <TableHeader>
                 <TableRow className="bg-blue-100">
                   <TableHead className="w-[50px]">ক্রমিক</TableHead>
-                  <TableHead>ভাউচার নাম্বার</TableHead>
+                  {/* Removed Voucher Number */}
                   <TableHead>জমাদানের তারিখ</TableHead>
-                  <TableHead>প্রতিষ্ঠানের নাম</TableHead>
+                  {/* Removed প্রতিষ্ঠানের নাম */}
                   <TableHead>শাখার নাম</TableHead>
                   <TableHead>ভাউচারের ধরন</TableHead>
                   <TableHead className="text-right">টাকার পরিমাণ</TableHead>
@@ -210,9 +210,9 @@ const MentorVoucherDetails = () => {
                 {filteredUserVouchers.map((voucher, index) => (
                   <TableRow key={voucher.id}>
                     <TableCell className="font-medium">{index + 1}</TableCell>
-                    <TableCell>{voucher.voucherNumber}</TableCell>
+                    {/* Removed Voucher Number Cell */}
                     <TableCell>{format(parseISO(voucher.createdAt), "dd MMM, yyyy")}</TableCell>
-                    <TableCell>{DUMMY_INSTITUTIONS.find(inst => inst.id === voucher.data.institutionId)?.name || "N/A"}</TableCell>
+                    {/* Removed প্রতিষ্ঠানের নাম Cell */}
                     <TableCell>{DUMMY_INSTITUTIONS.find(inst => inst.id === voucher.data.institutionId)?.branches.find(b => b.id === voucher.data.branchId)?.name || "N/A"}</TableCell>
                     <TableCell>{getVoucherHeadingById(voucher.voucherTypeId)}</TableCell>
                     <TableCell className="text-right">{(voucher.data.amount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT' })}</TableCell>
@@ -226,7 +226,7 @@ const MentorVoucherDetails = () => {
               </TableBody>
               <TableFooter>
                 <TableRow className="bg-blue-50 font-bold">
-                  <TableCell colSpan={6}>মোট</TableCell>
+                  <TableCell colSpan={4}>মোট</TableCell> {/* Adjusted colSpan from 6 to 4 */}
                   <TableCell className="text-right">{totalAmountForUserVouchers.toLocaleString('bn-BD', { style: 'currency', currency: 'BDT' })}</TableCell>
                   <TableCell></TableCell> {/* Empty cell for action column */}
                 </TableRow>
