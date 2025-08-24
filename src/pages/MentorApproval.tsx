@@ -14,6 +14,12 @@ import { DUMMY_INSTITUTIONS, DUMMY_VOUCHER_TYPES } from "@/data/dummyData";
 import { cn } from "@/lib/utils";
 import { SubmittedVoucher } from "@/types";
 
+// Helper function to get voucher heading by ID (copied from other files for consistency)
+const getVoucherHeadingById = (id: string) => {
+  const voucherType = DUMMY_VOUCHER_TYPES.flatMap(v => v.type === 'multi' && v.subTypes ? [v, ...v.subTypes] : [v]).find(v => v.id === id);
+  return voucherType?.heading || id;
+};
+
 const MentorApproval = () => {
   const { submittedVouchers } = useSubmittedVouchers();
   const navigate = useNavigate();
@@ -40,41 +46,34 @@ const MentorApproval = () => {
   }, []);
 
   const filteredAndGroupedVouchers = useMemo(() => {
-    console.log("All submitted vouchers (from context):", submittedVouchers); // Debug log 1
-
     const filteredVouchers = submittedVouchers.filter(voucher => {
-      // Only show pending vouchers in the main table
       if (voucher.status !== 'pending') {
         return false;
       }
-
-      // Filter by voucher type
       if (selectedVoucherType !== "all" && voucher.voucherTypeId !== selectedVoucherType) {
         return false;
       }
-
-      // Filter by PIN
       if (pinSearchTerm && !voucher.submittedByPin.includes(pinSearchTerm)) {
         return false;
       }
-
       return true;
     });
 
-    console.log("Filtered vouchers (status=pending, by type/pin):", filteredVouchers); // Debug log 2
-
-    // Group by user (submittedByPin)
-    const groupedByUser: {
-      [pin: string]: {
+    // Group by user (submittedByPin) AND voucherTypeId
+    const groupedByPinAndType: {
+      [key: string]: {
         user: { pin: string; name: string; mobileNumber: string; department: string; designation: string; };
+        voucherTypeId: string;
+        voucherTypeHeading: string;
         pendingCount: number;
         totalAmount: number;
       };
     } = {};
 
     filteredVouchers.forEach(voucher => {
-      if (!groupedByUser[voucher.submittedByPin]) {
-        groupedByUser[voucher.submittedByPin] = {
+      const key = `${voucher.submittedByPin}_${voucher.voucherTypeId}`;
+      if (!groupedByPinAndType[key]) {
+        groupedByPinAndType[key] = {
           user: {
             pin: voucher.submittedByPin,
             name: voucher.submittedByName,
@@ -82,28 +81,28 @@ const MentorApproval = () => {
             department: voucher.submittedByDepartment,
             designation: voucher.submittedByDesignation,
           },
+          voucherTypeId: voucher.voucherTypeId,
+          voucherTypeHeading: getVoucherHeadingById(voucher.voucherTypeId),
           pendingCount: 0,
           totalAmount: 0,
         };
       }
-      groupedByUser[voucher.submittedByPin].pendingCount += 1;
-      groupedByUser[voucher.submittedByPin].totalAmount += (voucher.data.amount || 0);
+      groupedByPinAndType[key].pendingCount += 1;
+      groupedByPinAndType[key].totalAmount += (voucher.data.amount || 0);
     });
 
-    console.log("Grouped by user before Object.values:", groupedByUser); // Debug log 3
-
-    return Object.values(groupedByUser);
+    return Object.values(groupedByPinAndType);
   }, [submittedVouchers, selectedVoucherType, pinSearchTerm]);
 
-  const totalPendingVouchers = useMemo(() => filteredAndGroupedVouchers.reduce((sum, user) => sum + user.pendingCount, 0), [filteredAndGroupedVouchers]);
-  const grandTotalAmount = useMemo(() => filteredAndGroupedVouchers.reduce((sum, user) => sum + user.totalAmount, 0), [filteredAndGroupedVouchers]);
+  const totalPendingVouchers = useMemo(() => filteredAndGroupedVouchers.reduce((sum, group) => sum + group.pendingCount, 0), [filteredAndGroupedVouchers]);
+  const grandTotalAmount = useMemo(() => filteredAndGroupedVouchers.reduce((sum, group) => sum + group.totalAmount, 0), [filteredAndGroupedVouchers]);
 
-  const handleViewUserVouchers = (userPin: string) => {
+  const handleViewUserVouchers = (userPin: string, voucherTypeId: string) => {
     navigate(`/mentor-approval/${userPin}`, {
       state: {
         filters: {
-          selectedVoucherType,
-          pinSearchTerm: userPin, // This will be the userPin for the details page
+          selectedVoucherType: voucherTypeId, // Pass the specific voucher type
+          pinSearchTerm: userPin,
         }
       }
     });
@@ -161,7 +160,7 @@ const MentorApproval = () => {
                   <TableHead className="w-[50px]">ক্রমিক</TableHead>
                   <TableHead>পিন</TableHead>
                   <TableHead>নাম</TableHead>
-                  {/* <TableHead>মোবাইল নম্বর</TableHead> Removed Mobile Number column */}
+                  <TableHead>ভাউচারের ধরন</TableHead> {/* New column */}
                   <TableHead>অনুমোদন বাকি আছে</TableHead>
                   <TableHead className="text-right">টাকার পরিমাণ</TableHead>
                   <TableHead className="text-center">অ্যাকশন</TableHead>
@@ -169,15 +168,15 @@ const MentorApproval = () => {
               </TableHeader>
               <TableBody>
                 {filteredAndGroupedVouchers.map((userGroup, index) => (
-                  <TableRow key={userGroup.user.pin}>
+                  <TableRow key={`${userGroup.user.pin}-${userGroup.voucherTypeId}`}>
                     <TableCell className="font-medium">{index + 1}</TableCell>
                     <TableCell>{userGroup.user.pin}</TableCell>
                     <TableCell>{userGroup.user.name}</TableCell>
-                    {/* <TableCell>{userGroup.user.mobileNumber}</TableCell> Removed Mobile Number cell */}
+                    <TableCell>{userGroup.voucherTypeHeading}</TableCell> {/* Display voucher type heading */}
                     <TableCell>{userGroup.pendingCount}</TableCell>
                     <TableCell className="text-right">{userGroup.totalAmount.toLocaleString('bn-BD', { style: 'currency', currency: 'BDT' })}</TableCell>
                     <TableCell className="text-center">
-                      <Button variant="outline" size="sm" onClick={() => handleViewUserVouchers(userGroup.user.pin)}>
+                      <Button variant="outline" size="sm" onClick={() => handleViewUserVouchers(userGroup.user.pin, userGroup.voucherTypeId)}>
                         দেখুন
                       </Button>
                     </TableCell>
@@ -186,7 +185,7 @@ const MentorApproval = () => {
               </TableBody>
               <TableFooter>
                 <TableRow className="bg-purple-50 font-bold">
-                  <TableCell colSpan={3}>মোট</TableCell>{/* Adjusted colSpan from 4 to 3 */}
+                  <TableCell colSpan={4}>মোট</TableCell>{/* Adjusted colSpan from 3 to 4 */}
                   <TableCell>{totalPendingVouchers}</TableCell>
                   <TableCell className="text-right">{grandTotalAmount.toLocaleString('bn-BD', { style: 'currency', currency: 'BDT' })}</TableCell>
                   <TableCell></TableCell> {/* Empty cell for action column */}
