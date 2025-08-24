@@ -11,25 +11,25 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const LOCAL_STORAGE_USER_KEY = "currentUser"; // Key for storing user in localStorage
+const SESSION_STORAGE_USER_KEY = "currentUser"; // Key for storing user in sessionStorage
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<UserProfile | null>(() => {
-    // Load user from localStorage on initial load
+    // Load user from sessionStorage on initial load
     if (typeof window !== "undefined") {
-      const savedUser = localStorage.getItem(LOCAL_STORAGE_USER_KEY);
+      const savedUser = sessionStorage.getItem(SESSION_STORAGE_USER_KEY);
       return savedUser ? JSON.parse(savedUser) : null;
     }
     return null;
   });
 
-  // Save user to localStorage whenever the user state changes
+  // Save user to sessionStorage whenever the user state changes
   useEffect(() => {
     if (typeof window !== "undefined") {
       if (user) {
-        localStorage.setItem(LOCAL_STORAGE_USER_KEY, JSON.stringify(user));
+        sessionStorage.setItem(SESSION_STORAGE_USER_KEY, JSON.stringify(user));
       } else {
-        localStorage.removeItem(LOCAL_STORAGE_USER_KEY);
+        sessionStorage.removeItem(SESSION_STORAGE_USER_KEY);
       }
     }
   }, [user]);
