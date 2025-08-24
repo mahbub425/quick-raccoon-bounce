@@ -40,6 +40,8 @@ const MentorApproval = () => {
   }, []);
 
   const filteredAndGroupedVouchers = useMemo(() => {
+    console.log("All submitted vouchers (from context):", submittedVouchers); // Debug log 1
+
     const filteredVouchers = submittedVouchers.filter(voucher => {
       // Only show pending vouchers in the main table
       if (voucher.status !== 'pending') {
@@ -58,6 +60,8 @@ const MentorApproval = () => {
 
       return true;
     });
+
+    console.log("Filtered vouchers (status=pending, by type/pin):", filteredVouchers); // Debug log 2
 
     // Group by user (submittedByPin)
     const groupedByUser: {
@@ -85,6 +89,8 @@ const MentorApproval = () => {
       groupedByUser[voucher.submittedByPin].pendingCount += 1;
       groupedByUser[voucher.submittedByPin].totalAmount += (voucher.data.amount || 0);
     });
+
+    console.log("Grouped by user before Object.values:", groupedByUser); // Debug log 3
 
     return Object.values(groupedByUser);
   }, [submittedVouchers, selectedVoucherType, pinSearchTerm]);
