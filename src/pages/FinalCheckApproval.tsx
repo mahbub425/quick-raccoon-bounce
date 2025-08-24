@@ -11,13 +11,17 @@ import { toast } from "sonner"; // Added toast import
 
 // Helper function to get correction text
 const getCorrectionText = (count: number | undefined) => {
-  const actualCount = count ?? 0; // Treat undefined/null as 0
-  if (actualCount === 1) {
+  if (count === undefined || count === 0) { // Original submission, or no correction count
+    return ''; // No text for original submission
+  } else if (count === 1) {
     return 'সংশোধিত';
-  } else if (actualCount > 1) {
-    return `${actualCount}য় বার সংশোধিত`;
+  } else { // count > 1
+    const bengaliNumbers = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+    const toBengaliNumber = (num: number) => {
+      return String(num).split('').map(digit => bengaliNumbers[parseInt(digit)]).join('');
+    };
+    return `${toBengaliNumber(count)}য় বার সংশোধিত`;
   }
-  return 'সংশোধিত'; // Fallback for unexpected 0 or negative count with originalVoucherId
 };
 
 const FinalCheckApproval = () => {
