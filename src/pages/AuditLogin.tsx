@@ -16,7 +16,7 @@ const AuditLogin = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (login(name, password, 'audit')) { // Specify 'audit' role for this login page
-      navigate("/audit/home");
+      navigate("/audit/home"); // Redirect to audit's home page
     }
   };
 

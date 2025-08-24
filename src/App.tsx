@@ -38,11 +38,11 @@ const App = () => (
           <CartProvider>
             <SubmittedVouchersProvider>
               <Routes>
-                {/* Public Login Routes */}
+                {/* Public Login Routes - Renamed to avoid conflicts */}
                 <Route path="/login" element={<Login />} />
-                <Route path="/mentor" element={<MentorLogin />} />
-                <Route path="/payment" element={<PaymentLogin />} />
-                <Route path="/audit" element={<AuditLogin />} />
+                <Route path="/mentor-login" element={<MentorLogin />} />
+                <Route path="/payment-login" element={<PaymentLogin />} />
+                <Route path="/audit-login" element={<AuditLogin />} />
                 
                 {/* Initial redirect based on login status */}
                 <Route path="/" element={<Index />} />
@@ -60,13 +60,13 @@ const App = () => (
                 </Route>
 
                 {/* Protected Routes for 'mentor' role */}
-                <Route element={<ProtectedRoute requiredRole="mentor" redirectTo="/mentor" />}>
+                <Route element={<ProtectedRoute requiredRole="mentor" redirectTo="/mentor-login" />}>
                   <Route element={<Layout />}>
                     <Route path="/mentor/home" element={<Home />} />
                     <Route path="/mentor/dashboard" element={<Dashboard />} />
                     <Route path="/mentor/voucher-entry" element={<VoucherEntry />} />
-                    <Route path="/mentor/selected-vouchers" element={<SelectedVouchers />} /> {/* Added */}
-                    <Route path="/mentor/cart" element={<Cart />} /> {/* Added */}
+                    <Route path="/mentor/selected-vouchers" element={<SelectedVouchers />} />
+                    <Route path="/mentor/cart" element={<Cart />} />
                     <Route path="/mentor-approval" element={<MentorApproval />} />
                     <Route path="/mentor-approval/:userPin" element={<MentorVoucherDetails />} />
                     <Route path="/mentor/report" element={<Report />} />
@@ -74,26 +74,26 @@ const App = () => (
                 </Route>
 
                 {/* Protected Routes for 'payment' role */}
-                <Route element={<ProtectedRoute requiredRole="payment" redirectTo="/payment" />}>
+                <Route element={<ProtectedRoute requiredRole="payment" redirectTo="/payment-login" />}>
                   <Route element={<Layout />}>
                     <Route path="/payment/home" element={<Home />} />
                     <Route path="/payment/dashboard" element={<Dashboard />} />
                     <Route path="/payment/voucher-entry" element={<VoucherEntry />} />
-                    <Route path="/payment/selected-vouchers" element={<SelectedVouchers />} /> {/* Added */}
-                    <Route path="/payment/cart" element={<Cart />} /> {/* Added */}
-                    <Route path="/payment" element={<Payment />} />
+                    <Route path="/payment/selected-vouchers" element={<SelectedVouchers />} />
+                    <Route path="/payment/cart" element={<Cart />} />
+                    <Route path="/payment" element={<Payment />} /> {/* This is the actual Payment page */}
                     <Route path="/payment/report" element={<Report />} />
                   </Route>
                 </Route>
 
                 {/* Protected Routes for 'audit' role */}
-                <Route element={<ProtectedRoute requiredRole="audit" redirectTo="/audit" />}>
+                <Route element={<ProtectedRoute requiredRole="audit" redirectTo="/audit-login" />}>
                   <Route element={<Layout />}>
                     <Route path="/audit/home" element={<Home />} />
                     <Route path="/audit/dashboard" element={<Dashboard />} />
                     <Route path="/audit/voucher-entry" element={<VoucherEntry />} />
-                    <Route path="/audit/selected-vouchers" element={<SelectedVouchers />} /> {/* Added */}
-                    <Route path="/audit/cart" element={<Cart />} /> {/* Added */}
+                    <Route path="/audit/selected-vouchers" element={<SelectedVouchers />} />
+                    <Route path="/audit/cart" element={<Cart />} />
                     <Route path="/final-check-approval" element={<FinalCheckApproval />} />
                     <Route path="/audit/report" element={<Report />} />
                   </Route>

@@ -16,7 +16,7 @@ const MentorLogin = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (login(name, password, 'mentor')) { // Specify 'mentor' role for this login page
-      navigate("/mentor/home");
+      navigate("/mentor/home"); // Redirect to mentor's home page
     }
   };
 

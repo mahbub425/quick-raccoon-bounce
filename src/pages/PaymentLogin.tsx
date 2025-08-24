@@ -16,7 +16,7 @@ const PaymentLogin = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (login(name, password, 'payment')) { // Specify 'payment' role for this login page
-      navigate("/payment/home");
+      navigate("/payment/home"); // Redirect to payment's home page
     }
   };
 

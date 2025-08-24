@@ -19,7 +19,9 @@ const Index = () => {
         navigate("/home"); // Default for 'user' role
       }
     } else {
-      navigate("/login"); // Default login for unauthenticated users
+      // Redirect to specific login pages based on the intended role, or default to /login
+      // For now, default to /login for unauthenticated users
+      navigate("/login"); 
     }
   }, [navigate, user]);
 
