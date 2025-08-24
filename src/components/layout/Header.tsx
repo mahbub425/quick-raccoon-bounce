@@ -22,6 +22,14 @@ const Header = ({ children }: HeaderProps) => {
   const { user, logout } = useAuth();
   const { cartItemCount } = useCart();
 
+  // Function to get the role-specific path for /cart
+  const getCartPath = () => {
+    if (!user || user.role === 'user') {
+      return "/cart";
+    }
+    return `/${user.role}/cart`;
+  };
+
   return (
     <header className="bg-gradient-to-r from-blue-600 to-purple-700 text-white p-4 shadow-lg">
       <div className="container mx-auto flex justify-between items-center">
@@ -34,7 +42,7 @@ const Header = ({ children }: HeaderProps) => {
         <nav className="flex items-center space-x-4">
           {user ? (
             <>
-              <Link to="/cart" className="relative p-2 hover:bg-blue-700 rounded-md transition-colors">
+              <Link to={getCartPath()} className="relative p-2 hover:bg-blue-700 rounded-md transition-colors">
                 <ShoppingCart className="h-6 w-6" />
                 {cartItemCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
