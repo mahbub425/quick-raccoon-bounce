@@ -90,7 +90,7 @@ export type CartItem = {
   createdAt: string; // Timestamp for when it was added
 };
 
-export type VoucherStatus = 'pending' | 'approved' | 'sent_back' | 'rejected';
+export type VoucherStatus = 'pending' | 'approved' | 'sent_back' | 'rejected' | 'paid'; // Added 'paid' status
 
 export type SubmittedVoucher = CartItem & {
   status: VoucherStatus;

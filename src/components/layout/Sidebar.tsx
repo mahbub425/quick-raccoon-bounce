@@ -74,8 +74,18 @@ const Sidebar = ({ onLinkClick }: SidebarProps) => {
   // Adjust hrefs for role-specific paths
   const getAdjustedHref = (href: string) => {
     if (!user) return href;
+    // Routes that should NOT be prefixed, as they are already role-specific top-level routes
+    const roleSpecificTopLevelRoutes = ["/mentor-approval", "/payment", "/final-check-approval"];
+
+    if (roleSpecificTopLevelRoutes.includes(href)) {
+      return href; // Do not prefix these
+    }
+
     // Apply role prefix to common user pages if the user is not a 'user' role
-    if (user.role !== 'user' && (href === "/home" || href === "/dashboard" || href === "/voucher-entry" || href === "/selected-vouchers" || href === "/cart" || href === "/report")) {
+    // This list should include all routes that are shared across roles but need a prefix
+    const commonUserPages = ["/home", "/dashboard", "/voucher-entry", "/selected-vouchers", "/cart", "/report"];
+    
+    if (user.role !== 'user' && commonUserPages.includes(href)) {
       if (user.role === 'mentor') return `/mentor${href}`;
       if (user.role === 'payment') return `/payment${href}`;
       if (user.role === 'audit') return `/audit${href}`;
