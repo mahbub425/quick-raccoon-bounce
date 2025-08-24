@@ -22,7 +22,7 @@ export const DUMMY_USERS: UserProfile[] = [
   // Mentor User
   {
     pin: "29",
-    name: "K.M Mostafa Kamal",
+    name: "mkpasha", // Updated username
     mobileNumber: "01811415103",
     department: "Finance & Accounts",
     designation: "General Manager",
@@ -32,7 +32,7 @@ export const DUMMY_USERS: UserProfile[] = [
   // Payment User
   {
     pin: "115",
-    name: "Rafiqul Islam",
+    name: "rafiq", // Updated username
     mobileNumber: "01811415147",
     department: "Finance & Accounts",
     designation: "Deputy Manager",
@@ -42,7 +42,7 @@ export const DUMMY_USERS: UserProfile[] = [
   // Audit User (Final Check & Approval)
   {
     pin: "4170",
-    name: "Abdullah",
+    name: "abdullah", // Updated username
     mobileNumber: "01518647186",
     department: "Finance & Accounts",
     designation: "Executive",
