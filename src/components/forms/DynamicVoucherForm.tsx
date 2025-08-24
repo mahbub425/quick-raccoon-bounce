@@ -273,6 +273,7 @@ const DynamicVoucherForm = forwardRef<DynamicVoucherFormRef, DynamicVoucherFormP
           voucherTypeId: voucherDetails.id,
           voucherHeading: voucherDetails.heading,
           data: data,
+          voucherNumber: undefined, // Explicitly pass undefined to let CartContext generate
         });
         toast.success(`${voucherDetails.heading} কার্টে যোগ করা হয়েছে!`);
         form.reset(defaultFormValues); // Only reset if this component handles addToCart

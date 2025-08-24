@@ -7,6 +7,7 @@ import { format, parseISO } from "date-fns";
 import { DUMMY_INSTITUTIONS, DUMMY_VOUCHER_TYPES } from "@/data/dummyData";
 import { SubmittedVoucher } from "@/types";
 import VoucherDetailsPopup from "@/components/VoucherDetailsPopup"; // Assuming this popup is reusable for viewing details
+import { toast } from "sonner"; // Added toast import
 
 const FinalCheckApproval = () => {
   const { submittedVouchers, updateSubmittedVoucherStatus } = useSubmittedVouchers();
@@ -15,6 +16,7 @@ const FinalCheckApproval = () => {
 
   // Filter for vouchers that are 'approved' by a mentor and are ready for final check
   const vouchersForFinalApproval = useMemo(() => {
+    // Filter out 'corrected_by_user' status from the main list
     return submittedVouchers.filter(v => v.status === 'approved');
   }, [submittedVouchers]);
 
@@ -35,9 +37,9 @@ const FinalCheckApproval = () => {
   };
 
   const handleFinalApprove = (voucherId: string) => {
-    updateSubmittedVoucherStatus(voucherId, 'approved'); // Assuming 'approved' is the final status
-    // In a real app, this might change to a 'final_approved' status or similar
-    console.log(`Voucher ${voucherId} finally approved.`);
+    updateSubmittedVoucherStatus(voucherId, 'paid'); // Assuming 'paid' is the final status after final approval
+    console.log(`Voucher ${voucherId} finally approved and marked as paid.`);
+    toast.success("ভাউচার সফলভাবে ফাইনাল অ্যাপ্রুভ করা হয়েছে এবং পেমেন্টের জন্য প্রস্তুত!");
   };
 
   const totalVouchers = vouchersForFinalApproval.length;
@@ -74,20 +76,25 @@ const FinalCheckApproval = () => {
                 {vouchersForFinalApproval.map((voucher, index) => (
                   <TableRow key={voucher.id}>
                     <TableCell className="font-medium">{index + 1}</TableCell>
-                    <TableCell>{voucher.voucherNumber}</TableCell>
+                    <TableCell>
+                      {voucher.voucherNumber}
+                      {voucher.originalVoucherId && (
+                        <span className="ml-2 text-sm text-purple-600">(সংশোধিত)</span>
+                      )}
+                    </TableCell>
                     <TableCell>{format(parseISO(voucher.createdAt), "dd MMM, yyyy")}</TableCell>
                     <TableCell>{voucher.submittedByName} ({voucher.submittedByPin})</TableCell>
                     <TableCell>{getInstitutionName(voucher.data.institutionId)}</TableCell>
                     <TableCell>{getBranchName(voucher.data.institutionId, voucher.data.branchId)}</TableCell>
                     <TableCell>{getVoucherHeadingById(voucher.voucherTypeId)}</TableCell>
                     <TableCell className="text-right">{(voucher.data.amount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT' })}</TableCell>
-                    <TableCell className="text-center">
+                    <TableCell className="text-center flex justify-center space-x-2">
                       <Button variant="outline" size="sm" onClick={() => handleViewVoucherDetails(voucher)}>
                         দেখুন
                       </Button>
-                      {/* <Button variant="default" size="sm" className="ml-2 bg-green-600 hover:bg-green-700" onClick={() => handleFinalApprove(voucher.id)}>
+                      <Button variant="default" size="sm" className="ml-2 bg-green-600 hover:bg-green-700" onClick={() => handleFinalApprove(voucher.id)}>
                         ফাইনাল অ্যাপ্রুভ
-                      </Button> */}
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}

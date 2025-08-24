@@ -19,13 +19,15 @@ interface VoucherDetailsPopupProps {
 }
 
 const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPopupProps) => {
-  const { updateSubmittedVoucherStatus } = useSubmittedVouchers();
+  const { submittedVouchers, updateSubmittedVoucherStatus } = useSubmittedVouchers();
   const navigate = useNavigate();
   const [isCommentDialogOpen, setIsCommentDialogOpen] = useState(false);
   const [commentType, setCommentType] = useState<'send_back' | 'reject' | null>(null);
   const [comment, setComment] = useState("");
   const [isAttachmentPopupOpen, setIsAttachmentPopupOpen] = useState(false); // State for attachment popup
   const [attachmentToView, setAttachmentToView] = useState(""); // State for filename to view
+  const [isOriginalVoucherPopupOpen, setIsOriginalVoucherPopupOpen] = useState(false); // State for original voucher popup
+  const [originalVoucher, setOriginalVoucher] = useState<SubmittedVoucher | null>(null); // State for original voucher data
 
   // Helper functions (copied/adapted from Cart.tsx)
   const getInstitutionName = (id: string) => DUMMY_INSTITUTIONS.find(inst => inst.id === id)?.name || "N/A";
@@ -139,6 +141,18 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
   const handleViewAttachment = (filename: string) => {
     setAttachmentToView(filename);
     setIsAttachmentPopupOpen(true);
+  };
+
+  const handleViewOriginalVoucher = () => {
+    if (voucher.originalVoucherId) {
+      const original = submittedVouchers.find(v => v.id === voucher.originalVoucherId);
+      if (original) {
+        setOriginalVoucher(original);
+        setIsOriginalVoucherPopupOpen(true);
+      } else {
+        toast.error("পূর্ববর্তী ভাউচারটি খুঁজে পাওয়া যায়নি।");
+      }
+    }
   };
 
   const renderAttachmentCell = (itemData: any) => (
@@ -526,6 +540,14 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
           <DialogHeader className="text-center mb-4">
             <DialogTitle className="text-2xl font-bold text-blue-700">
               {getVoucherHeadingById(voucher.voucherTypeId)}
+              {voucher.originalVoucherId && (
+                <span
+                  className="ml-2 text-sm text-purple-600 cursor-pointer hover:underline"
+                  onClick={handleViewOriginalVoucher}
+                >
+                  (সংশোধিত)
+                </span>
+              )}
             </DialogTitle>
             <p className="text-sm text-gray-600">
               জমাদানের তারিখ: {format(parseISO(voucher.createdAt), "dd MMM, yyyy")} | ভাউচার নম্বর: {voucher.voucherNumber}
@@ -596,6 +618,15 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
           isOpen={isAttachmentPopupOpen}
           onOpenChange={setIsAttachmentPopupOpen}
           filename={attachmentToView}
+        />
+      )}
+
+      {/* Original Voucher Details Popup */}
+      {isOriginalVoucherPopupOpen && originalVoucher && (
+        <VoucherDetailsPopup
+          isOpen={isOriginalVoucherPopupOpen}
+          onOpenChange={setIsOriginalVoucherPopupOpen}
+          voucher={originalVoucher}
         />
       )}
     </>

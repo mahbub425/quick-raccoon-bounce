@@ -23,15 +23,7 @@ const MentorVoucherDetails = () => {
 
   // Filter states, initialized from location state or defaults
   const initialFilters = location.state?.filters || {};
-  // const [startDate, setStartDate] = useState<Date | undefined>( // Removed
-  //   initialFilters.startDate ? parseISO(initialFilters.startDate) : undefined
-  // );
-  // const [endDate, setEndDate] = useState<Date | undefined>( // Removed
-  //   initialFilters.endDate ? parseISO(initialFilters.endDate) : undefined
-  // );
   const [selectedVoucherType, setSelectedVoucherType] = useState<string>(initialFilters.selectedVoucherType || "all");
-  // const [selectedInstitutionId, setSelectedInstitutionId] = useState<string>(initialFilters.selectedInstitutionId || "all"); // Removed
-  // const [selectedBranchId, setSelectedBranchId] = useState<string>(initialFilters.selectedBranchId || "all"); // Removed
 
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [selectedVoucherForPopup, setSelectedVoucherForPopup] = useState<SubmittedVoucher | null>(null);
@@ -55,9 +47,6 @@ const MentorVoucherDetails = () => {
       return { value: id, label: voucher?.heading || id };
     });
   }, []);
-
-  // const institutionOptions = DUMMY_INSTITUTIONS.map(inst => ({ value: inst.id, label: inst.name })); // Removed
-  // const branchOptions = [{ value: "bogura", label: "Bogura (বগুড়া)" }]; // Removed
 
   // Get the user details for the current userPin
   const currentUser = useMemo(() => {
@@ -83,40 +72,19 @@ const MentorVoucherDetails = () => {
         return false;
       }
 
-      // Filter by date range (Removed)
-      // const voucherDate = parseISO(voucher.createdAt);
-      // if (startDate && endDate) {
-      //   // Adjust endDate to include the entire day
-      //   const adjustedEndDate = endOfDay(endDate);
-      //   if (!isWithinInterval(voucherDate, { start: startDate, end: adjustedEndDate })) {
-      //     return false;
-      //   }
-      // } else if (startDate && !endDate) { // Only start date selected
-      //   if (voucherDate < startDate) return false;
-      // } else if (!startDate && endDate) { // Only end date selected
-      //   const adjustedEndDate = endOfDay(endDate);
-      //   if (voucherDate > adjustedEndDate) return false;
-      // }
+      // Only show pending vouchers and filter out 'corrected_by_user'
+      if (voucher.status !== 'pending') {
+        return false;
+      }
 
       // Filter by voucher type
       if (selectedVoucherType !== "all" && voucher.voucherTypeId !== selectedVoucherType) {
         return false;
       }
 
-      // Filter by institution (Removed)
-      // if (selectedInstitutionId !== "all" && voucher.data.institutionId !== selectedInstitutionId) {
-      //   return false;
-      // }
-
-      // Filter by branch (Removed)
-      // if (selectedBranchId !== "all" && voucher.data.branchId !== selectedBranchId) {
-      //   return false;
-      // }
-
-      // Only show pending vouchers in this table
-      return voucher.status === 'pending';
+      return true;
     });
-  }, [submittedVouchers, userPin, selectedVoucherType]); // Removed startDate, endDate, selectedInstitutionId, selectedBranchId from dependencies
+  }, [submittedVouchers, userPin, selectedVoucherType]);
 
   const totalAmountForUserVouchers = useMemo(() => filteredUserVouchers.reduce((sum, voucher) => sum + (voucher.data.amount || 0), 0), [filteredUserVouchers]);
 
@@ -197,9 +165,8 @@ const MentorVoucherDetails = () => {
               <TableHeader>
                 <TableRow className="bg-blue-100">
                   <TableHead className="w-[50px]">ক্রমিক</TableHead>
-                  {/* Removed Voucher Number */}
+                  <TableHead>ভাউচার নাম্বার</TableHead> {/* Added Voucher Number */}
                   <TableHead>জমাদানের তারিখ</TableHead>
-                  {/* Removed প্রতিষ্ঠানের নাম */}
                   <TableHead>শাখার নাম</TableHead>
                   <TableHead>ভাউচারের ধরন</TableHead>
                   <TableHead className="text-right">টাকার পরিমাণ</TableHead>
@@ -210,9 +177,13 @@ const MentorVoucherDetails = () => {
                 {filteredUserVouchers.map((voucher, index) => (
                   <TableRow key={voucher.id}>
                     <TableCell className="font-medium">{index + 1}</TableCell>
-                    {/* Removed Voucher Number Cell */}
+                    <TableCell>
+                      {voucher.voucherNumber}
+                      {voucher.originalVoucherId && (
+                        <span className="ml-2 text-sm text-purple-600">(সংশোধিত)</span>
+                      )}
+                    </TableCell>
                     <TableCell>{format(parseISO(voucher.createdAt), "dd MMM, yyyy")}</TableCell>
-                    {/* Removed প্রতিষ্ঠানের নাম Cell */}
                     <TableCell>{DUMMY_INSTITUTIONS.find(inst => inst.id === voucher.data.institutionId)?.branches.find(b => b.id === voucher.data.branchId)?.name || "N/A"}</TableCell>
                     <TableCell>{getVoucherHeadingById(voucher.voucherTypeId)}</TableCell>
                     <TableCell className="text-right">{(voucher.data.amount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT' })}</TableCell>
@@ -226,7 +197,7 @@ const MentorVoucherDetails = () => {
               </TableBody>
               <TableFooter>
                 <TableRow className="bg-blue-50 font-bold">
-                  <TableCell colSpan={4}>মোট</TableCell> {/* Adjusted colSpan from 6 to 4 */}
+                  <TableCell colSpan={5}>মোট</TableCell> {/* Adjusted colSpan from 4 to 5 */}
                   <TableCell className="text-right">{totalAmountForUserVouchers.toLocaleString('bn-BD', { style: 'currency', currency: 'BDT' })}</TableCell>
                   <TableCell></TableCell> {/* Empty cell for action column */}
                 </TableRow>

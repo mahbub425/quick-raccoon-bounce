@@ -5,9 +5,10 @@ import { toast } from "sonner";
 
 interface SubmittedVouchersContextType {
   submittedVouchers: SubmittedVoucher[];
-  addSubmittedVouchers: (items: CartItem[]) => void;
+  addSubmittedVouchers: (items: (Omit<CartItem, 'id' | 'createdAt'> & { originalVoucherId?: string; voucherNumber?: string })[]) => void;
   updateSubmittedVoucherStatus: (voucherId: string, status: VoucherStatus, comment?: string) => void;
   updateSubmittedVoucherData: (voucherId: string, newData: any) => void;
+  markVoucherAsCorrected: (voucherId: string) => void; // New function
   clearSubmittedVouchers: () => void;
 }
 
@@ -38,14 +39,16 @@ export const SubmittedVouchersProvider = ({ children }: { children: ReactNode })
     }
   }, [submittedVouchers]);
 
-  const addSubmittedVouchers = (items: CartItem[]) => {
+  const addSubmittedVouchers = (items: (Omit<CartItem, 'id' | 'createdAt'> & { originalVoucherId?: string; voucherNumber?: string })[]) => {
     if (!user) {
       toast.error("ভাউচার সাবমিট করার জন্য লগইন করুন।");
       return;
     }
 
     const newSubmittedItems: SubmittedVoucher[] = items.map(item => ({
-      ...item,
+      id: Date.now().toString(), // Generate new ID
+      createdAt: new Date().toISOString(), // Generate new timestamp
+      ...item, // Spread the rest of the item properties
       status: 'pending',
       submittedByPin: user.pin,
       submittedByName: user.name,
@@ -53,6 +56,7 @@ export const SubmittedVouchersProvider = ({ children }: { children: ReactNode })
       submittedByDepartment: user.department,
       submittedByDesignation: user.designation,
       submittedByRole: user.role,
+      // originalVoucherId is already in `item` if provided, or undefined
     }));
     setSubmittedVouchers((prev) => [...prev, ...newSubmittedItems]);
   };
@@ -73,6 +77,14 @@ export const SubmittedVouchersProvider = ({ children }: { children: ReactNode })
     );
   };
 
+  const markVoucherAsCorrected = (voucherId: string) => {
+    setSubmittedVouchers((prev) =>
+      prev.map((voucher) =>
+        voucher.id === voucherId ? { ...voucher, status: 'corrected_by_user' } : voucher,
+      ),
+    );
+  };
+
   const clearSubmittedVouchers = () => {
     setSubmittedVouchers([]);
   };
@@ -84,6 +96,7 @@ export const SubmittedVouchersProvider = ({ children }: { children: ReactNode })
         addSubmittedVouchers,
         updateSubmittedVoucherStatus,
         updateSubmittedVoucherData,
+        markVoucherAsCorrected,
         clearSubmittedVouchers,
       }}
     >

@@ -89,9 +89,10 @@ export type CartItem = {
   voucherNumber: string; // Auto-generated unique voucher number
   data: any; // The actual form data for this item
   createdAt: string; // Timestamp for when it was added
+  originalVoucherId?: string; // NEW: ID of the voucher this one is a correction of
 };
 
-export type VoucherStatus = 'pending' | 'approved' | 'sent_back' | 'rejected' | 'paid'; // Added 'paid' status
+export type VoucherStatus = 'pending' | 'approved' | 'sent_back' | 'rejected' | 'paid' | 'corrected_by_user'; // Added 'corrected_by_user' status
 
 export type SubmittedVoucher = CartItem & {
   status: VoucherStatus;
@@ -102,6 +103,7 @@ export type SubmittedVoucher = CartItem & {
   submittedByDepartment: string;
   submittedByDesignation: string;
   submittedByRole: UserProfile['role']; // Added submittedByRole
+  // originalVoucherId is now part of CartItem
 };
 
 // Specific form data types for better type safety (optional, can be inferred from FormField definitions)

@@ -62,6 +62,7 @@ const SelectedVouchers = () => {
       voucherTypeId: activeSubFormId || "", // Use sub-voucher ID
       voucherHeading: newHeading,
       data: combinedData,
+      voucherNumber: undefined, // Explicitly pass undefined to let CartContext generate
     });
     toast.success(`${newHeading} কার্টে যোগ করা হয়েছে!`);
 

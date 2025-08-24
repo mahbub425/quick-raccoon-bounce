@@ -4,7 +4,7 @@ import { toast } from "sonner";
 
 interface CartContextType {
   cartItems: CartItem[];
-  addToCart: (item: Omit<CartItem, 'id' | 'createdAt' | 'voucherNumber'>) => void;
+  addToCart: (item: Omit<CartItem, 'id' | 'createdAt'> & { originalVoucherId?: string; voucherNumber?: string }) => void;
   removeFromCart: (id: string) => void;
   updateCartItem: (id: string, updatedData: any) => void;
   clearCart: () => void;
@@ -22,12 +22,13 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     return `${prefix}${Date.now().toString().slice(-6)}`;
   };
 
-  const addToCart = (item: Omit<CartItem, 'id' | 'createdAt' | 'voucherNumber'>) => {
+  const addToCart = (item: Omit<CartItem, 'id' | 'createdAt'> & { originalVoucherId?: string; voucherNumber?: string }) => {
     const newItem: CartItem = {
       ...item,
       id: Date.now().toString(), // Simple unique ID for now
       createdAt: new Date().toISOString(),
-      voucherNumber: generateVoucherNumber(item.voucherTypeId),
+      voucherNumber: item.voucherNumber || generateVoucherNumber(item.voucherTypeId), // Use provided voucherNumber or generate new
+      originalVoucherId: item.originalVoucherId, // Pass originalVoucherId if present
     };
     setCartItems((prev) => [...prev, newItem]);
     toast.success(`${item.voucherHeading} কার্টে যোগ করা হয়েছে!`);
@@ -44,7 +45,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         item.id === id ? { ...item, data: { ...item.data, ...updatedData } } : item,
       ),
     );
-    toast.success("কার্ট আইটেম আপডেট করা হয়েছে!");
+    toast.success("কার্ট আইtem আপডেট করা হয়েছে!");
   };
 
   const clearCart = () => {

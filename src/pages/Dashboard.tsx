@@ -14,8 +14,9 @@ import { useAuth } from "@/context/AuthContext"; // Import useAuth
 import AttachmentViewerPopup from "@/components/AttachmentViewerPopup"; // Import the new component
 
 const Dashboard = () => {
-  const { submittedVouchers, updateSubmittedVoucherStatus, updateSubmittedVoucherData } = useSubmittedVouchers();
+  const { submittedVouchers, updateSubmittedVoucherStatus, markVoucherAsCorrected, addSubmittedVouchers } = useSubmittedVouchers();
   const { user } = useAuth(); // Get current user
+  const { addToCart } = useCart(); // Use addToCart for new submission
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingVoucher, setEditingVoucher] = useState<SubmittedVoucher | null>(null);
   const [isAttachmentPopupOpen, setIsAttachmentPopupOpen] = useState(false); // State for attachment popup
@@ -23,7 +24,8 @@ const Dashboard = () => {
 
   const userSpecificVouchers = useMemo(() => {
     if (!user) return [];
-    return submittedVouchers.filter(v => v.submittedByPin === user.pin);
+    // Filter out vouchers that have been corrected by the user, unless they are the latest version
+    return submittedVouchers.filter(v => v.submittedByPin === user.pin && v.status !== 'corrected_by_user');
   }, [submittedVouchers, user]);
 
   const sentBackVouchers = useMemo(() => userSpecificVouchers.filter(v => v.status === 'sent_back'), [userSpecificVouchers]);
@@ -106,8 +108,20 @@ const Dashboard = () => {
 
   const handleResubmitVoucher = (updatedData: any) => {
     if (editingVoucher) {
-      updateSubmittedVoucherData(editingVoucher.id, updatedData);
-      updateSubmittedVoucherStatus(editingVoucher.id, 'pending', undefined);
+      // 1. Mark the original voucher as 'corrected_by_user'
+      markVoucherAsCorrected(editingVoucher.id);
+
+      // 2. Create a new CartItem structure for the resubmission
+      const newCartItem = {
+        voucherTypeId: editingVoucher.voucherTypeId,
+        voucherHeading: editingVoucher.voucherHeading,
+        data: updatedData,
+        voucherNumber: editingVoucher.voucherNumber, // Keep the same voucher number
+        originalVoucherId: editingVoucher.id, // Link to the original voucher
+      };
+
+      // 3. Add the new voucher to submittedVouchers
+      addSubmittedVouchers([newCartItem]);
       
       toast.success("ভাউচার সফলভাবে পুনরায় সাবমিট করা হয়েছে!");
       setIsEditDialogOpen(false);
