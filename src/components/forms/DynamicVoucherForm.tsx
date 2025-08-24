@@ -50,7 +50,7 @@ const generateDefaultValues = (formFields: FormFieldType[]) => {
       if (field.type === 'date') {
         defaults[field.name] = null;
       } else if (field.type === 'number') {
-        defaults[field.name] = undefined;
+        defaults[field.name] = null; // Changed from undefined to null for consistency
       } else if (field.type === 'pin-selector') {
         defaults[field.name] = [];
       } else if (field.type === 'quantity-unit') {
@@ -90,23 +90,28 @@ const createSchema = (fields: FormFieldType[], currentFormValues: any, voucherTy
         }
         break;
       case "number":
-        currentFieldSchema = z.coerce.number({ invalid_type_error: `${field.label} অবশ্যই একটি সংখ্যা হতে হবে` });
+        let baseNumberSchema = z.coerce.number({ invalid_type_error: `${field.label} অবশ্যই একটি সংখ্যা হতে হবে` });
+
         if (field.mandatory) {
-          currentFieldSchema = (currentFieldSchema as z.ZodNumber).min(1, { message: `${field.label} অবশ্যই 0 এর বেশি হতে হবে` });
+          baseNumberSchema = baseNumberSchema.min(1, { message: `${field.label} অবশ্যই 0 এর বেশি হতে হবে` });
         } else {
-          currentFieldSchema = (currentFieldSchema as z.ZodNumber).optional();
+          baseNumberSchema = baseNumberSchema.nullable(); // Make it nullable if not mandatory
         }
 
         if (field.maxAmountRules && field.name === "amount" && currentFormValues.shift) {
           const maxAmount = field.maxAmountRules[currentFormValues.shift];
           if (maxAmount !== undefined) {
-            currentFieldSchema = (currentFieldSchema as z.ZodNumber).refine(
-              (val) => val === undefined || val <= maxAmount,
+            currentFieldSchema = baseNumberSchema.refine(
+              (val) => val === null || val <= maxAmount, // Allow null
               {
                 message: `আপনি টাকার পরিমান বেশি দেখিয়েছেন`, // Updated message
               }
             );
+          } else {
+            currentFieldSchema = baseNumberSchema; // If no maxAmount, use the base schema
           }
+        } else {
+          currentFieldSchema = baseNumberSchema; // If no maxAmountRules, use the base schema
         }
         break;
       case "dropdown":
@@ -324,7 +329,10 @@ const DynamicVoucherForm = forwardRef<DynamicVoucherFormRef, DynamicVoucherFormP
                         placeholder={field.placeholder}
                         {...formHookField}
                         value={formHookField.value === undefined || formHookField.value === null ? "" : String(formHookField.value)}
-                        onChange={(e) => formHookField.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          formHookField.onChange(value === "" ? null : parseFloat(value)); // Set to null if empty
+                        }}
                         className="border-blue-300 focus:border-blue-500 focus:ring-blue-500"
                       />
                     );
