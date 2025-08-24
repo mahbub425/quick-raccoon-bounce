@@ -8,14 +8,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { toast } from "sonner";
 
 const PaymentLogin = () => {
-  const [name, setName] = useState("");
+  const [username, setUsername] = useState(""); // Changed state variable to username
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
   const { login } = useAuth();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (login(name, password, 'payment')) { // Specify 'payment' role for this login page
+    if (login(username, password, 'payment')) { // Pass username to login function
       navigate("/payment/home"); // Redirect to payment's home page
     }
   };
@@ -32,15 +32,15 @@ const PaymentLogin = () => {
         <CardContent className="p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <Label htmlFor="name" className="text-lg font-semibold text-gray-700">
-                ইউজার নেম (নাম)
+              <Label htmlFor="username" className="text-lg font-semibold text-gray-700"> {/* Changed htmlFor to username */}
+                ইউজার নেম
               </Label>
               <Input
-                id="name"
+                id="username" // Changed id to username
                 type="text"
-                placeholder="Rafiqul Islam"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                placeholder="আপনার ইউজার নেম লিখুন" // Updated placeholder
+                value={username}
+                onChange={(e) => setUsername(e.target.value)} // Updated onChange
                 required
                 className="mt-2 p-3 border-green-300 focus:border-green-500 focus:ring-green-500"
               />

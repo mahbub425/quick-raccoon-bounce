@@ -5,7 +5,7 @@ import { toast } from "sonner";
 
 interface AuthContextType {
   user: UserProfile | null;
-  login: (name: string, password: string, requiredRole?: UserProfile['role']) => boolean;
+  login: (username: string, password: string, requiredRole?: UserProfile['role']) => boolean;
   logout: () => void;
 }
 
@@ -34,9 +34,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [user]);
 
-  const login = (name: string, password: string, requiredRole?: UserProfile['role']): boolean => {
+  const login = (username: string, password: string, requiredRole?: UserProfile['role']): boolean => {
     const foundUser = DUMMY_USERS.find(
-      (u) => u.name === name && u.password === password,
+      (u) => u.username === username && u.password === password,
     );
 
     if (foundUser) {

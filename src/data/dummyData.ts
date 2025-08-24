@@ -4,6 +4,7 @@ export const DUMMY_USERS: UserProfile[] = [
   {
     pin: "203",
     name: "Tanzir",
+    username: "tanzir", // Added username
     mobileNumber: "01713236989",
     department: "Finance & Accounts",
     designation: "Deputy Manager",
@@ -13,6 +14,7 @@ export const DUMMY_USERS: UserProfile[] = [
   {
     pin: "204",
     name: "Rahim",
+    username: "rahim", // Added username
     mobileNumber: "01712345678",
     department: "HR",
     designation: "Manager",
@@ -23,6 +25,7 @@ export const DUMMY_USERS: UserProfile[] = [
   {
     pin: "1001",
     name: "Akram Hossain",
+    username: "akram.hossain", // Added username
     mobileNumber: "01700000001",
     department: "Sales",
     designation: "Sales Executive",
@@ -32,6 +35,7 @@ export const DUMMY_USERS: UserProfile[] = [
   {
     pin: "1002",
     name: "Farhana Islam",
+    username: "farhana.islam", // Added username
     mobileNumber: "01700000002",
     department: "Marketing",
     designation: "Marketing Officer",
@@ -41,6 +45,7 @@ export const DUMMY_USERS: UserProfile[] = [
   {
     pin: "1003",
     name: "Kamal Ahmed",
+    username: "kamal.ahmed", // Added username
     mobileNumber: "01700000003",
     department: "IT",
     designation: "Software Engineer",
@@ -50,6 +55,7 @@ export const DUMMY_USERS: UserProfile[] = [
   {
     pin: "1004",
     name: "Nabila Rahman",
+    username: "nabila.rahman", // Added username
     mobileNumber: "01700000004",
     department: "Customer Service",
     designation: "Support Agent",
@@ -59,6 +65,7 @@ export const DUMMY_USERS: UserProfile[] = [
   {
     pin: "1005",
     name: "Omar Faruk",
+    username: "omar.faruk", // Added username
     mobileNumber: "01700000005",
     department: "Operations",
     designation: "Operations Lead",
@@ -69,6 +76,7 @@ export const DUMMY_USERS: UserProfile[] = [
   {
     pin: "29",
     name: "mkpasha",
+    username: "mkpasha", // Added username
     mobileNumber: "01811415103",
     department: "Finance & Accounts",
     designation: "General Manager",
@@ -79,6 +87,7 @@ export const DUMMY_USERS: UserProfile[] = [
   {
     pin: "115",
     name: "rafiq",
+    username: "rafiq", // Added username
     mobileNumber: "01811415147",
     department: "Finance & Accounts",
     designation: "Deputy Manager",
@@ -89,6 +98,7 @@ export const DUMMY_USERS: UserProfile[] = [
   {
     pin: "4170",
     name: "abdullah",
+    username: "abdullah", // Added username
     mobileNumber: "01518647186",
     department: "Finance & Accounts",
     designation: "Executive",

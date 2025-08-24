@@ -1,6 +1,7 @@
 export type UserProfile = {
   pin: string;
   name: string;
+  username: string; // Added username for login
   mobileNumber: string;
   department: string;
   designation: string;
