@@ -5,6 +5,7 @@ export type UserProfile = {
   department: string;
   designation: string;
   password: string;
+  role: 'user' | 'mentor' | 'payment' | 'audit'; // Added role
 };
 
 export type Institution = {
@@ -99,6 +100,7 @@ export type SubmittedVoucher = CartItem & {
   submittedByMobile: string;
   submittedByDepartment: string;
   submittedByDesignation: string;
+  submittedByRole: UserProfile['role']; // Added submittedByRole
 };
 
 // Specific form data types for better type safety (optional, can be inferred from FormField definitions)

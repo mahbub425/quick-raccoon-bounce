@@ -31,6 +31,7 @@ export const SubmittedVouchersProvider = ({ children }: { children: ReactNode })
       submittedByMobile: user.mobileNumber,
       submittedByDepartment: user.department,
       submittedByDesignation: user.designation,
+      submittedByRole: user.role, // Added the missing property
     }));
     setSubmittedVouchers((prev) => [...prev, ...newSubmittedItems]);
   };

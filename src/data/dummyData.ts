@@ -8,6 +8,7 @@ export const DUMMY_USERS: UserProfile[] = [
     department: "Finance & Accounts",
     designation: "Deputy Manager",
     password: "123456",
+    role: "user", // User role
   },
   {
     pin: "204",
@@ -16,6 +17,37 @@ export const DUMMY_USERS: UserProfile[] = [
     department: "HR",
     designation: "Manager",
     password: "password",
+    role: "user", // User role
+  },
+  // Mentor User
+  {
+    pin: "29",
+    name: "K.M Mostafa Kamal",
+    mobileNumber: "01811415103",
+    department: "Finance & Accounts",
+    designation: "General Manager",
+    password: "123456",
+    role: "mentor", // Mentor role
+  },
+  // Payment User
+  {
+    pin: "115",
+    name: "Rafiqul Islam",
+    mobileNumber: "01811415147",
+    department: "Finance & Accounts",
+    designation: "Deputy Manager",
+    password: "123456",
+    role: "payment", // Payment role
+  },
+  // Audit User (Final Check & Approval)
+  {
+    pin: "4170",
+    name: "Abdullah",
+    mobileNumber: "01518647186",
+    department: "Finance & Accounts",
+    designation: "Executive",
+    password: "123456",
+    role: "audit", // Audit role
   },
 ];
 
@@ -73,6 +105,9 @@ export const DUMMY_PINS = [
   { sl: 3, pin: "103", name: "User Three" },
   { sl: 4, pin: "104", name: "User Four" },
   { sl: 5, pin: "105", name: "User Five" },
+  { sl: 6, pin: "29", name: "K.M Mostafa Kamal" }, // Mentor PIN
+  { sl: 7, pin: "115", name: "Rafiqul Islam" }, // Payment PIN
+  { sl: 8, pin: "4170", name: "Abdullah" }, // Audit PIN
 ];
 
 export const OFFICE_SUPPLIES_ITEM_OPTIONS: { [key: string]: { value: string; label: string }[] } = {
