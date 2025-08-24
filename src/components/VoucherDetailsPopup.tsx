@@ -211,7 +211,7 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
                 {itemData.selectedPins && itemData.selectedPins.length > 0 && ` (পিন: ${itemData.selectedPins.length} জন)`} {/* Updated line */}
                 {itemData.quantityUnit?.quantity && itemData.quantityUnit?.unit && ` (${itemData.quantityUnit.quantity} ${itemData.quantityUnit.unit})`}
               </TableCell>
-              <TableCell className="text-right">{(itemData.amount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT' })}</TableCell>
+              <TableCell className="text-right">{(itemData.amount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</TableCell>
               <TableCell>{itemData.description || "N/A"}</TableCell>
               {renderAttachmentCell(itemData)}
             </TableRow>
@@ -236,7 +236,7 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
                 {getDropdownLabel(voucherTypeId, 'vehicleName', itemData.vehicleName, itemData) || "N/A"}
                 {itemData.specialApproverPin && ` (অনুমোদনকারী পিন: ${itemData.specialApproverPin})`}
               </TableCell>
-              <TableCell className="text-right">{(itemData.amount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT' })}</TableCell>
+              <TableCell className="text-right">{(itemData.amount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</TableCell>
               <TableCell>{itemData.purpose || "N/A"}</TableCell>
               {renderAttachmentCell(itemData)}
             </TableRow>
@@ -259,7 +259,7 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
                 {itemData.specialApproverPin && ` (অনুমোদনকারী পিন: ${itemData.specialApproverPin})`}
               </TableCell>
               <TableCell>{itemData.numberOfPersons || 0}</TableCell>
-              <TableCell className="text-right">{(itemData.amount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT' })}</TableCell>
+              <TableCell className="text-right">{(itemData.amount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</TableCell>
               <TableCell>{itemData.description || "N/A"}</TableCell>
               {renderAttachmentCell(itemData)}
             </TableRow>
@@ -282,7 +282,7 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
                 {!itemData.pin && !itemData.name && "N/A"}
               </TableCell>
               <TableCell>{getDropdownLabel(voucherTypeId, 'type', itemData.type, itemData) || "N/A"}</TableCell>
-              <TableCell className="text-right">{(itemData.amount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT' })}</TableCell>
+              <TableCell className="text-right">{(itemData.amount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</TableCell>
               <TableCell>{itemData.description || "N/A"}</TableCell>
               {renderAttachmentCell(itemData)}
             </TableRow>
@@ -301,7 +301,7 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
               <TableCell>{itemData.publicistName || "N/A"}</TableCell>
               <TableCell>{itemData.mobileNumber || "N/A"}</TableCell>
               <TableCell>{getDropdownLabel(voucherTypeId, 'shift', itemData.shift, itemData) || "N/A"}</TableCell>
-              <TableCell className="text-right">{(itemData.amount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT' })}</TableCell>
+              <TableCell className="text-right">{(itemData.amount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</TableCell>
               {renderAttachmentCell(itemData)}
             </TableRow>
           </TableBody>
@@ -316,7 +316,7 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
               <TableCell>{getDropdownLabel(voucherTypeId, 'expenseTitle', itemData.expenseTitle, itemData) || "N/A"}</TableCell>
               <TableCell>{getDropdownLabel(voucherTypeId, 'itemName', itemData.itemName, itemData) || "N/A"}</TableCell>
               <TableCell>{itemData.quantityUnit?.quantity || "N/A"} {itemData.quantityUnit?.unit || ""}</TableCell>
-              <TableCell className="text-right">{(itemData.amount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT' })}</TableCell>
+              <TableCell className="text-right">{(itemData.amount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</TableCell>
               <TableCell>{itemData.description || "N/A"}</TableCell>
               {renderAttachmentCell(itemData)}
             </TableRow>
@@ -332,7 +332,7 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
               <TableCell>{getDropdownLabel(voucherTypeId, 'expenseTitle', itemData.expenseTitle, itemData) || "N/A"}</TableCell>
               <TableCell>{getDropdownLabel(voucherTypeId, 'itemName', itemData.itemName, itemData) || "N/A"}</TableCell>
               <TableCell>{itemData.quantityUnit?.quantity || "N/A"} {itemData.quantityUnit?.unit || ""}</TableCell>
-              <TableCell className="text-right">{(itemData.amount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT' })}</TableCell>
+              <TableCell className="text-right">{(itemData.amount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</TableCell>
               <TableCell>{itemData.description || "N/A"}</TableCell>
               {renderAttachmentCell(itemData)}
             </TableRow>
@@ -348,7 +348,7 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
               <TableCell>{getDropdownLabel(voucherTypeId, 'expenseTitle', itemData.expenseTitle, itemData) || "N/A"}</TableCell>
               <TableCell>{getDropdownLabel(voucherTypeId, 'itemName', itemData.itemName, itemData) || "N/A"}</TableCell>
               <TableCell>{itemData.quantityUnit?.quantity || "N/A"} {itemData.quantityUnit?.unit || ""}</TableCell>
-              <TableCell className="text-right">{(itemData.amount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT' })}</TableCell>
+              <TableCell className="text-right">{(itemData.amount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</TableCell>
               <TableCell>{itemData.description || "N/A"}</TableCell>
               {renderAttachmentCell(itemData)}
             </TableRow>
@@ -364,7 +364,7 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
               <TableCell>{itemData.date ? format(new Date(itemData.date), "dd MMM, yyyy") : "N/A"}</TableCell>
               <TableCell>{getInstitutionName(itemData.institutionId)}</TableCell>
               <TableCell>{getBranchName(itemData.institutionId, itemData.branchId)}</TableCell>
-              <TableCell className="text-right">{(itemData.amount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT' })}</TableCell>
+              <TableCell className="text-right">{(itemData.amount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</TableCell>
               <TableCell>{itemData.description || "N/A"}</TableCell>
               {renderAttachmentCell(itemData)}
             </TableRow>
@@ -586,7 +586,7 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
               <TableFooter>
                 <TableRow className="bg-gray-50 font-bold">
                   <TableCell colSpan={getTableColSpan(voucher.voucherTypeId) - 1}>মোট</TableCell>
-                  <TableCell className="text-right">{(voucher.data.amount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT' })}</TableCell>
+                  <TableCell className="text-right">{(voucher.data.amount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</TableCell>
                 </TableRow>
               </TableFooter>
             </Table>

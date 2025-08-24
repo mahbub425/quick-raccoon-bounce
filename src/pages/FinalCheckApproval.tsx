@@ -104,7 +104,7 @@ const FinalCheckApproval = () => {
                     <TableCell>{getInstitutionName(voucher.data.institutionId)}</TableCell>
                     <TableCell>{getBranchName(voucher.data.institutionId, voucher.data.branchId)}</TableCell>
                     <TableCell>{getVoucherHeadingById(voucher.voucherTypeId)}</TableCell>
-                    <TableCell className="text-right">{(voucher.data.amount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT' })}</TableCell>
+                    <TableCell className="text-right">{(voucher.data.amount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</TableCell>
                     <TableCell className="text-center flex justify-center space-x-2">
                       <Button variant="outline" size="sm" onClick={() => handleViewVoucherDetails(voucher)}>
                         দেখুন
@@ -119,7 +119,7 @@ const FinalCheckApproval = () => {
               <TableFooter>
                 <TableRow className="bg-orange-50 font-bold">
                   <TableCell colSpan={7}>মোট</TableCell>
-                  <TableCell className="text-right">{grandTotalAmount.toLocaleString('bn-BD', { style: 'currency', currency: 'BDT' })}</TableCell>
+                  <TableCell className="text-right">{grandTotalAmount.toLocaleString('bn-BD', { style: 'currency', currency: 'BDT', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</TableCell>
                   <TableCell></TableCell>
                 </TableRow>
               </TableFooter>

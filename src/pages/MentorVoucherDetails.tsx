@@ -203,7 +203,7 @@ const MentorVoucherDetails = () => {
                     <TableCell>{format(parseISO(voucher.createdAt), "dd MMM, yyyy")}</TableCell>
                     <TableCell>{DUMMY_INSTITUTIONS.find(inst => inst.id === voucher.data.institutionId)?.branches.find(b => b.id === voucher.data.branchId)?.name || "N/A"}</TableCell>
                     <TableCell>{getVoucherHeadingById(voucher.voucherTypeId)}</TableCell>
-                    <TableCell className="text-right">{(voucher.data.amount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT' })}</TableCell>
+                    <TableCell className="text-right">{(voucher.data.amount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</TableCell>
                     <TableCell className="text-center">
                       <Button variant="outline" size="sm" onClick={() => handleViewVoucherDetails(voucher)}>
                         দেখুন
@@ -215,7 +215,7 @@ const MentorVoucherDetails = () => {
               <TableFooter>
                 <TableRow className="bg-blue-50 font-bold">
                   <TableCell colSpan={5}>মোট</TableCell> {/* Adjusted colSpan from 4 to 5 */}
-                  <TableCell className="text-right">{totalAmountForUserVouchers.toLocaleString('bn-BD', { style: 'currency', currency: 'BDT' })}</TableCell>
+                  <TableCell className="text-right">{totalAmountForUserVouchers.toLocaleString('bn-BD', { style: 'currency', currency: 'BDT', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</TableCell>
                   <TableCell></TableCell> {/* Empty cell for action column */}
                 </TableRow>
               </TableFooter>

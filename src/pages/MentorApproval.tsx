@@ -174,7 +174,7 @@ const MentorApproval = () => {
                     <TableCell>{userGroup.user.name}</TableCell>
                     <TableCell>{userGroup.voucherTypeHeading}</TableCell> {/* Display voucher type heading */}
                     <TableCell>{userGroup.pendingCount}</TableCell>
-                    <TableCell className="text-right">{userGroup.totalAmount.toLocaleString('bn-BD', { style: 'currency', currency: 'BDT' })}</TableCell>
+                    <TableCell className="text-right">{userGroup.totalAmount.toLocaleString('bn-BD', { style: 'currency', currency: 'BDT', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</TableCell>
                     <TableCell className="text-center">
                       <Button variant="outline" size="sm" onClick={() => handleViewUserVouchers(userGroup.user.pin, userGroup.voucherTypeId)}>
                         দেখুন
@@ -187,7 +187,7 @@ const MentorApproval = () => {
                 <TableRow className="bg-purple-50 font-bold">
                   <TableCell colSpan={4}>মোট</TableCell>{/* Adjusted colSpan from 3 to 4 */}
                   <TableCell>{totalPendingVouchers}</TableCell>
-                  <TableCell className="text-right">{grandTotalAmount.toLocaleString('bn-BD', { style: 'currency', currency: 'BDT' })}</TableCell>
+                  <TableCell className="text-right">{grandTotalAmount.toLocaleString('bn-BD', { style: 'currency', currency: 'BDT', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</TableCell>
                   <TableCell></TableCell> {/* Empty cell for action column */}
                 </TableRow>
               </TableFooter>
