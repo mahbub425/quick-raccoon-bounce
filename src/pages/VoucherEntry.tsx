@@ -4,9 +4,11 @@ import { Button } from "@/components/ui/button";
 import VoucherCard from "@/components/VoucherCard";
 import { DUMMY_VOUCHER_TYPES } from "@/data/dummyData";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/context/AuthContext"; // Import useAuth
 
 const VoucherEntry = () => {
   const navigate = useNavigate();
+  const { user } = useAuth(); // Get current user from AuthContext
   const [selectedVoucherIds, setSelectedVoucherIds] = useState<string[]>([]);
   const [collapsedMultiTypes, setCollapsedMultiTypes] = useState<string[]>([]);
 
@@ -35,7 +37,13 @@ const VoucherEntry = () => {
       alert("অনুগ্রহ করে অন্তত একটি ভাউচার নির্বাচন করুন।");
       return;
     }
-    navigate("/selected-vouchers", { state: { selectedVoucherIds } });
+
+    let selectedVouchersPath = "/selected-vouchers";
+    if (user && user.role !== 'user') {
+      selectedVouchersPath = `/${user.role}${selectedVouchersPath}`;
+    }
+    
+    navigate(selectedVouchersPath, { state: { selectedVoucherIds } });
   };
 
   return (
