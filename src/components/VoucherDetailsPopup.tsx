@@ -101,7 +101,7 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
     updateSubmittedVoucherStatus(voucher.id, 'approved');
     toast.success("অনুমোদন সম্পন্ন হয়েছে!");
     onOpenChange(false); // Close popup
-    navigate("/final-check-approval"); // Navigate to Final Check & Approval page
+    // Removed: navigate("/final-check-approval"); // No longer navigate
   };
 
   const handleSendBack = () => {
@@ -122,11 +122,11 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
     if (commentType === 'send_back') {
       updateSubmittedVoucherStatus(voucher.id, 'sent_back', comment);
       toast.info("ভাউচার ফেরত পাঠানো হয়েছে।");
-      navigate("/dashboard"); // Navigate to Dashboard page
+      // Removed: navigate("/dashboard"); // No longer navigate
     } else if (commentType === 'reject') {
       updateSubmittedVoucherStatus(voucher.id, 'rejected', comment);
       toast.error("ভাউচার বাতিল করা হয়েছে।");
-      navigate("/dashboard"); // Navigate to Dashboard page
+      // Removed: navigate("/dashboard"); // No longer navigate
     }
     setIsCommentDialogOpen(false);
     setComment("");
