@@ -58,7 +58,7 @@ const allSidebarNavItems: SidebarNavItem[] = [
     title: "Report",
     href: "/report",
     icon: BarChart,
-    roles: ["audit"], // Only for audit
+    roles: ["user", "mentor", "payment", "audit"], // Added for all roles
   },
 ];
 
@@ -74,7 +74,7 @@ const Sidebar = ({ onLinkClick }: SidebarProps) => {
   // Adjust hrefs for role-specific paths
   const getAdjustedHref = (href: string) => {
     if (!user) return href;
-    if (href === "/home" || href === "/dashboard" || href === "/voucher-entry") {
+    if (href === "/home" || href === "/dashboard" || href === "/voucher-entry" || href === "/report") { // Added /report here
       if (user.role === 'mentor') return `/mentor${href}`;
       if (user.role === 'payment') return `/payment${href}`;
       if (user.role === 'audit') return `/audit${href}`;
