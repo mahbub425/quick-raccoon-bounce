@@ -55,7 +55,7 @@ const App = () => (
                     <Route path="/voucher-entry" element={<VoucherEntry />} />
                     <Route path="/selected-vouchers" element={<SelectedVouchers />} />
                     <Route path="/cart" element={<Cart />} />
-                    <Route path="/report" element={<Report />} /> {/* Added for user role */}
+                    <Route path="/report" element={<Report />} />
                   </Route>
                 </Route>
 
@@ -65,11 +65,11 @@ const App = () => (
                     <Route path="/mentor/home" element={<Home />} />
                     <Route path="/mentor/dashboard" element={<Dashboard />} />
                     <Route path="/mentor/voucher-entry" element={<VoucherEntry />} />
-                    <Route path="/mentor/selected-vouchers" element={<SelectedVouchers />} />
-                    <Route path="/mentor/cart" element={<Cart />} />
+                    <Route path="/mentor/selected-vouchers" element={<SelectedVouchers />} /> {/* Added */}
+                    <Route path="/mentor/cart" element={<Cart />} /> {/* Added */}
                     <Route path="/mentor-approval" element={<MentorApproval />} />
                     <Route path="/mentor-approval/:userPin" element={<MentorVoucherDetails />} />
-                    <Route path="/mentor/report" element={<Report />} /> {/* Added for mentor role */}
+                    <Route path="/mentor/report" element={<Report />} />
                   </Route>
                 </Route>
 
@@ -79,10 +79,10 @@ const App = () => (
                     <Route path="/payment/home" element={<Home />} />
                     <Route path="/payment/dashboard" element={<Dashboard />} />
                     <Route path="/payment/voucher-entry" element={<VoucherEntry />} />
-                    <Route path="/payment/selected-vouchers" element={<SelectedVouchers />} />
-                    <Route path="/payment/cart" element={<Cart />} />
+                    <Route path="/payment/selected-vouchers" element={<SelectedVouchers />} /> {/* Added */}
+                    <Route path="/payment/cart" element={<Cart />} /> {/* Added */}
                     <Route path="/payment" element={<Payment />} />
-                    <Route path="/payment/report" element={<Report />} /> {/* Added for payment role */}
+                    <Route path="/payment/report" element={<Report />} />
                   </Route>
                 </Route>
 
@@ -92,11 +92,10 @@ const App = () => (
                     <Route path="/audit/home" element={<Home />} />
                     <Route path="/audit/dashboard" element={<Dashboard />} />
                     <Route path="/audit/voucher-entry" element={<VoucherEntry />} />
-                    <Route path="/audit/selected-vouchers" element={<SelectedVouchers />} />
-                    <Route path="/audit/cart" element={<Cart />} />
+                    <Route path="/audit/selected-vouchers" element={<SelectedVouchers />} /> {/* Added */}
+                    <Route path="/audit/cart" element={<Cart />} /> {/* Added */}
                     <Route path="/final-check-approval" element={<FinalCheckApproval />} />
-                    <Route path="/report" element={<Report />} /> {/* Already present, but ensuring it's in the correct block */}
-                    <Route path="/audit/report" element={<Report />} /> {/* Added for audit role */}
+                    <Route path="/audit/report" element={<Report />} />
                   </Route>
                 </Route>
 

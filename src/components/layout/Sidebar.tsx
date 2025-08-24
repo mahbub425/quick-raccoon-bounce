@@ -74,7 +74,8 @@ const Sidebar = ({ onLinkClick }: SidebarProps) => {
   // Adjust hrefs for role-specific paths
   const getAdjustedHref = (href: string) => {
     if (!user) return href;
-    if (href === "/home" || href === "/dashboard" || href === "/voucher-entry" || href === "/report") { // Added /report here
+    // Apply role prefix to common user pages if the user is not a 'user' role
+    if (user.role !== 'user' && (href === "/home" || href === "/dashboard" || href === "/voucher-entry" || href === "/selected-vouchers" || href === "/cart" || href === "/report")) {
       if (user.role === 'mentor') return `/mentor${href}`;
       if (user.role === 'payment') return `/payment${href}`;
       if (user.role === 'audit') return `/audit${href}`;
