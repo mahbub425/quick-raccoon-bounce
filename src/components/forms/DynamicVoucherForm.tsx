@@ -227,7 +227,7 @@ const DynamicVoucherForm = forwardRef<DynamicVoucherFormRef, DynamicVoucherFormP
         ...initialData,
         date: initialData.date ? new Date(initialData.date) : null,
       } : defaultFormValues);
-    }, [voucherTypeId, initialData, form, defaultFormValues]);
+    }, [voucherTypeId, initialData, defaultFormValues]);
 
 
     // Expose form methods to parent via ref
