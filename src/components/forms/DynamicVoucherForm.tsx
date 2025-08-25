@@ -233,6 +233,28 @@ const createSchema = (fields: FormFieldType[], currentFormValues: any, voucherTy
               .refine(val => allowedValues.includes(val), { message: `${field.label} একটি বৈধ অপশন হতে হবে` });
           }
         }
+        // Dynamic validation for 'pin' and 'name' in 'publicity-entertainment'
+        if (voucherTypeId === "publicity-entertainment") {
+          if (field.name === "pin") {
+            const currentApplicableFor = currentFormValues.applicableFor;
+            const shouldBeMandatory = currentApplicableFor === "Regular Staff";
+            currentFieldSchema = z.array(z.string());
+            if (shouldBeMandatory) {
+              currentFieldSchema = (currentFieldSchema as z.ZodArray<z.ZodString>).min(1, { message: `${field.label} আবশ্যক` });
+            } else {
+              currentFieldSchema = (currentFieldSchema as z.ZodArray<z.ZodString>).optional();
+            }
+          } else if (field.name === "name") {
+            const currentApplicableFor = currentFormValues.applicableFor;
+            const shouldBeMandatory = currentApplicableFor === "Irregular Staff";
+            currentFieldSchema = z.string();
+            if (shouldBeMandatory) {
+              currentFieldSchema = (currentFieldSchema as z.ZodString).min(1, { message: `${field.label} আবশ্যক` });
+            } else {
+              currentFieldSchema = (currentFieldSchema as z.ZodString).optional().or(z.literal(""));
+            }
+          }
+        }
         break;
       case "file":
         currentFieldSchema = z.string().optional(); // Expecting filename string or undefined
@@ -348,6 +370,7 @@ const DynamicVoucherForm = forwardRef<DynamicVoucherFormRef, DynamicVoucherFormP
     const selectedInstitutionId = form.watch("institutionId");
     const selectedExpenseTitle = form.watch("expenseTitle"); // Watch expenseTitle for dynamic options
     const selectedExpenseCategory = form.watch("expenseCategory"); // Watch expenseCategory for conditional fields
+    const selectedApplicableFor = form.watch("applicableFor"); // Watch applicableFor for publicity-entertainment
 
     const branchOptions = useMemo(() => {
       if (!selectedInstitutionId) {
@@ -654,6 +677,41 @@ const DynamicVoucherForm = forwardRef<DynamicVoucherFormRef, DynamicVoucherFormP
       );
     };
 
+    // Helper to render the 'pin' or 'name' field alongside 'amount' for publicity-entertainment
+    const renderPublicityEntertainmentAmountGroup = (
+      applicableForField: FormFieldType,
+      pinField: FormFieldType | undefined,
+      nameField: FormFieldType | undefined,
+      amountField: FormFieldType
+    ) => {
+      const isPinVisible = selectedApplicableFor === "Regular Staff" && pinField;
+      const isNameVisible = selectedApplicableFor === "Irregular Staff" && nameField;
+      const isAnyConditionalFieldVisible = isPinVisible || isNameVisible;
+
+      return (
+        <>
+          <div key={applicableForField.name} className="md:col-span-1">
+            {renderSingleFormFieldComponent(applicableForField)}
+          </div>
+          <div className={cn("md:col-span-1", isAnyConditionalFieldVisible ? "flex gap-4" : "")}>
+            {isPinVisible && (
+              <div key={pinField!.name} className={cn(isAnyConditionalFieldVisible ? "flex-1" : "w-full")}>
+                {renderSingleFormFieldComponent(pinField!)}
+              </div>
+            )}
+            {isNameVisible && (
+              <div key={nameField!.name} className={cn(isAnyConditionalFieldVisible ? "flex-1" : "w-full")}>
+                {renderSingleFormFieldComponent(nameField!)}
+              </div>
+            )}
+            <div key={amountField.name} className={cn(isAnyConditionalFieldVisible ? "flex-1" : "w-full")}>
+              {renderSingleFormFieldComponent(amountField)}
+            </div>
+          </div>
+        </>
+      );
+    };
+
     // This is the main rendering function for a field, including its container and conditional children
     const renderField = (field: FormFieldType, index: number, array: FormFieldType[]) => {
       let isVisible = !field.dependency || (form.watch(field.dependency.field) === field.dependency.value || field.dependency.value === "*");
@@ -761,6 +819,23 @@ const DynamicVoucherForm = forwardRef<DynamicVoucherFormRef, DynamicVoucherFormP
             return null; // Already rendered as part of the group
         }
       }
+
+      // Special handling for 'publicity-entertainment' voucher for 'applicableFor', 'pin', 'name', 'amount'
+      if (voucherTypeId === "publicity-entertainment" && field.name === "applicableFor") {
+        const pinField = array.find(f => f.name === "pin");
+        const nameField = array.find(f => f.name === "name");
+        const amountField = array.find(f => f.name === "amount");
+
+        // Ensure all necessary fields are found before rendering the group
+        if (pinField && nameField && amountField) {
+          return renderPublicityEntertainmentAmountGroup(field, pinField, nameField, amountField);
+        }
+      }
+      // If 'pin', 'name', or 'amount' are part of the 'publicity-entertainment' group, skip individual rendering
+      if (voucherTypeId === "publicity-entertainment" && (field.name === "pin" || field.name === "name" || field.name === "amount")) {
+        return null;
+      }
+
 
       // For all other fields, or if the special handling didn't apply
       const shouldSpanTwoColumns = field.type === "textarea" || field.type === "file";
