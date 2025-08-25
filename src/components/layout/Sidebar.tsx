@@ -60,6 +60,12 @@ const allSidebarNavItems: SidebarNavItem[] = [
     icon: BarChart,
     roles: ["user", "mentor", "payment", "audit"], // Added for all roles
   },
+  {
+    title: "Payment", // New menu item for mentor
+    href: "/mentor/payment",
+    icon: DollarSign,
+    roles: ["mentor"], // Only for mentor
+  },
 ];
 
 const Sidebar = ({ onLinkClick }: SidebarProps) => {

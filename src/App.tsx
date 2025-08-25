@@ -70,6 +70,7 @@ const App = () => (
                     <Route path="/mentor-approval" element={<MentorApproval />} />
                     <Route path="/mentor-approval/:userPin" element={<MentorVoucherDetails />} />
                     <Route path="/mentor/report" element={<Report />} />
+                    <Route path="/mentor/payment" element={<Payment />} /> {/* New route for mentor's payment page */}
                   </Route>
                 </Route>
 
