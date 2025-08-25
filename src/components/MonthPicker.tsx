@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar"; // shadcn/ui Calendar
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { format, setYear, getYear, setMonth, getMonth } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { format, setYear, getYear, setMonth, getMonth, addMonths, subMonths } from "date-fns";
+import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import { CaptionProps, useNavigation } from "react-day-picker"; // Import CaptionProps and useNavigation
 
 interface MonthPickerProps {
   value?: Date;
@@ -19,46 +20,71 @@ interface MonthPickerProps {
 const MonthPicker = ({ value, onChange, placeholder, className }: MonthPickerProps) => {
   const [open, setOpen] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState<Date | undefined>(value);
-  const [displayYear, setDisplayYear] = useState(value ? getYear(value) : getYear(new Date()));
+  const [viewedMonth, setViewedMonth] = useState<Date>(value || new Date()); // Month currently shown in calendar
 
   useEffect(() => {
     setSelectedMonth(value);
     if (value) {
-      setDisplayYear(getYear(value));
+      setViewedMonth(value); // Sync viewedMonth with selected value
     }
   }, [value]);
 
   const handleYearChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const year = parseInt(e.target.value, 10);
     if (!isNaN(year) && year >= 1900 && year <= 2100) { // Basic year validation
-      setDisplayYear(year);
-      if (selectedMonth) {
-        setSelectedMonth(setYear(selectedMonth, year));
-      } else {
-        // If no month selected, set to current month of the new year
-        setSelectedMonth(setYear(new Date(), year));
-      }
+      setViewedMonth(setYear(viewedMonth, year)); // Update the year of the viewed month
     }
   };
 
   const handleMonthSelect = (date: Date | undefined) => {
     setSelectedMonth(date);
     onChange(date);
+    if (date) {
+      setViewedMonth(date); // Keep viewed month in sync with selected
+    }
     setOpen(false); // Close popover after selection
   };
 
   const handleClear = () => {
     setSelectedMonth(undefined);
     onChange(undefined);
+    setViewedMonth(new Date()); // Reset viewed month to current
     setOpen(false);
   };
 
   const handleThisMonth = () => {
     const today = new Date();
-    // Set to current month of the currently displayed year
-    setSelectedMonth(setMonth(setYear(today, displayYear), getMonth(today)));
-    onChange(setMonth(setYear(today, displayYear), getMonth(today)));
+    setSelectedMonth(today);
+    onChange(today);
+    setViewedMonth(today); // Set viewed month to today
     setOpen(false);
+  };
+
+  const CustomCaption = (props: CaptionProps) => {
+    const { displayMonth } = props;
+    const { goToMonth } = useNavigation(); // Use useNavigation hook to get goToMonth
+
+    const handlePrevMonth = () => {
+      goToMonth(subMonths(displayMonth, 1));
+    };
+
+    const handleNextMonth = () => {
+      goToMonth(addMonths(displayMonth, 1));
+    };
+
+    return (
+      <div className="flex items-center justify-between px-4 py-2">
+        <Button variant="ghost" size="icon" onClick={handlePrevMonth}>
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        <span className="text-lg font-semibold">
+          {format(displayMonth, "MMMM yyyy")}
+        </span>
+        <Button variant="ghost" size="icon" onClick={handleNextMonth}>
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </div>
+    );
   };
 
   return (
@@ -81,7 +107,7 @@ const MonthPicker = ({ value, onChange, placeholder, className }: MonthPickerPro
           <Input
             type="number"
             placeholder="বছর"
-            value={displayYear}
+            value={getYear(viewedMonth)} // Display year from viewedMonth
             onChange={handleYearChange}
             className="w-full text-center border-none focus-visible:ring-0"
           />
@@ -93,11 +119,10 @@ const MonthPicker = ({ value, onChange, placeholder, className }: MonthPickerPro
           initialFocus
           // @ts-ignore: 'view' prop is supported by react-day-picker but might be missing from shadcn/ui's Calendar types
           view="months" // This is the key for month-only view
-          month={setYear(selectedMonth || new Date(), displayYear)} // Ensure calendar displays correct year
-          onMonthChange={(month) => setDisplayYear(getYear(month))} // Update displayYear when navigating months
-          // Custom components to hide default navigation as we have a custom year input
+          month={viewedMonth} // Control the displayed month
+          onMonthChange={setViewedMonth} // Update viewedMonth when internal navigation occurs
           components={{
-            Caption: () => null, // Hide default caption (month/year display)
+            Caption: CustomCaption, // Use the custom caption
           }}
           className="p-2"
         />
