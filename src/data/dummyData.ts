@@ -1182,40 +1182,6 @@ export const DUMMY_VOUCHER_TYPES: VoucherType[] = [
     shortDescription: "প্রচারণা সম্পর্কিত আপ্যায়ন খরচ।",
     type: "single",
     formFields: [
-      { name: "date", label: "তারিখ", type: "date", mandatory: true },
-      {
-        name: "institutionId",
-        label: "প্রতিষ্ঠানের নাম",
-        type: "dropdown",
-        mandatory: true,
-        options: DUMMY_INSTITUTIONS.map((inst) => ({ value: inst.id, label: inst.name })),
-      },
-      {
-        name: "branchId",
-        label: "শাখার নাম",
-        type: "dropdown",
-        mandatory: true,
-        options: [{ value: "bogura", label: "Bogura (বগুড়া)" }],
-        dependency: { field: "institutionId", value: "*" },
-      },
-      {
-        name: "programSessionId",
-        label: "প্রোগ্রাম ও সেশন",
-        type: "dropdown",
-        mandatory: true,
-        options: [], // Dynamically populated in form component
-        dependency: { field: "institutionId", value: "*" },
-      },
-      {
-        name: "publicityLocation",
-        label: "প্রচারণার স্থান",
-        type: "text", // Will use AutosuggestInput
-        mandatory: true,
-        placeholder: "প্রচারণার স্থান লিখুন",
-        options: DUMMY_PUBLICITY_LOCATIONS.map(loc => ({ value: loc, label: loc })), // For autosuggestion
-      },
-      { name: "startTime", label: "শুরু", type: "time", mandatory: true },
-      { name: "endTime", label: "শেষ", type: "time", mandatory: true },
       {
         name: "applicableFor",
         label: "যাহার জন্য প্রযোজ্য",
@@ -1225,10 +1191,21 @@ export const DUMMY_VOUCHER_TYPES: VoucherType[] = [
           { value: "Regular Staff", label: "Regular Staff (নিয়মিত কর্মী)" },
           { value: "Irregular Staff", label: "Irregular Staff (অনিয়মিত কর্মী)" },
         ],
+        conditionalFields: [
+          {
+            value: "Regular Staff",
+            fields: [
+              { name: "pin", label: "পিন", type: "pin-selector", mandatory: true, allowMultiplePins: true }, // Changed to true
+            ],
+          },
+          {
+            value: "Irregular Staff",
+            fields: [
+              { name: "name", label: "নাম", type: "text", mandatory: true, placeholder: "নাম লিখুন" },
+            ],
+          },
+        ],
       },
-      { name: "pin", label: "পিন", type: "pin-selector", mandatory: false, allowMultiplePins: true, dependency: { field: "applicableFor", value: "Regular Staff" } },
-      { name: "name", label: "নাম", type: "text", mandatory: false, placeholder: "নাম লিখুন", dependency: { field: "applicableFor", value: "Irregular Staff" } },
-      { name: "amount", label: "টাকার পরিমাণ", type: "number", mandatory: true, placeholder: "টাকার পরিমাণ লিখুন" },
       {
         name: "type",
         label: "ধরণ",
@@ -1243,8 +1220,7 @@ export const DUMMY_VOUCHER_TYPES: VoucherType[] = [
           { value: "Publicity Snacks", label: "Publicity Snacks (প্রচারণাকালিন নাস্তা)" },
         ],
       },
-      { name: "description", label: "বর্ণনা", type: "textarea", mandatory: true, placeholder: "বর্ণনা লিখুন" },
-      { name: "attachment", label: "সংযুক্তি", type: "file", mandatory: false },
+      { name: "amount", label: "টাকার পরিমাণ", type: "number", mandatory: true, placeholder: "টাকার পরিমাণ লিখুন" },
     ],
   },
   {
