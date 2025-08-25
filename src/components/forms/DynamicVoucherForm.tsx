@@ -257,16 +257,7 @@ const createSchema = (fields: FormFieldType[], currentFormValues: any, voucherTy
           } else {
             currentFieldSchema = (currentFieldSchema as z.ZodArray<z.ZodString>).optional();
           }
-        } else if (voucherTypeId === "publicity-entertainment" && (field.name === "pin" || field.name === "name")) {
-          // For publicity-entertainment, pin/name are mandatory when visible
-          currentFieldSchema = z.string();
-          if (field.mandatory) { // field.mandatory is true in dummyData for these
-            currentFieldSchema = (currentFieldSchema as z.ZodString).min(1, { message: `${field.label} আবশ্যক` });
-          } else {
-            currentFieldSchema = (currentFieldSchema as z.ZodString).optional().or(z.literal(""));
-          }
-        }
-        else {
+        } else {
           currentFieldSchema = z.array(z.string());
           if (field.mandatory) {
             currentFieldSchema = (currentFieldSchema as z.ZodArray<z.ZodString>).min(1, { message: `${field.label} আবশ্যক` });
@@ -792,83 +783,14 @@ const DynamicVoucherForm = forwardRef<DynamicVoucherFormRef, DynamicVoucherFormP
       );
     };
 
-    const renderPublicityEntertainmentForm = () => {
-      // Get field definitions for easier access
-      const applicableForField = voucherDetails.formFields.find(f => f.name === "applicableFor")!;
-      const typeField = voucherDetails.formFields.find(f => f.name === "type")!;
-      const amountField = voucherDetails.formFields.find(f => f.name === "amount")!;
-
-      // Watch applicableFor value
-      const currentApplicableFor = form.watch("applicableFor");
-
-      // Determine if pin/name fields should be visible
-      const isPinVisible = currentApplicableFor === "Regular Staff";
-      const isNameVisible = currentApplicableFor === "Irregular Staff";
-      const isPinOrNameVisible = isPinVisible || isNameVisible;
-
-      // Get conditional pin/name field definitions
-      const pinField = applicableForField.conditionalFields?.find(cf => cf.value === "Regular Staff")?.fields.find(f => f.name === "pin");
-      const nameField = applicableForField.conditionalFields?.find(cf => cf.value === "Irregular Staff")?.fields.find(f => f.name === "name");
-
-      return (
-        <>
-          {/* Row 1: Applicable For (col 1) and (conditionally) Amount (col 2) */}
-          <div className="md:col-span-1">
-            {renderSingleFormFieldComponent(applicableForField)}
-          </div>
-          {isPinOrNameVisible && ( // If pin/name is visible, amount shifts right
-            <div className="md:col-span-1">
-              {renderSingleFormFieldComponent(amountField)}
-            </div>
-          )}
-          {!isPinOrNameVisible && <div className="md:col-span-1"></div>} {/* Fill empty space if amount is not here */}
-
-
-          {/* Row 2: Conditional Pin/Name (col 1) and (conditionally) Amount (col 1, if not shifted right) */}
-          {isPinOrNameVisible ? (
-            // If pin/name is visible, render it in col 1, and col 2 is empty
-            <React.Fragment>
-              <div className="md:col-span-1">
-                {isPinVisible && pinField && renderSingleFormFieldComponent(pinField)}
-                {isNameVisible && nameField && renderSingleFormFieldComponent(nameField)}
-              </div>
-              <div className="md:col-span-1"></div> {/* Empty second column */}
-            </React.Fragment>
-          ) : (
-            // If pin/name is NOT visible, render amount in col 1, and col 2 is empty
-            <React.Fragment>
-              <div className="md:col-span-1">
-                {renderSingleFormFieldComponent(amountField)}
-              </div>
-              <div className="md:col-span-1"></div> {/* Empty second column */}
-            </React.Fragment>
-          )}
-
-
-          {/* Row 3: Type (col 1) and empty (col 2) */}
-          <div className="md:col-span-1">
-            {renderSingleFormFieldComponent(typeField)}
-          </div>
-          <div className="md:col-span-1"></div> {/* Empty second column */}
-        </>
-      );
-    };
-
     return (
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit, onError)} className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-white rounded-lg shadow-lg border border-blue-200">
           <h2 className="text-3xl font-bold text-blue-800 mb-6 text-center md:col-span-2">{voucherDetails.heading}</h2>
-
-          {voucherTypeId === "publicity-entertainment" ? (
-            renderPublicityEntertainmentForm()
-          ) : (
-            // Existing general rendering logic for other voucher types
-            voucherDetails.formFields.map((field, index, array) =>
-              renderField(field, index, array)
-            )
+          {voucherDetails.formFields.map((field, index, array) =>
+            renderField(field, index, array)
           )}
-
-          {!hideSubmitButton && (
+          {!hideSubmitButton && ( // Conditionally render submit button
             <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-700 hover:to-purple-800 text-white text-lg py-3 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105 md:col-span-2">
               {initialData ? "আপডেট করুন" : "কার্টে যোগ করুন"}
             </Button>
