@@ -527,48 +527,7 @@ export const DUMMY_VOUCHER_TYPES: VoucherType[] = [
               { value: "Others", label: "Others (অন্যান্য)" },
             ],
             conditionalFields: [
-              {
-                value: "Staff",
-                fields: [
-                  {
-                    name: "selectedPins",
-                    label: "পিন নম্বর সংযুক্ত করুন",
-                    type: "pin-selector",
-                    mandatory: true,
-                    allowMultiplePins: true,
-                    dependency: { field: "expenseCategory", value: "Afternoon Snacks" },
-                  },
-                  {
-                    name: "selectedPins",
-                    label: "পিন নম্বর সংযুক্ত করুন",
-                    type: "pin-selector",
-                    mandatory: true,
-                    allowMultiplePins: true,
-                    dependency: { field: "expenseCategory", value: "Iftar" },
-                  },
-                ],
-              },
-              {
-                value: "Teacher",
-                fields: [
-                  {
-                    name: "selectedPins",
-                    label: "পিন নম্বর সংযুক্ত করুন",
-                    type: "pin-selector",
-                    mandatory: true,
-                    allowMultiplePins: true,
-                    dependency: { field: "expenseCategory", value: "Breakfast" },
-                  },
-                  {
-                    name: "selectedPins",
-                    label: "পিন নম্বর সংযুক্ত করুন",
-                    type: "pin-selector",
-                    mandatory: true,
-                    allowMultiplePins: true,
-                    dependency: { field: "expenseCategory", value: "Afternoon Snacks" },
-                  },
-                ],
-              },
+              // Removed selectedPins from here
               {
                 value: "Director & Guest",
                 fields: [
@@ -694,6 +653,14 @@ export const DUMMY_VOUCHER_TYPES: VoucherType[] = [
             mandatory: true,
             options: [], // Dynamically populated in DynamicVoucherForm
             dependency: { field: "expenseTitle", value: "*" }, // Always visible, options change based on expenseTitle
+          },
+          { // NEW: selectedPins field moved here
+            name: "selectedPins",
+            label: "পিন নম্বর সংযুক্ত করুন",
+            type: "pin-selector",
+            mandatory: true, // Will be conditionally mandatory in schema
+            allowMultiplePins: true,
+            // No dependency here, as visibility is handled in renderField
           },
           { name: "amount", label: "টাকার পরিমাণ", type: "number", mandatory: true, placeholder: "টাকার পরিমাণ লিখুন" },
           { name: "description", label: "বর্ণনা", type: "textarea", mandatory: true, placeholder: "বর্ণনা লিখুন" },

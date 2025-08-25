@@ -241,11 +241,29 @@ const createSchema = (fields: FormFieldType[], currentFormValues: any, voucherTy
         }
         break;
       case "pin-selector":
-        currentFieldSchema = z.array(z.string());
-        if (field.mandatory) {
-          currentFieldSchema = (currentFieldSchema as z.ZodArray<z.ZodString>).min(1, { message: `${field.label} আবশ্যক` });
+        // Special validation logic for 'selectedPins' in 'entertainment' voucher
+        if (voucherTypeId === "entertainment" && field.name === "selectedPins") {
+          const currentExpenseTitle = currentFormValues.expenseTitle;
+          const currentExpenseCategory = currentFormValues.expenseCategory;
+
+          const isStaffPinsVisible = currentExpenseTitle === "Staff" && (currentExpenseCategory === "Afternoon Snacks" || currentExpenseCategory === "Iftar");
+          const isTeacherPinsVisible = currentExpenseTitle === "Teacher" && (currentExpenseCategory === "Breakfast" || currentExpenseCategory === "Afternoon Snacks");
+
+          const shouldBeMandatory = isStaffPinsVisible || isTeacherPinsVisible;
+
+          currentFieldSchema = z.array(z.string());
+          if (shouldBeMandatory) {
+            currentFieldSchema = (currentFieldSchema as z.ZodArray<z.ZodString>).min(1, { message: `${field.label} আবশ্যক` });
+          } else {
+            currentFieldSchema = (currentFieldSchema as z.ZodArray<z.ZodString>).optional();
+          }
         } else {
-          currentFieldSchema = (currentFieldSchema as z.ZodArray<z.ZodString>).optional();
+          currentFieldSchema = z.array(z.string());
+          if (field.mandatory) {
+            currentFieldSchema = (currentFieldSchema as z.ZodArray<z.ZodString>).min(1, { message: `${field.label} আবশ্যক` });
+          } else {
+            currentFieldSchema = (currentFieldSchema as z.ZodArray<z.ZodString>).optional();
+          }
         }
         break;
       case "quantity-unit":
@@ -638,7 +656,19 @@ const DynamicVoucherForm = forwardRef<DynamicVoucherFormRef, DynamicVoucherFormP
 
     // This is the main rendering function for a field, including its container and conditional children
     const renderField = (field: FormFieldType, index: number, array: FormFieldType[]) => {
-      const isVisible = !field.dependency || (form.watch(field.dependency.field) === field.dependency.value || field.dependency.value === "*");
+      let isVisible = !field.dependency || (form.watch(field.dependency.field) === field.dependency.value || field.dependency.value === "*");
+
+      // Special visibility logic for 'selectedPins' in 'entertainment' voucher
+      if (voucherTypeId === "entertainment" && field.name === "selectedPins") {
+        const currentExpenseTitle = form.watch("expenseTitle");
+        const currentExpenseCategory = form.watch("expenseCategory");
+
+        const isStaffPinsVisible = currentExpenseTitle === "Staff" && (currentExpenseCategory === "Afternoon Snacks" || currentExpenseCategory === "Iftar");
+        const isTeacherPinsVisible = currentExpenseTitle === "Teacher" && (currentExpenseCategory === "Breakfast" || currentExpenseCategory === "Afternoon Snacks");
+        
+        isVisible = isStaffPinsVisible || isTeacherPinsVisible;
+      }
+
       if (!isVisible) return null;
 
       // Special handling for "publicityLocation" followed by "startTime" and "endTime"
