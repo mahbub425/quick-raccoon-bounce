@@ -78,10 +78,10 @@ const VoucherEntry = () => {
         ভাউচার টাইপ নির্বাচন করুন
       </h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-6xl mx-auto">
+      <div className="flex flex-wrap justify-center gap-4 max-w-6xl mx-auto">
         {visibleVoucherTypes // Use the filtered list here
           .map((voucher) => (
-            <div key={voucher.id} className="col-span-1">
+            <div key={voucher.id} className="w-full md:w-[calc(50%-0.5rem)]"> {/* Adjusted width for flex layout */}
               {voucher.type === "multi" ? (
                 <div className="border border-gray-200 rounded-lg p-2 bg-white shadow-sm"> {/* Added a container for multi-type card and its sub-types */}
                   <VoucherCard
