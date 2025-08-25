@@ -53,7 +53,7 @@ export type ExpenseSubCategory = {
 export type FormField = {
   name: string; // Unique name for the field
   label: string; // Label to display
-  type: 'text' | 'number' | 'dropdown' | 'textarea' | 'date' | 'time' | 'file' | 'checkbox' | 'pin-selector' | 'quantity-unit';
+  type: 'text' | 'number' | 'dropdown' | 'textarea' | 'date' | 'time' | 'file' | 'checkbox' | 'pin-selector' | 'quantity-unit' | 'month-picker';
   placeholder?: string;
   mandatory?: boolean;
   options?: { value: string; label: string; }[]; // For dropdowns

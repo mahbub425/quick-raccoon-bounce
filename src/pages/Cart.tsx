@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { useCart } from "@/context/CartContext";
 import { useSubmittedVouchers } from "@/context/SubmittedVouchersContext";
 import { CartItem } from "@/types";
-import { DUMMY_INSTITUTIONS, DUMMY_PINS, DUMMY_PROGRAM_SESSIONS, DUMMY_VOUCHER_TYPES, OFFICE_SUPPLIES_ITEM_OPTIONS, CLEANING_SUPPLIES_ITEM_OPTIONS, KITCHEN_HOUSEHOLD_ITEM_OPTIONS } from "@/data/dummyData";
+import { DUMMY_INSTITUTIONS, DUMMY_PINS, DUMMY_PROGRAM_SESSIONS, DUMMY_VOUCHER_TYPES, OFFICE_SUPPLIES_ITEM_OPTIONS, CLEANING_SUPPLIES_ITEM_OPTIONS, KITCHEN_HOUSEHOLD_ITEM_OPTIONS, RENTAL_UTILITY_EXPENSE_CATEGORIES } from "@/data/dummyData";
 import { format } from "date-fns";
 import { useAuth } from "@/context/AuthContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -84,11 +84,15 @@ const Cart = () => {
       } else if (voucherTypeId === "kitchen-household-items") {
         options = currentExpenseTitle ? KITCHEN_HOUSEHOLD_ITEM_OPTIONS[currentExpenseTitle] || [] : [];
       }
-    } else if (fieldName === "expenseCategory" && voucherTypeId === "entertainment" && itemData.expenseTitle) {
-      const expenseTitleField = voucher.formFields.find(f => f.name === 'expenseTitle');
-      const matchingConditionalField = expenseTitleField?.conditionalFields?.find(cf => cf.value === itemData.expenseTitle);
-      const expenseCategoryField = matchingConditionalField?.fields.find(f => f.name === 'expenseCategory');
-      options = expenseCategoryField?.options || [];
+    } else if (fieldName === "expenseCategory") { // Handle expenseCategory for all relevant voucher types
+      if (voucherTypeId === "entertainment" && itemData.expenseTitle) {
+        const expenseTitleField = voucher.formFields.find(f => f.name === 'expenseTitle');
+        const matchingConditionalField = expenseTitleField?.conditionalFields?.find(cf => cf.value === itemData.expenseTitle);
+        const expenseCategoryField = matchingConditionalField?.fields.find(f => f.name === 'expenseCategory');
+        options = expenseCategoryField?.options || [];
+      } else if (voucherTypeId === "rental-utility" && itemData.expenseTitle) {
+        options = RENTAL_UTILITY_EXPENSE_CATEGORIES[itemData.expenseTitle] || [];
+      }
     } else if (fieldName === "applicableFor") {
       options = field.options || [];
     } else if (fieldName === "vehicleName") {
@@ -432,7 +436,39 @@ const Cart = () => {
     ));
   };
 
-  // Helper function for rendering simple voucher tables (rental-utility, mobile-bill, repair, petty-cash)
+  const renderRentalUtilityTable = (items: CartItem[]) => {
+    if (items.length === 0) {
+      return (
+        <TableRow>
+          <TableCell colSpan={10} className="text-center text-gray-500">
+            কোনো রেন্টাল ও ইউটিলিটি বিল ভাউচার নেই।
+          </TableCell>
+        </TableRow>
+      );
+    }
+
+    return items.map((item, index) => (
+      <TableRow key={item.id}>
+        <TableCell className="font-medium">{index + 1}</TableCell>
+        <TableCell>{item.data.date ? format(new Date(item.data.date), "dd MMM, yyyy") : "N/A"}</TableCell>
+        <TableCell>{getInstitutionName(item.data.institutionId)}</TableCell>
+        <TableCell>{getBranchName(item.data.institutionId, item.data.branchId)}</TableCell>
+        <TableCell>{getDropdownLabel(item.voucherTypeId, 'expenseTitle', item.data.expenseTitle, item.data) || "N/A"}</TableCell>
+        <TableCell>{getDropdownLabel(item.voucherTypeId, 'expenseCategory', item.data.expenseCategory, item.data) || "N/A"}</TableCell>
+        <TableCell className="text-right">{item.data.amount || 0}</TableCell>
+        <TableCell>{item.data.recipientName || "N/A"}</TableCell>
+        <TableCell>{item.data.monthName ? format(new Date(item.data.monthName), "MMMM yyyy") : "N/A"}</TableCell>
+        <TableCell>{item.data.description || "N/A"}</TableCell>
+        {renderAttachmentCell(item)}
+        <TableCell className="flex justify-center space-x-2">
+          <Button variant="outline" size="sm" onClick={() => handleEdit(item)}>এডিট</Button>
+          <Button variant="destructive" size="sm" onClick={() => removeFromCart(item.id)}>মুছে ফেলুন</Button>
+        </TableCell>
+      </TableRow>
+    ));
+  };
+
+  // Helper function for rendering simple voucher tables (mobile-bill, repair, petty-cash)
   const renderGenericSimpleTable = (items: CartItem[], title: string, headerBgClass: string) => {
     if (items.length === 0) {
       return (
@@ -716,7 +752,7 @@ const Cart = () => {
             </div>
           )}
 
-          {/* New tables for simple single-type vouchers */}
+          {/* Rental & Utility Bill Voucher Table */}
           {rentalUtilityVouchers.length > 0 && (
             <div className="bg-white p-6 rounded-xl shadow-lg border border-red-200">
               <h2 className="text-2xl font-bold text-red-700 mb-4">রেন্টাল ও ইউটিলিটি বিল ভাউচার</h2>
@@ -728,14 +764,18 @@ const Cart = () => {
                       <TableHead>তারিখ</TableHead>
                       <TableHead>প্রতিষ্ঠানের নাম</TableHead>
                       <TableHead>শাখার নাম</TableHead>
+                      <TableHead>ব্যয়ের শিরোনাম</TableHead>
+                      <TableHead>ব্যয়ের খাত</TableHead>
                       <TableHead className="text-right">টাকার পরিমাণ</TableHead>
+                      <TableHead>গ্রহিতার নাম</TableHead>
+                      <TableHead>মাসের নাম</TableHead>
                       <TableHead>বর্ণনা</TableHead>
                       <TableHead>সংযুক্তি</TableHead>
                       <TableHead className="text-center">অ্যাকশন</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {renderGenericSimpleTable(rentalUtilityVouchers, "রেন্টাল ও ইউটিলিটি বিল", "bg-red-100")}
+                    {renderRentalUtilityTable(rentalUtilityVouchers)}
                   </TableBody>
                 </Table>
               </div>

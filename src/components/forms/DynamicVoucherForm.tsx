@@ -12,7 +12,7 @@ import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { DUMMY_INSTITUTIONS, DUMMY_PROGRAM_SESSIONS, DUMMY_PUBLICITY_LOCATIONS, DUMMY_VOUCHER_TYPES, OFFICE_SUPPLIES_ITEM_OPTIONS, CLEANING_SUPPLIES_ITEM_OPTIONS, KITCHEN_HOUSEHOLD_ITEM_OPTIONS } from "@/data/dummyData";
+import { DUMMY_INSTITUTIONS, DUMMY_PROGRAM_SESSIONS, DUMMY_PUBLICITY_LOCATIONS, DUMMY_VOUCHER_TYPES, OFFICE_SUPPLIES_ITEM_OPTIONS, CLEANING_SUPPLIES_ITEM_OPTIONS, KITCHEN_HOUSEHOLD_ITEM_OPTIONS, RENTAL_UTILITY_EXPENSE_CATEGORIES } from "@/data/dummyData";
 import { cn } from "@/lib/utils";
 import { FormField as FormFieldType, VoucherType } from "@/types";
 import PinSelector from "@/components/PinSelector";
@@ -57,7 +57,10 @@ const generateDefaultValues = (formFields: FormFieldType[]) => {
         defaults[field.name] = { quantity: "", unit: "" };
       } else if (field.type === 'file') {
         defaults[field.name] = undefined; // Store filename string or undefined
-      } else {
+      } else if (field.type === 'month-picker') { // Handle new month-picker type
+        defaults[field.name] = null;
+      }
+      else {
         defaults[field.name] = "";
       }
 
@@ -83,6 +86,14 @@ const createSchema = (fields: FormFieldType[], currentFormValues: any, voucherTy
     switch (field.type) {
       case "date":
         currentFieldSchema = z.date({ invalid_type_error: `${field.label} অবশ্যই একটি তারিখ হতে হবে` });
+        if (field.mandatory) {
+          currentFieldSchema = (currentFieldSchema as z.ZodDate).nullable().refine(val => val !== null, { message: `${field.label} আবশ্যক` });
+        } else {
+          currentFieldSchema = (currentFieldSchema as z.ZodDate).nullable().optional();
+        }
+        break;
+      case "month-picker": // Handle new month-picker type
+        currentFieldSchema = z.date({ invalid_type_error: `${field.label} অবশ্যই একটি মাস হতে হবে` });
         if (field.mandatory) {
           currentFieldSchema = (currentFieldSchema as z.ZodDate).nullable().refine(val => val !== null, { message: `${field.label} আবশ্যক` });
         } else {
@@ -139,6 +150,21 @@ const createSchema = (fields: FormFieldType[], currentFormValues: any, voucherTy
           }
           
           const allowedValues = dynamicItemOptions.map(opt => opt.value);
+
+          if (field.mandatory) {
+            currentFieldSchema = (currentFieldSchema as z.ZodString)
+              .min(1, { message: `${field.label} আবশ্যক` })
+              .refine(val => allowedValues.includes(val), { message: `${field.label} একটি বৈধ অপশন হতে হবে` });
+          }
+        }
+        // Dynamic validation for expenseCategory in rental-utility
+        if (voucherTypeId === "rental-utility" && field.name === "expenseCategory") {
+          const currentExpenseTitle = currentFormValues.expenseTitle;
+          let dynamicCategoryOptions: { value: string; label: string }[] = [];
+          if (currentExpenseTitle && RENTAL_UTILITY_EXPENSE_CATEGORIES[currentExpenseTitle]) {
+            dynamicCategoryOptions = RENTAL_UTILITY_EXPENSE_CATEGORIES[currentExpenseTitle];
+          }
+          const allowedValues = dynamicCategoryOptions.map(opt => opt.value);
 
           if (field.mandatory) {
             currentFieldSchema = (currentFieldSchema as z.ZodString)
@@ -213,6 +239,7 @@ const DynamicVoucherForm = forwardRef<DynamicVoucherFormRef, DynamicVoucherFormP
         ...initialData,
         // Special handling for date type if it's a string from initialData
         date: initialData.date ? new Date(initialData.date) : null,
+        monthName: initialData.monthName ? new Date(initialData.monthName) : null, // Handle monthName
       } : defaultFormValues,
       resolver: (values, context, options) => {
         const dynamicSchema = createSchema(voucherDetails.formFields, values, voucherTypeId);
@@ -226,6 +253,7 @@ const DynamicVoucherForm = forwardRef<DynamicVoucherFormRef, DynamicVoucherFormP
         ...defaultFormValues,
         ...initialData,
         date: initialData.date ? new Date(initialData.date) : null,
+        monthName: initialData.monthName ? new Date(initialData.monthName) : null, // Handle monthName
       } : defaultFormValues);
     }, [voucherTypeId, initialData, defaultFormValues]);
 
@@ -265,6 +293,13 @@ const DynamicVoucherForm = forwardRef<DynamicVoucherFormRef, DynamicVoucherFormP
         label: session.name,
       }));
     }, [selectedInstitutionId]);
+
+    const rentalUtilityExpenseCategoryOptions = useMemo(() => {
+      if (voucherTypeId === "rental-utility" && selectedExpenseTitle && RENTAL_UTILITY_EXPENSE_CATEGORIES[selectedExpenseTitle]) {
+        return RENTAL_UTILITY_EXPENSE_CATEGORIES[selectedExpenseTitle];
+      }
+      return [];
+    }, [voucherTypeId, selectedExpenseTitle]);
 
 
     const onSubmit = async (data: z.infer<z.ZodObject<any>>) => {
@@ -359,6 +394,8 @@ const DynamicVoucherForm = forwardRef<DynamicVoucherFormRef, DynamicVoucherFormP
                       optionsToRender = selectedExpenseTitle ? CLEANING_SUPPLIES_ITEM_OPTIONS[selectedExpenseTitle] || [] : [];
                     } else if (voucherTypeId === "kitchen-household-items" && field.name === "itemName") {
                       optionsToRender = selectedExpenseTitle ? KITCHEN_HOUSEHOLD_ITEM_OPTIONS[selectedExpenseTitle] || [] : [];
+                    } else if (voucherTypeId === "rental-utility" && field.name === "expenseCategory") {
+                      optionsToRender = rentalUtilityExpenseCategoryOptions;
                     }
                     return (
                       <Select onValueChange={formHookField.onChange} value={formHookField.value || ""}>
@@ -398,6 +435,44 @@ const DynamicVoucherForm = forwardRef<DynamicVoucherFormRef, DynamicVoucherFormP
                             initialFocus
                             toDate={new Date()}
                           />
+                        </PopoverContent>
+                      </Popover>
+                    );
+                  }
+                  if (field.type === "month-picker") { // Render for month-picker
+                    return (
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant={"outline"}
+                            className={cn(
+                              "w-full justify-start text-left font-normal border-blue-300 focus:border-blue-500 focus:ring-blue-500",
+                              !formHookField.value && "text-muted-foreground"
+                            )}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {formHookField.value ? format(formHookField.value as Date, "MMMM yyyy") : <span>মাস নির্বাচন করুন</span>}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            captionLayout="dropdown-buttons" // Enable month/year dropdowns
+                            selected={formHookField.value as Date | null | undefined}
+                            onSelect={formHookField.onChange}
+                            initialFocus
+                            fromYear={2000} // Adjust as needed
+                            toYear={new Date().getFullYear() + 5} // Adjust as needed
+                          />
+                          <div className="p-2 border-t">
+                            <Button
+                              variant="ghost"
+                              className="w-full"
+                              onClick={() => formHookField.onChange(new Date())}
+                            >
+                              বর্তমান মাস
+                            </Button>
+                          </div>
                         </PopoverContent>
                       </Popover>
                     );

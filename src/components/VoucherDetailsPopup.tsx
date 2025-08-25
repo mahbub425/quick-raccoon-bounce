@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
 import { SubmittedVoucher, VoucherStatus } from "@/types";
 import { useSubmittedVouchers } from "@/context/SubmittedVouchersContext";
-import { DUMMY_INSTITUTIONS, DUMMY_PINS, DUMMY_PROGRAM_SESSIONS, DUMMY_VOUCHER_TYPES, OFFICE_SUPPLIES_ITEM_OPTIONS, CLEANING_SUPPLIES_ITEM_OPTIONS, KITCHEN_HOUSEHOLD_ITEM_OPTIONS } from "@/data/dummyData";
+import { DUMMY_INSTITUTIONS, DUMMY_PINS, DUMMY_PROGRAM_SESSIONS, DUMMY_VOUCHER_TYPES, OFFICE_SUPPLIES_ITEM_OPTIONS, CLEANING_SUPPLIES_ITEM_OPTIONS, KITCHEN_HOUSEHOLD_ITEM_OPTIONS, RENTAL_UTILITY_EXPENSE_CATEGORIES } from "@/data/dummyData";
 import { useNavigate } from "react-router-dom";
 import AttachmentViewerPopup from "@/components/AttachmentViewerPopup"; // Import the new component
 
@@ -92,11 +92,15 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
       } else if (voucherTypeId === "kitchen-household-items") {
         options = currentExpenseTitle ? KITCHEN_HOUSEHOLD_ITEM_OPTIONS[currentExpenseTitle] || [] : [];
       }
-    } else if (fieldName === "expenseCategory" && voucherTypeId === "entertainment" && itemData.expenseTitle) {
-      const expenseTitleField = voucherTypeDetails.formFields.find(f => f.name === 'expenseTitle');
-      const matchingConditionalField = expenseTitleField?.conditionalFields?.find(cf => cf.value === itemData.expenseTitle);
-      const expenseCategoryField = matchingConditionalField?.fields.find(f => f.name === 'expenseCategory');
-      options = expenseCategoryField?.options || [];
+    } else if (fieldName === "expenseCategory") { // Handle expenseCategory for all relevant voucher types
+      if (voucherTypeId === "entertainment" && itemData.expenseTitle) {
+        const expenseTitleField = voucherTypeDetails.formFields.find(f => f.name === 'expenseTitle');
+        const matchingConditionalField = expenseTitleField?.conditionalFields?.find(cf => cf.value === itemData.expenseTitle);
+        const expenseCategoryField = matchingConditionalField?.fields.find(f => f.name === 'expenseCategory');
+        options = expenseCategoryField?.options || [];
+      } else if (voucherTypeId === "rental-utility" && itemData.expenseTitle) {
+        options = RENTAL_UTILITY_EXPENSE_CATEGORIES[itemData.expenseTitle] || [];
+      }
     } else if (fieldName === "applicableFor") {
       options = field.options || [];
     } else if (fieldName === "vehicleName") {
@@ -354,8 +358,24 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
             </TableRow>
           </TableBody>
         );
-      case 'mobile-bill':
       case 'rental-utility':
+        return (
+          <TableBody>
+            <TableRow>
+              <TableCell>{itemData.date ? format(new Date(itemData.date), "dd MMM, yyyy") : "N/A"}</TableCell>
+              <TableCell>{getInstitutionName(itemData.institutionId)}</TableCell>
+              <TableCell>{getBranchName(itemData.institutionId, itemData.branchId)}</TableCell>
+              <TableCell>{getDropdownLabel(voucherTypeId, 'expenseTitle', itemData.expenseTitle, itemData) || "N/A"}</TableCell>
+              <TableCell>{getDropdownLabel(voucherTypeId, 'expenseCategory', itemData.expenseCategory, itemData) || "N/A"}</TableCell>
+              <TableCell className="text-right">{(itemData.amount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</TableCell>
+              <TableCell>{itemData.recipientName || "N/A"}</TableCell>
+              <TableCell>{itemData.monthName ? format(new Date(itemData.monthName), "MMMM yyyy") : "N/A"}</TableCell>
+              <TableCell>{itemData.description || "N/A"}</TableCell>
+              {renderAttachmentCell(itemData)}
+            </TableRow>
+          </TableBody>
+        );
+      case 'mobile-bill':
       case 'repair':
       case 'petty-cash':
         return (
@@ -507,8 +527,22 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
             <TableHead>সংযুক্তি</TableHead>
           </TableRow>
         );
-      case 'mobile-bill':
       case 'rental-utility':
+        return (
+          <TableRow className="bg-red-100">
+            <TableHead>তারিখ</TableHead>
+            <TableHead>প্রতিষ্ঠানের নাম</TableHead>
+            <TableHead>শাখার নাম</TableHead>
+            <TableHead>ব্যয়ের শিরোনাম</TableHead>
+            <TableHead>ব্যয়ের খাত</TableHead>
+            <TableHead className="text-right">টাকার পরিমাণ</TableHead>
+            <TableHead>গ্রহিতার নাম</TableHead>
+            <TableHead>মাসের নাম</TableHead>
+            <TableHead>বর্ণনা</TableHead>
+            <TableHead>সংযুক্তি</TableHead>
+          </TableRow>
+        );
+      case 'mobile-bill':
       case 'repair':
       case 'petty-cash':
         return (
@@ -540,8 +574,8 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
       case 'office-supplies-stationery': return 9;
       case 'cleaning-supplies': return 9;
       case 'kitchen-household-items': return 9;
+      case 'rental-utility': return 10; // Updated colspan for rental-utility
       case 'mobile-bill':
-      case 'rental-utility':
       case 'repair':
       case 'petty-cash': return 6;
       default: return 1;

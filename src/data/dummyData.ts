@@ -420,6 +420,67 @@ export const KITCHEN_HOUSEHOLD_ITEM_OPTIONS: { [key: string]: { value: string; l
   ],
 };
 
+export const RENTAL_UTILITY_EXPENSE_CATEGORIES: { [key: string]: { value: string; label: string }[] } = {
+  "Office Rent": [
+    { value: "Hasan Tower 1st Floor (600 sft)", label: "Hasan Tower 1st Floor (600 sft)" },
+    { value: "Hasan Tower 1st Floor (800 sft)", label: "Hasan Tower 1st Floor (800 sft)" },
+    { value: "Hasan Tower 2nd Floor (1000 sft)", label: "Hasan Tower 2nd Floor (1000 sft)" },
+    { value: "Hasan Tower 3rd Floor (2000 sft)", label: "Hasan Tower 3rd Floor (2000 sft)" },
+    { value: "AIT For Office Rent", label: "AIT For Office Rent" },
+    { value: "VAT For Office Rent", label: "VAT For Office Rent" },
+  ],
+  "Electricity Bill": [
+    { value: "Meter No: 966500201", label: "Meter No: 966500201" },
+    { value: "Meter No: 966500202", label: "Meter No: 966500202" },
+    { value: "Meter No: 966500203", label: "Meter No: 966500203" },
+    { value: "Meter No: 966500204", label: "Meter No: 966500204" },
+    { value: "Meter No: 966500205", label: "Meter No: 966500205" },
+    { value: "Others", label: "Others" },
+  ],
+  "WASA Bill": [
+    { value: "Meter No: 556601", label: "Meter No: 556601" },
+    { value: "Meter No: 556602", label: "Meter No: 556602" },
+    { value: "Meter No: 556603", label: "Meter No: 556603" },
+    { value: "Deed Wise Name", label: "Deed Wise Name" },
+    { value: "Others", label: "Others" },
+  ],
+  "Gas Bill": [
+    { value: "Meter No: 556601", label: "Meter No: 556601" },
+    { value: "Meter No: 556602", label: "Meter No: 556602" },
+    { value: "Meter No: 556603", label: "Meter No: 556603" },
+    { value: "Deed Wise Name", label: "Deed Wise Name" },
+    { value: "Others", label: "Others" },
+  ],
+  "Internet Bill": [
+    { value: "Amber IT", label: "Amber IT" },
+    { value: "Link3", label: "Link3" },
+    { value: "Starlink", label: "Starlink" },
+    { value: "Modem Bill", label: "Modem Bill" },
+    { value: "Local Air Time Call", label: "Local Air Time Call" },
+    { value: "VAT for Internet Bill", label: "VAT for Internet Bill" },
+    { value: "TDS for Internet Bill", label: "TDS for Internet Bill" },
+  ],
+  "Telephone Bill": [
+    { value: "Telephone Number: 99966644", label: "Telephone Number: 99966644" },
+    { value: "Telephone Number: 99966645", label: "Telephone Number: 99966645" },
+    { value: "Telephone Number: 99966646", label: "Telephone Number: 99966646" },
+  ],
+  "Service Charge": [
+    { value: "Hasan Tower 1st Floor (600 sft)", label: "Hasan Tower 1st Floor (600 sft)" },
+    { value: "Hasan Tower 1st Floor (800 sft)", label: "Hasan Tower 1st Floor (800 sft)" },
+    { value: "Hasan Tower 2nd Floor (1000 sft)", label: "Hasan Tower 2nd Floor (1000 sft)" },
+    { value: "Hasan Tower 3rd Floor (2000 sft)", label: "Hasan Tower 3rd Floor (2000 sft)" },
+  ],
+  "Guard & Cleaner Bill": [
+    { value: "Guard Bill", label: "Guard Bill" },
+    { value: "Cleaner Bill", label: "Cleaner Bill" },
+  ],
+  "Extra Space Rent": [
+    { value: "Extra Office Rent", label: "Extra Office Rent" },
+    { value: "Program name", label: "Program name" },
+  ],
+};
+
 export const DUMMY_VOUCHER_TYPES: VoucherType[] = [
   // Multi-type vouchers (top rows in screenshot)
   {
@@ -1222,8 +1283,137 @@ export const DUMMY_VOUCHER_TYPES: VoucherType[] = [
         type: "dropdown",
         mandatory: true,
         options: [{ value: "bogura", label: "Bogura (বগুড়া)" }],
-        dependency: { field: "institutionId", value: "*" }, // Always show if institution is selected
+        dependency: { field: "institutionId", value: "*" },
       },
+      {
+        name: "expenseTitle",
+        label: "ব্যয়ের শিরোনাম",
+        type: "dropdown",
+        mandatory: true,
+        options: [
+          { value: "Office Rent", label: "Office Rent (অফিস ভাড়া)" },
+          { value: "Electricity Bill", label: "Electricity Bill (বিদ্যুৎ বিল)" },
+          { value: "WASA Bill", label: "WASA Bill (ওয়াসা বিল)" },
+          { value: "Gas Bill", label: "Gas Bill (গ্যাস বিল)" },
+          { value: "Internet Bill", label: "Internet Bill (ইন্টারনেট বিল)" },
+          { value: "Telephone Bill", label: "Telephone Bill (টেলিফোন বিল)" },
+          { value: "Service Charge", label: "Service Charge (সার্ভিস চার্জ)" },
+          { value: "Guard & Cleaner Bill", label: "Guard & Cleaner Bill (গার্ড এন্ড ক্লিনার বিল)" },
+          { value: "Extra Space Rent", label: "Extra Space Rent (অতিরিক্ত জায়গা ভাড়া)" },
+        ],
+        conditionalFields: [
+          {
+            value: "Office Rent",
+            fields: [
+              {
+                name: "expenseCategory",
+                label: "ব্যয়ের খাত",
+                type: "dropdown",
+                mandatory: true,
+                options: RENTAL_UTILITY_EXPENSE_CATEGORIES["Office Rent"],
+              },
+            ],
+          },
+          {
+            value: "Electricity Bill",
+            fields: [
+              {
+                name: "expenseCategory",
+                label: "ব্যয়ের খাত",
+                type: "dropdown",
+                mandatory: true,
+                options: RENTAL_UTILITY_EXPENSE_CATEGORIES["Electricity Bill"],
+              },
+            ],
+          },
+          {
+            value: "WASA Bill",
+            fields: [
+              {
+                name: "expenseCategory",
+                label: "ব্যয়ের খাত",
+                type: "dropdown",
+                mandatory: true,
+                options: RENTAL_UTILITY_EXPENSE_CATEGORIES["WASA Bill"],
+              },
+            ],
+          },
+          {
+            value: "Gas Bill",
+            fields: [
+              {
+                name: "expenseCategory",
+                label: "ব্যয়ের খাত",
+                type: "dropdown",
+                mandatory: true,
+                options: RENTAL_UTILITY_EXPENSE_CATEGORIES["Gas Bill"],
+              },
+            ],
+          },
+          {
+            value: "Internet Bill",
+            fields: [
+              {
+                name: "expenseCategory",
+                label: "ব্যয়ের খাত",
+                type: "dropdown",
+                mandatory: true,
+                options: RENTAL_UTILITY_EXPENSE_CATEGORIES["Internet Bill"],
+              },
+            ],
+          },
+          {
+            value: "Telephone Bill",
+            fields: [
+              {
+                name: "expenseCategory",
+                label: "ব্যয়ের খাত",
+                type: "dropdown",
+                mandatory: true,
+                options: RENTAL_UTILITY_EXPENSE_CATEGORIES["Telephone Bill"],
+              },
+            ],
+          },
+          {
+            value: "Service Charge",
+            fields: [
+              {
+                name: "expenseCategory",
+                label: "ব্যয়ের খাত",
+                type: "dropdown",
+                mandatory: true,
+                options: RENTAL_UTILITY_EXPENSE_CATEGORIES["Service Charge"],
+              },
+            ],
+          },
+          {
+            value: "Guard & Cleaner Bill",
+            fields: [
+              {
+                name: "expenseCategory",
+                label: "ব্যয়ের খাত",
+                type: "dropdown",
+                mandatory: true,
+                options: RENTAL_UTILITY_EXPENSE_CATEGORIES["Guard & Cleaner Bill"],
+              },
+            ],
+          },
+          {
+            value: "Extra Space Rent",
+            fields: [
+              {
+                name: "expenseCategory",
+                label: "ব্যয়ের খাত",
+                type: "dropdown",
+                mandatory: true,
+                options: RENTAL_UTILITY_EXPENSE_CATEGORIES["Extra Space Rent"],
+              },
+            ],
+          },
+        ],
+      },
+      { name: "recipientName", label: "গ্রহিতার নাম", type: "text", mandatory: true, placeholder: "গ্রহিতার নাম লিখুন" },
+      { name: "monthName", label: "মাসের নাম", type: "month-picker", mandatory: true }, // New type for month picker
       { name: "amount", label: "টাকার পরিমাণ", type: "number", mandatory: true, placeholder: "টাকার পরিমাণ লিখুন" },
       { name: "description", label: "বর্ণনা", type: "textarea", mandatory: true, placeholder: "বর্ণনা লিখুন" },
       { name: "attachment", label: "সংযুক্তি", type: "file", mandatory: false },
