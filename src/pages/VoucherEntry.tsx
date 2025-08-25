@@ -6,27 +6,35 @@ import { DUMMY_VOUCHER_TYPES, SUPPORT_STAFF_ALLOWED_VOUCHER_TYPES_IDS } from "@/
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext"; // Import useAuth
 import {
-  Ticket, Utensils, Car, Megaphone, Award, Clipboard, Sparkles, CookingPot,
-  Receipt, Smartphone, Building, Wrench, Wallet, BookText, ReceiptText
+  Utensils, Car, Megaphone, Clipboard, Sparkles, CookingPot,
+  Smartphone, Building, Wrench, Wallet, Lightbulb, Settings, Briefcase, DollarSign, FileStack
 } from "lucide-react"; // Import necessary icons
 
 // Map voucher IDs to Lucide React icons
 const voucherIcons: { [key: string]: React.ElementType } = {
-  "entertainment-conveyance-multi": Ticket,
+  // Multi-type vouchers
+  "entertainment-conveyance-multi": Briefcase, // General expense/travel
+  "publicity-students-inspiration-multi": Megaphone, // Publicity
+  "stationery-maintenance-multi": Settings, // Maintenance/tools
+  "debit-credit-journal-multi": FileStack, // Documents/records
+
+  // Single-type vouchers
   "entertainment": Utensils,
   "conveyance": Car,
-  "publicity-students-inspiration-multi": Megaphone,
   "publicity": Megaphone,
-  "publicity-students-inspiration": Award,
-  "stationery-maintenance-multi": Clipboard,
+  "publicity-students-inspiration": Lightbulb, // Inspiration
   "office-supplies-stationery": Clipboard,
   "cleaning-supplies": Sparkles,
   "kitchen-household-items": CookingPot,
-  "debit-credit-journal-multi": Receipt,
   "mobile-bill": Smartphone,
   "rental-utility": Building,
   "repair": Wrench,
   "petty-cash": Wallet,
+
+  // Publicity sub-vouchers (these are not in the main list, but defined in dummyData)
+  "publicity-conveyance": Car, // Reusing Car
+  "publicity-entertainment": Utensils, // Reusing Utensils
+  "publicity-publicist-bill": DollarSign, // Publicist bill
 };
 
 const VoucherEntry = () => {
@@ -114,7 +122,7 @@ const VoucherEntry = () => {
                     isMultiType
                     onToggleCollapse={handleToggleCollapse}
                     isCollapsed={collapsedMultiTypes.includes(voucher.id)}
-                    icon={voucherIcons[voucher.id] || Ticket} // Pass the icon
+                    icon={voucherIcons[voucher.id] || Briefcase} // Pass the icon
                   />
                   {!collapsedMultiTypes.includes(voucher.id) && voucher.subTypes && (
                     <div className="grid grid-cols-1 gap-4 mt-4 pl-4 border-l-4 border-purple-300">
@@ -125,7 +133,7 @@ const VoucherEntry = () => {
                             voucher={subVoucher}
                             isSelected={selectedVoucherIds.includes(subVoucher.id)}
                             onSelect={handleSelectVoucher}
-                            icon={voucherIcons[subVoucher.id] || Ticket} // Pass the icon
+                            icon={voucherIcons[subVoucher.id] || Briefcase} // Pass the icon
                           />
                         ))}
                     </div>
@@ -136,7 +144,7 @@ const VoucherEntry = () => {
                   voucher={voucher}
                   isSelected={selectedVoucherIds.includes(voucher.id)}
                   onSelect={handleSelectVoucher}
-                  icon={voucherIcons[voucher.id] || Ticket} // Pass the icon
+                  icon={voucherIcons[voucher.id] || Briefcase} // Pass the icon
                 />
               )}
             </div>

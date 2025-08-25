@@ -42,7 +42,7 @@ const VoucherCard = ({
     >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <div className="flex items-center gap-2"> {/* Container for icon and title */}
-          <Icon className="h-6 w-6 text-gray-600" /> {/* Render the icon */}
+          <Icon className={cn("h-6 w-6", isMultiType ? "text-purple-700" : "text-blue-700")} /> {/* Render the icon with dynamic color */}
           <CardTitle className="text-lg font-bold text-gray-800">
             {voucher.heading}
           </CardTitle>
