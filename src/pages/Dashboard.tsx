@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { format, parseISO } from "date-fns";
-import { DUMMY_INSTITUTIONS, DUMMY_PINS, DUMMY_PROGRAM_SESSIONS, DUMMY_VOUCHER_TYPES, OFFICE_SUPPLIES_ITEM_OPTIONS, CLEANING_SUPPLIES_ITEM_OPTIONS, KITCHEN_HOUSEHOLD_ITEM_OPTIONS } from "@/data/dummyData";
+import { DUMMY_INSTITUTIONS, DUMMY_PINS, DUMMY_PROGRAM_SESSIONS, DUMMY_VOUCHER_TYPES, OFFICE_SUPPLIES_ITEM_OPTIONS, CLEANING_SUPPLIES_ITEM_OPTIONS, KITCHEN_HOUSEHOLD_ITEM_OPTIONS, REPAIR_ITEM_OPTIONS } from "@/data/dummyData";
 import { SubmittedVoucher } from "@/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import DynamicVoucherForm from "@/components/forms/DynamicVoucherForm";
@@ -80,6 +80,8 @@ const Dashboard = () => {
         options = currentExpenseTitle ? CLEANING_SUPPLIES_ITEM_OPTIONS[currentExpenseTitle] || [] : [];
       } else if (voucherTypeId === "kitchen-household-items") {
         options = currentExpenseTitle ? KITCHEN_HOUSEHOLD_ITEM_OPTIONS[currentExpenseTitle] || [] : [];
+      } else if (voucherTypeId === "repair") { // NEW: Repair item options
+        options = currentExpenseTitle ? REPAIR_ITEM_OPTIONS[currentExpenseTitle] || [] : [];
       }
     } else if (fieldName === "expenseCategory" && voucherTypeId === "entertainment" && itemData.expenseTitle) {
       const expenseTitleField = voucherTypeDetails.formFields.find(f => f.name === 'expenseTitle');

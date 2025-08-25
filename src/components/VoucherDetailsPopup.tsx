@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
 import { SubmittedVoucher, VoucherStatus } from "@/types";
 import { useSubmittedVouchers } from "@/context/SubmittedVouchersContext";
-import { DUMMY_INSTITUTIONS, DUMMY_PINS, DUMMY_PROGRAM_SESSIONS, DUMMY_VOUCHER_TYPES, OFFICE_SUPPLIES_ITEM_OPTIONS, CLEANING_SUPPLIES_ITEM_OPTIONS, KITCHEN_HOUSEHOLD_ITEM_OPTIONS, RENTAL_UTILITY_EXPENSE_CATEGORIES } from "@/data/dummyData";
+import { DUMMY_INSTITUTIONS, DUMMY_PINS, DUMMY_PROGRAM_SESSIONS, DUMMY_VOUCHER_TYPES, OFFICE_SUPPLIES_ITEM_OPTIONS, CLEANING_SUPPLIES_ITEM_OPTIONS, KITCHEN_HOUSEHOLD_ITEM_OPTIONS, RENTAL_UTILITY_EXPENSE_CATEGORIES, REPAIR_ITEM_OPTIONS } from "@/data/dummyData";
 import { useNavigate } from "react-router-dom";
 import AttachmentViewerPopup from "@/components/AttachmentViewerPopup"; // Import the new component
 
@@ -91,6 +91,8 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
         options = currentExpenseTitle ? CLEANING_SUPPLIES_ITEM_OPTIONS[currentExpenseTitle] || [] : [];
       } else if (voucherTypeId === "kitchen-household-items") {
         options = currentExpenseTitle ? KITCHEN_HOUSEHOLD_ITEM_OPTIONS[currentExpenseTitle] || [] : [];
+      } else if (voucherTypeId === "repair") { // NEW: Repair item options
+        options = currentExpenseTitle ? REPAIR_ITEM_OPTIONS[currentExpenseTitle] || [] : [];
       }
     } else if (fieldName === "expenseCategory") { // Handle expenseCategory for all relevant voucher types
       if (voucherTypeId === "entertainment" && itemData.expenseTitle) {
@@ -375,8 +377,22 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
             </TableRow>
           </TableBody>
         );
+      case 'repair': // NEW: Repair voucher details
+        return (
+          <TableBody>
+            <TableRow>
+              <TableCell>{itemData.date ? format(new Date(itemData.date), "dd MMM, yyyy") : "N/A"}</TableCell>
+              <TableCell>{getInstitutionName(itemData.institutionId)}</TableCell>
+              <TableCell>{getBranchName(itemData.institutionId, itemData.branchId)}</TableCell>
+              <TableCell>{getDropdownLabel(voucherTypeId, 'expenseTitle', itemData.expenseTitle, itemData) || "N/A"}</TableCell>
+              <TableCell>{getDropdownLabel(voucherTypeId, 'itemName', itemData.itemName, itemData) || "N/A"}</TableCell>
+              <TableCell className="text-right">{(itemData.amount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</TableCell>
+              <TableCell>{itemData.description || "N/A"}</TableCell>
+              {renderAttachmentCell(itemData)}
+            </TableRow>
+          </TableBody>
+        );
       case 'mobile-bill':
-      case 'repair':
       case 'petty-cash':
         return (
           <TableBody>
@@ -542,8 +558,20 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
             <TableHead>সংযুক্তি</TableHead>
           </TableRow>
         );
+      case 'repair': // NEW: Repair voucher table header
+        return (
+          <TableRow className="bg-teal-100">
+            <TableHead>তারিখ</TableHead>
+            <TableHead>প্রতিষ্ঠানের নাম</TableHead>
+            <TableHead>শাখার নাম</TableHead>
+            <TableHead>ব্যয়ের শিরোনাম</TableHead>
+            <TableHead>আইটেমের নাম</TableHead>
+            <TableHead className="text-right">টাকার পরিমাণ</TableHead>
+            <TableHead>বর্ণনা</TableHead>
+            <TableHead>সংযুক্তি</TableHead>
+          </TableRow>
+        );
       case 'mobile-bill':
-      case 'repair':
       case 'petty-cash':
         return (
           <TableRow className="bg-gray-100">
@@ -574,9 +602,9 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
       case 'office-supplies-stationery': return 9;
       case 'cleaning-supplies': return 9;
       case 'kitchen-household-items': return 9;
-      case 'rental-utility': return 10; // Updated colspan for rental-utility
+      case 'rental-utility': return 10;
+      case 'repair': return 8; // NEW: Colspan for repair
       case 'mobile-bill':
-      case 'repair':
       case 'petty-cash': return 6;
       default: return 1;
     }

@@ -12,7 +12,7 @@ import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { DUMMY_INSTITUTIONS, DUMMY_PROGRAM_SESSIONS, DUMMY_PUBLICITY_LOCATIONS, DUMMY_VOUCHER_TYPES, OFFICE_SUPPLIES_ITEM_OPTIONS, CLEANING_SUPPLIES_ITEM_OPTIONS, KITCHEN_HOUSEHOLD_ITEM_OPTIONS, RENTAL_UTILITY_EXPENSE_CATEGORIES } from "@/data/dummyData";
+import { DUMMY_INSTITUTIONS, DUMMY_PROGRAM_SESSIONS, DUMMY_PUBLICITY_LOCATIONS, DUMMY_VOUCHER_TYPES, OFFICE_SUPPLIES_ITEM_OPTIONS, CLEANING_SUPPLIES_ITEM_OPTIONS, KITCHEN_HOUSEHOLD_ITEM_OPTIONS, RENTAL_UTILITY_EXPENSE_CATEGORIES, REPAIR_ITEM_OPTIONS } from "@/data/dummyData";
 import { cn } from "@/lib/utils";
 import { FormField as FormFieldType, VoucherType } from "@/types";
 import PinSelector from "@/components/PinSelector";
@@ -137,7 +137,7 @@ const createSchema = (fields: FormFieldType[], currentFormValues: any, voucherTy
           currentFieldSchema = (currentFieldSchema as z.ZodString).optional().or(z.literal(""));
         }
 
-        // Dynamic validation for itemName in office-supplies-stationery, cleaning-supplies, kitchen-household-items
+        // Dynamic validation for itemName in office-supplies-stationery, cleaning-supplies, kitchen-household-items, repair
         if (field.name === "itemName") {
           const currentExpenseTitle = currentFormValues.expenseTitle;
           let dynamicItemOptions: { value: string; label: string }[] = [];
@@ -148,6 +148,8 @@ const createSchema = (fields: FormFieldType[], currentFormValues: any, voucherTy
             dynamicItemOptions = currentExpenseTitle ? CLEANING_SUPPLIES_ITEM_OPTIONS[currentExpenseTitle] || [] : [];
           } else if (voucherTypeId === "kitchen-household-items") {
             dynamicItemOptions = currentExpenseTitle ? KITCHEN_HOUSEHOLD_ITEM_OPTIONS[currentExpenseTitle] || [] : [];
+          } else if (voucherTypeId === "repair") { // NEW: Add repair logic
+            dynamicItemOptions = currentExpenseTitle ? REPAIR_ITEM_OPTIONS[currentExpenseTitle] || [] : [];
           }
           
           const allowedValues = dynamicItemOptions.map(opt => opt.value);
@@ -532,6 +534,8 @@ const DynamicVoucherForm = forwardRef<DynamicVoucherFormRef, DynamicVoucherFormP
                       optionsToRender = selectedExpenseTitle ? CLEANING_SUPPLIES_ITEM_OPTIONS[selectedExpenseTitle] || [] : [];
                     } else if (voucherTypeId === "kitchen-household-items" && field.name === "itemName") {
                       optionsToRender = selectedExpenseTitle ? KITCHEN_HOUSEHOLD_ITEM_OPTIONS[selectedExpenseTitle] || [] : [];
+                    } else if (voucherTypeId === "repair" && field.name === "itemName") { // NEW: Add repair logic
+                      optionsToRender = selectedExpenseTitle ? REPAIR_ITEM_OPTIONS[selectedExpenseTitle] || [] : [];
                     } else if (field.name === "expenseCategory") { // Dynamic options for expenseCategory
                       optionsToRender = expenseCategoryOptions;
                     }
