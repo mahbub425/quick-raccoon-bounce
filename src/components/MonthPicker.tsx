@@ -92,11 +92,25 @@ const MonthPicker = ({ value, onChange, placeholder, className }: MonthPickerPro
           onSelect={handleMonthSelect}
           initialFocus
           view="months" // This is the key for month-only view
+          numberOfMonths={1} // Explicitly show only one month grid (one year of months)
           month={setYear(selectedMonth || new Date(), displayYear)} // Ensure calendar displays correct year
           onMonthChange={(month) => setDisplayYear(getYear(month))} // Update displayYear when navigating months
           // Custom components to hide default navigation as we have a custom year input
           components={{
             Caption: () => null, // Hide default caption (month/year display)
+          }}
+          classNames={{
+            // Override default day-related classes to ensure month-only appearance
+            day: "hidden", // Hide day numbers if they somehow appear
+            month_cell: "h-10 w-10 rounded-md p-0 font-normal text-sm hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+            month_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+            month_today: "bg-accent text-accent-foreground",
+            month_outside: "text-muted-foreground opacity-50",
+            month_disabled: "text-muted-foreground opacity-50",
+            // Ensure the grid itself is clean
+            table: "w-full border-collapse space-y-1",
+            row: "flex w-full mt-2",
+            cell: "text-center text-sm p-0 relative focus-within:relative focus-within:z-20",
           }}
           className="p-2"
         />
