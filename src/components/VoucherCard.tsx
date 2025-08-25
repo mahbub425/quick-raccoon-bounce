@@ -11,6 +11,7 @@ interface VoucherCardProps {
   isMultiType?: boolean;
   onToggleCollapse?: (id: string) => void;
   isCollapsed?: boolean;
+  icon: React.ElementType; // New prop for the icon
 }
 
 const VoucherCard = ({
@@ -20,6 +21,7 @@ const VoucherCard = ({
   isMultiType = false,
   onToggleCollapse,
   isCollapsed,
+  icon: Icon, // Destructure and rename icon to Icon for JSX
 }: VoucherCardProps) => {
   const handleCardClick = () => {
     if (isMultiType && onToggleCollapse) {
@@ -39,9 +41,12 @@ const VoucherCard = ({
       onClick={handleCardClick}
     >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-lg font-bold text-gray-800">
-          {voucher.heading}
-        </CardTitle>
+        <div className="flex items-center gap-2"> {/* Container for icon and title */}
+          <Icon className="h-6 w-6 text-gray-600" /> {/* Render the icon */}
+          <CardTitle className="text-lg font-bold text-gray-800">
+            {voucher.heading}
+          </CardTitle>
+        </div>
         {!isMultiType && (
           <Checkbox
             checked={isSelected}

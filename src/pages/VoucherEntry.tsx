@@ -5,6 +5,29 @@ import VoucherCard from "@/components/VoucherCard";
 import { DUMMY_VOUCHER_TYPES, SUPPORT_STAFF_ALLOWED_VOUCHER_TYPES_IDS } from "@/data/dummyData";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext"; // Import useAuth
+import {
+  Ticket, Utensils, Car, Megaphone, Award, Clipboard, Sparkles, CookingPot,
+  Receipt, Smartphone, Building, Wrench, Wallet, BookText, ReceiptText
+} from "lucide-react"; // Import necessary icons
+
+// Map voucher IDs to Lucide React icons
+const voucherIcons: { [key: string]: React.ElementType } = {
+  "entertainment-conveyance-multi": Ticket,
+  "entertainment": Utensils,
+  "conveyance": Car,
+  "publicity-students-inspiration-multi": Megaphone,
+  "publicity": Megaphone,
+  "publicity-students-inspiration": Award,
+  "stationery-maintenance-multi": Clipboard,
+  "office-supplies-stationery": Clipboard,
+  "cleaning-supplies": Sparkles,
+  "kitchen-household-items": CookingPot,
+  "debit-credit-journal-multi": Receipt,
+  "mobile-bill": Smartphone,
+  "rental-utility": Building,
+  "repair": Wrench,
+  "petty-cash": Wallet,
+};
 
 const VoucherEntry = () => {
   const navigate = useNavigate();
@@ -91,6 +114,7 @@ const VoucherEntry = () => {
                     isMultiType
                     onToggleCollapse={handleToggleCollapse}
                     isCollapsed={collapsedMultiTypes.includes(voucher.id)}
+                    icon={voucherIcons[voucher.id] || Ticket} // Pass the icon
                   />
                   {!collapsedMultiTypes.includes(voucher.id) && voucher.subTypes && (
                     <div className="grid grid-cols-1 gap-4 mt-4 pl-4 border-l-4 border-purple-300">
@@ -101,6 +125,7 @@ const VoucherEntry = () => {
                             voucher={subVoucher}
                             isSelected={selectedVoucherIds.includes(subVoucher.id)}
                             onSelect={handleSelectVoucher}
+                            icon={voucherIcons[subVoucher.id] || Ticket} // Pass the icon
                           />
                         ))}
                     </div>
@@ -111,6 +136,7 @@ const VoucherEntry = () => {
                   voucher={voucher}
                   isSelected={selectedVoucherIds.includes(voucher.id)}
                   onSelect={handleSelectVoucher}
+                  icon={voucherIcons[voucher.id] || Ticket} // Pass the icon
                 />
               )}
             </div>
