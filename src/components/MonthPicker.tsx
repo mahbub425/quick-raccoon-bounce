@@ -100,17 +100,29 @@ const MonthPicker = ({ value, onChange, placeholder, className }: MonthPickerPro
             Caption: () => null, // Hide default caption (month/year display)
           }}
           classNames={{
-            // Override default day-related classes to ensure month-only appearance
-            day: "hidden", // Hide day numbers if they somehow appear
-            month_cell: "h-10 w-10 rounded-md p-0 font-normal text-sm hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
-            month_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
-            month_today: "bg-accent text-accent-foreground",
-            month_outside: "text-muted-foreground opacity-50",
-            month_disabled: "text-muted-foreground opacity-50",
-            // Ensure the grid itself is clean
-            table: "w-full border-collapse space-y-1",
-            row: "flex w-full mt-2",
-            cell: "text-center text-sm p-0 relative focus-within:relative focus-within:z-20",
+            // The container for all months (the grid itself)
+            months: "w-full",
+            // The table element, which will be our grid container
+            table: "w-full grid grid-cols-4 gap-1", // 4 columns for months
+            // Each row in the grid (we want them to be part of the grid, not separate rows)
+            row: "contents", 
+            // The individual cell (td) wrapping each month
+            cell: "p-0 relative focus-within:relative focus-within:z-20",
+            // The actual month element (div with role="button")
+            // This is where the main styling for each month goes
+            day: cn( // Use 'day' to style individual month elements when view="months"
+              "h-10 w-10 rounded-md p-0 font-normal text-sm flex items-center justify-center", // Base style
+              "hover:bg-accent hover:text-accent-foreground", // Hover state
+              "focus:bg-accent focus:text-accent-foreground", // Focus state
+            ),
+            // Styling for the selected month. When view="months", react-day-picker applies day_selected to the chosen month.
+            day_selected: "bg-sidebar-primary text-sidebar-primary-foreground border border-black",
+            // Styling for the current month (today)
+            day_today: "bg-accent text-accent-foreground",
+            // Styling for months outside the current view (if applicable, e.g., if showing multiple years)
+            day_outside: "text-muted-foreground opacity-50",
+            // Styling for disabled months
+            day_disabled: "text-muted-foreground opacity-50",
           }}
           className="p-2"
         />
