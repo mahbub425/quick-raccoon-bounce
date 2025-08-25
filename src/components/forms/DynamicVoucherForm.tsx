@@ -19,6 +19,7 @@ import PinSelector from "@/components/PinSelector";
 import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
 import AutosuggestInput from "@/components/AutosuggestInput";
+import MonthPicker from "@/components/MonthPicker"; // Import the new MonthPicker
 
 interface DynamicVoucherFormProps {
   voucherTypeId: string;
@@ -560,40 +561,12 @@ const DynamicVoucherForm = forwardRef<DynamicVoucherFormRef, DynamicVoucherFormP
                   }
                   if (field.type === "month-picker") { // Render for month-picker
                     return (
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant={"outline"}
-                            className={cn(
-                              "w-full justify-start text-left font-normal border-blue-300 focus:border-blue-500 focus:ring-blue-500",
-                              !formHookField.value && "text-muted-foreground"
-                            )}
-                          >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {formHookField.value ? format(formHookField.value as Date, "MMMM yyyy") : <span>মাস নির্বাচন করুন</span>}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            captionLayout="dropdown-buttons" // Enable month/year dropdowns
-                            selected={formHookField.value as Date | null | undefined}
-                            onSelect={formHookField.onChange}
-                            initialFocus
-                            fromYear={2000} // Adjust as needed
-                            toYear={new Date().getFullYear() + 5} // Adjust as needed
-                          />
-                          <div className="p-2 border-t">
-                            <Button
-                              variant="ghost"
-                              className="w-full"
-                              onClick={() => formHookField.onChange(new Date())}
-                            >
-                              বর্তমান মাস
-                            </Button>
-                          </div>
-                        </PopoverContent>
-                      </Popover>
+                      <MonthPicker
+                        value={formHookField.value as Date | null | undefined}
+                        onChange={formHookField.onChange}
+                        placeholder="মাস নির্বাচন করুন"
+                        className="border-blue-300 focus:border-blue-500 focus:ring-blue-500"
+                      />
                     );
                   }
                   if (field.type === "time") {
