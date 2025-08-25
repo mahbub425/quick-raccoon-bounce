@@ -10,7 +10,13 @@ const VoucherEntry = () => {
   const navigate = useNavigate();
   const { user } = useAuth(); // Get current user from AuthContext
   const [selectedVoucherIds, setSelectedVoucherIds] = useState<string[]>([]);
-  const [collapsedMultiTypes, setCollapsedMultiTypes] = useState<string[]>([]);
+  
+  // Initialize collapsedMultiTypes to have all multi-type voucher IDs, making them collapsed by default
+  const [collapsedMultiTypes, setCollapsedMultiTypes] = useState<string[]>(() => {
+    return DUMMY_VOUCHER_TYPES
+      .filter(v => v.type === 'multi')
+      .map(v => v.id);
+  });
 
   // IDs of the vouchers that are special sub-forms and should NOT appear as selectable cards
   // in the main VoucherEntry list, but are handled within other forms (e.g., Publicity main form).
@@ -27,9 +33,19 @@ const VoucherEntry = () => {
   };
 
   const handleToggleCollapse = (id: string) => {
-    setCollapsedMultiTypes((prev) =>
-      prev.includes(id) ? prev.filter((multiId) => multiId !== id) : [...prev, id],
-    );
+    setCollapsedMultiTypes((prev) => {
+      const allMultiTypeIds = DUMMY_VOUCHER_TYPES
+        .filter(v => v.type === 'multi')
+        .map(v => v.id);
+
+      if (prev.includes(id)) {
+        // If it was collapsed, expand it and collapse all others
+        return allMultiTypeIds.filter(multiId => multiId !== id);
+      } else {
+        // If it was expanded, collapse it
+        return [...prev, id];
+      }
+    });
   };
 
   const handleSendToSelected = () => {
