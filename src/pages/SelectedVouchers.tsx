@@ -66,9 +66,8 @@ const SelectedVouchers = () => {
     });
     toast.success(`${newHeading} কার্টে যোগ করা হয়েছে!`);
 
-    // Reset both forms after successful combined submission
-    mainPublicityFormRef.current.reset();
-    setActiveSubFormId(null); // This will unmount and reset the sub-form
+    // Only reset the sub-form by unmounting it, keep the main publicity form data
+    setActiveSubFormId(null); 
   };
 
   if (selectedVouchers.length === 0) {
