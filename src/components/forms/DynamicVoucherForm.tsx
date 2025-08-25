@@ -157,12 +157,72 @@ const createSchema = (fields: FormFieldType[], currentFormValues: any, voucherTy
               .refine(val => allowedValues.includes(val), { message: `${field.label} একটি বৈধ অপশন হতে হবে` });
           }
         }
-        // Dynamic validation for expenseCategory in rental-utility
-        if (voucherTypeId === "rental-utility" && field.name === "expenseCategory") {
+        // Dynamic validation for expenseCategory in rental-utility and entertainment
+        if ((voucherTypeId === "rental-utility" || voucherTypeId === "entertainment") && field.name === "expenseCategory") {
           const currentExpenseTitle = currentFormValues.expenseTitle;
           let dynamicCategoryOptions: { value: string; label: string }[] = [];
-          if (currentExpenseTitle && RENTAL_UTILITY_EXPENSE_CATEGORIES[currentExpenseTitle]) {
+          if (voucherTypeId === "rental-utility" && currentExpenseTitle && RENTAL_UTILITY_EXPENSE_CATEGORIES[currentExpenseTitle]) {
             dynamicCategoryOptions = RENTAL_UTILITY_EXPENSE_CATEGORIES[currentExpenseTitle];
+          } else if (voucherTypeId === "entertainment" && currentExpenseTitle) {
+            const entertainmentVoucherDetails = getVoucherDetails("entertainment");
+            const expenseTitleField = entertainmentVoucherDetails?.formFields?.find(f => f.name === 'expenseTitle');
+            const matchingConditionalField = expenseTitleField?.conditionalFields?.find(cf => cf.value === currentExpenseTitle);
+            // In the new structure, expenseCategory is a direct field, but its options are still derived from conditional logic
+            // So we need to manually construct the options based on expenseTitle
+            if (currentExpenseTitle === "Myself") {
+              dynamicCategoryOptions = [
+                { value: "Breakfast", label: "Breakfast (সকালের নাস্তা)" },
+                { value: "Lunch", label: "Lunch (দুপুরের খাবার)" },
+                { value: "Afternoon Snacks", label: "Afternoon Snacks (বিকালের নাস্তা)" },
+                { value: "Dinner", label: "Dinner (রাতের খাবার)" },
+                { value: "Iftar", label: "Iftar (ইফতার)" },
+                { value: "Sehri", label: "Sehri (সেহরি)" },
+              ];
+            } else if (currentExpenseTitle === "Staff") {
+              dynamicCategoryOptions = [
+                { value: "Afternoon Snacks", label: "Afternoon Snacks (বিকালের নাস্তা)" },
+                { value: "Special Occasion", label: "Special Occasion (বিশেষ উপলক্ষ)" },
+                { value: "Iftar", label: "Iftar (ইফতার)" },
+              ];
+            } else if (currentExpenseTitle === "Teacher") {
+              dynamicCategoryOptions = [
+                { value: "Breakfast", label: "Breakfast (সকালের নাস্তা)" },
+                { value: "Afternoon Snacks", label: "Afternoon Snacks (বিকালের নাস্তা)" },
+                { value: "Regular Lunch & Dinner", label: "Regular Lunch & Dinner (দুপুর ও রাতের প্রতিদিনের খাবার)" },
+                { value: "Special Lunch & Dinner", label: "Special Lunch & Dinner (দুপুর ও রাতের বিশেষ খাবার)" },
+                { value: "Special Occasion", label: "Special Occasion (বিশেষ উপলক্ষ)" },
+              ];
+            } else if (currentExpenseTitle === "Director & Guest") {
+              dynamicCategoryOptions = [
+                { value: "Director", label: "Director (পরিচালক)" },
+                { value: "Guest", label: "Guest (অতিথি)" },
+              ];
+            } else if (currentExpenseTitle === "Student & Guardian") {
+              dynamicCategoryOptions = [
+                { value: "Student", label: "Student (শিক্ষার্থী)" },
+                { value: "Guardian", label: "Guardian (অভিভাবক)" },
+              ];
+            } else if (currentExpenseTitle === "Tea & Tea Materials") {
+              dynamicCategoryOptions = [
+                { value: "Tea Bag", label: "Tea Bag (টি ব্যাগ)" },
+                { value: "Sugar", label: "Sugar (চিনি)" },
+                { value: "Ginger", label: "Ginger (আদা)" },
+                { value: "Lemon", label: "Lemon (লেবু)" },
+                { value: "Spice", label: "Spice (মসলা)" },
+              ];
+            } else if (currentExpenseTitle === "Drinking Water") {
+              dynamicCategoryOptions = [
+                { value: "Safe International", label: "Safe International" },
+                { value: "Ma Enterprise", label: "Ma Enterprise" },
+                { value: "Others", label: "Others" },
+              ];
+            } else if (currentExpenseTitle === "Others") {
+              dynamicCategoryOptions = [
+                { value: "Gas for Cooking", label: "Gas for Cooking (রান্নার গ্যাস)" },
+                { value: "Meeting", label: "Meeting (আলোচনা সভা)" },
+                { value: "Tablighi Jamat", label: "Tablighi Jamat (তাবলীগ জামাত)" },
+              ];
+            }
           }
           const allowedValues = dynamicCategoryOptions.map(opt => opt.value);
 
@@ -268,6 +328,7 @@ const DynamicVoucherForm = forwardRef<DynamicVoucherFormRef, DynamicVoucherFormP
 
     const selectedInstitutionId = form.watch("institutionId");
     const selectedExpenseTitle = form.watch("expenseTitle"); // Watch expenseTitle for dynamic options
+    const selectedExpenseCategory = form.watch("expenseCategory"); // Watch expenseCategory for conditional fields
 
     const branchOptions = useMemo(() => {
       if (!selectedInstitutionId) {
@@ -294,9 +355,67 @@ const DynamicVoucherForm = forwardRef<DynamicVoucherFormRef, DynamicVoucherFormP
       }));
     }, [selectedInstitutionId]);
 
-    const rentalUtilityExpenseCategoryOptions = useMemo(() => {
-      if (voucherTypeId === "rental-utility" && selectedExpenseTitle && RENTAL_UTILITY_EXPENSE_CATEGORIES[selectedExpenseTitle]) {
-        return RENTAL_UTILITY_EXPENSE_CATEGORIES[selectedExpenseTitle];
+    const expenseCategoryOptions = useMemo(() => {
+      if (!selectedExpenseTitle) {
+        return [];
+      }
+      if (voucherTypeId === "rental-utility") {
+        return RENTAL_UTILITY_EXPENSE_CATEGORIES[selectedExpenseTitle] || [];
+      } else if (voucherTypeId === "entertainment") {
+        if (selectedExpenseTitle === "Myself") {
+          return [
+            { value: "Breakfast", label: "Breakfast (সকালের নাস্তা)" },
+            { value: "Lunch", label: "Lunch (দুপুরের খাবার)" },
+            { value: "Afternoon Snacks", label: "Afternoon Snacks (বিকালের নাস্তা)" },
+            { value: "Dinner", label: "Dinner (রাতের খাবার)" },
+            { value: "Iftar", label: "Iftar (ইফতার)" },
+            { value: "Sehri", label: "Sehri (সেহরি)" },
+          ];
+        } else if (selectedExpenseTitle === "Staff") {
+          return [
+            { value: "Afternoon Snacks", label: "Afternoon Snacks (বিকালের নাস্তা)" },
+            { value: "Special Occasion", label: "Special Occasion (বিশেষ উপলক্ষ)" },
+            { value: "Iftar", label: "Iftar (ইফতার)" },
+          ];
+        } else if (selectedExpenseTitle === "Teacher") {
+          return [
+            { value: "Breakfast", label: "Breakfast (সকালের নাস্তা)" },
+            { value: "Afternoon Snacks", label: "Afternoon Snacks (বিকালের নাস্তা)" },
+            { value: "Regular Lunch & Dinner", label: "Regular Lunch & Dinner (দুপুর ও রাতের প্রতিদিনের খাবার)" },
+            { value: "Special Lunch & Dinner", label: "Special Lunch & Dinner (দুপুর ও রাতের বিশেষ খাবার)" },
+            { value: "Special Occasion", label: "Special Occasion (বিশেষ উপলক্ষ)" },
+          ];
+        } else if (selectedExpenseTitle === "Director & Guest") {
+          return [
+            { value: "Director", label: "Director (পরিচালক)" },
+            { value: "Guest", label: "Guest (অতিথি)" },
+          ];
+        } else if (selectedExpenseTitle === "Student & Guardian") {
+          return [
+            { value: "Student", label: "Student (শিক্ষার্থী)" },
+            { value: "Guardian", label: "Guardian (অভিভাবক)" },
+          ];
+        } else if (selectedExpenseTitle === "Tea & Tea Materials") {
+          return [
+            { value: "Tea Bag", label: "Tea Bag (টি ব্যাগ)" },
+            { value: "Sugar", label: "Sugar (চিনি)" },
+            { value: "Ginger", label: "Ginger (আদা)" },
+            { value: "Lemon", label: "Lemon (লেবু)" },
+            { value: "Spice", label: "Spice (মসলা)" },
+          ];
+        } else if (selectedExpenseTitle === "Drinking Water") {
+          return [
+            { value: "Safe International", label: "Safe International" },
+            { value: "Ma Enterprise", label: "Ma Enterprise" },
+            { value: "Others", label: "Others" },
+          ];
+        } else if (selectedExpenseTitle === "Others") {
+          return [
+            { value: "Gas for Cooking", label: "Gas for Cooking (রান্নার গ্যাস)" },
+            { value: "Meeting", label: "Meeting (আলোচনা সভা)" },
+            { value: "Tablighi Jamat", label: "Tablighi Jamat (তাবলীগ জামাত)" },
+          ];
+        }
       }
       return [];
     }, [voucherTypeId, selectedExpenseTitle]);
@@ -394,8 +513,8 @@ const DynamicVoucherForm = forwardRef<DynamicVoucherFormRef, DynamicVoucherFormP
                       optionsToRender = selectedExpenseTitle ? CLEANING_SUPPLIES_ITEM_OPTIONS[selectedExpenseTitle] || [] : [];
                     } else if (voucherTypeId === "kitchen-household-items" && field.name === "itemName") {
                       optionsToRender = selectedExpenseTitle ? KITCHEN_HOUSEHOLD_ITEM_OPTIONS[selectedExpenseTitle] || [] : [];
-                    } else if (voucherTypeId === "rental-utility" && field.name === "expenseCategory") {
-                      optionsToRender = rentalUtilityExpenseCategoryOptions;
+                    } else if (field.name === "expenseCategory") { // Dynamic options for expenseCategory
+                      optionsToRender = expenseCategoryOptions;
                     }
                     return (
                       <Select onValueChange={formHookField.onChange} value={formHookField.value || ""}>
@@ -554,8 +673,8 @@ const DynamicVoucherForm = forwardRef<DynamicVoucherFormRef, DynamicVoucherFormP
         const startTimeField = array[index + 1];
         const endTimeField = array[index + 2];
 
-        const isStartTimeVisible = !startTimeField.mandatory || (form.watch(startTimeField.dependency?.field || "") === startTimeField.dependency?.value || startTimeField.dependency?.value === "*");
-        const isEndTimeVisible = !endTimeField.mandatory || (form.watch(endTimeField.dependency?.field || "") === endTimeField.dependency?.value || endTimeField.dependency?.value === "*");
+        const isStartTimeVisible = !startTimeField.dependency || (form.watch(startTimeField.dependency?.field || "") === startTimeField.dependency?.value || startTimeField.dependency?.value === "*");
+        const isEndTimeVisible = !endTimeField.dependency || (form.watch(endTimeField.dependency?.field || "") === endTimeField.dependency?.value || endTimeField.dependency?.value === "*");
 
         return (
           <>
