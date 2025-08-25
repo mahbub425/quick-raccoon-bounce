@@ -1339,7 +1339,7 @@ export const DUMMY_VOUCHER_TYPES: VoucherType[] = [
           {
             value: "Regular Staff",
             fields: [
-              { name: "pin", label: "পিন", type: "pin-selector", mandatory: true, allowMultiplePins: false }, // Assuming single pin for regular staff
+              { name: "pin", label: "পিন", type: "pin-selector", mandatory: true, allowMultiplePins: true }, // Changed to true
             ],
           },
           {
