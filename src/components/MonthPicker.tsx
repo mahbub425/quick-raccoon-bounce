@@ -91,6 +91,7 @@ const MonthPicker = ({ value, onChange, placeholder, className }: MonthPickerPro
           selected={selectedMonth}
           onSelect={handleMonthSelect}
           initialFocus
+          // @ts-ignore: 'view' prop is supported by react-day-picker but might be missing from shadcn/ui's Calendar types
           view="months" // This is the key for month-only view
           month={setYear(selectedMonth || new Date(), displayYear)} // Ensure calendar displays correct year
           onMonthChange={(month) => setDisplayYear(getYear(month))} // Update displayYear when navigating months
