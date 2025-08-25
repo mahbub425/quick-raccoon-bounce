@@ -55,16 +55,16 @@ const allSidebarNavItems: SidebarNavItem[] = [
     roles: ["audit"], // Only for audit
   },
   {
-    title: "Report",
-    href: "/report",
-    icon: BarChart,
-    roles: ["user", "mentor", "payment", "audit"], // Added for all roles
-  },
-  {
     title: "Payment", // New menu item for mentor
     href: "/mentor/payment",
     icon: DollarSign,
     roles: ["mentor"], // Only for mentor
+  },
+  {
+    title: "Report",
+    href: "/report",
+    icon: BarChart,
+    roles: ["user", "mentor", "payment", "audit"], // Added for all roles
   },
 ];
 
@@ -74,6 +74,21 @@ const Sidebar = ({ onLinkClick }: SidebarProps) => {
 
   const filteredNavItems = React.useMemo(() => {
     if (!user) return [];
+    // Custom sorting for mentor's "Payment" and "Report"
+    if (user.role === 'mentor') {
+      const mentorItems = allSidebarNavItems.filter(item => item.roles.includes(user.role));
+      const reportIndex = mentorItems.findIndex(item => item.href === '/report');
+      const mentorPaymentIndex = mentorItems.findIndex(item => item.href === '/mentor/payment');
+
+      if (reportIndex !== -1 && mentorPaymentIndex !== -1 && mentorPaymentIndex > reportIndex) {
+        // If mentor payment is after report, swap them
+        const newMentorItems = [...mentorItems];
+        const [mentorPaymentItem] = newMentorItems.splice(mentorPaymentIndex, 1);
+        newMentorItems.splice(reportIndex, 0, mentorPaymentItem);
+        return newMentorItems;
+      }
+      return mentorItems;
+    }
     return allSidebarNavItems.filter(item => item.roles.includes(user.role));
   }, [user]);
 
