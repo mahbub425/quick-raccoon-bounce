@@ -624,7 +624,9 @@ const DynamicVoucherForm = forwardRef<DynamicVoucherFormRef, DynamicVoucherFormP
                             selected={formHookField.value as Date | null | undefined}
                             onSelect={formHookField.onChange}
                             initialFocus
-                            toDate={new Date()}
+                            // Only for 'petty-cash-demand' and 'dateNeeded' field, restrict past dates
+                            toDate={voucherTypeId === "petty-cash-demand" && field.name === "dateNeeded" ? undefined : new Date()}
+                            fromDate={voucherTypeId === "petty-cash-demand" && field.name === "dateNeeded" ? new Date() : undefined}
                           />
                         </PopoverContent>
                       </Popover>
