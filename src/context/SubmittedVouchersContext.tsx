@@ -163,12 +163,10 @@ export const SubmittedVouchersProvider = ({ children }: { children: ReactNode })
   };
 
   const addPettyCashLedgerEntry = (entry: PettyCashLedgerEntry) => {
-    const userPin = entry.description.includes("পেটি ক্যাশ উত্তোলন")
-      ? submittedVouchers.find(v => v.voucherNumber === entry.description.split(': ')[1])?.submittedByPin
-      : user?.pin; // For adjustment, assume current user
+    const userPin = entry.userPin; // Use userPin directly from the entry
 
     if (!userPin) {
-      console.error("Could not determine userPin for ledger entry.");
+      console.error("User PIN is missing for ledger entry.");
       return;
     }
 

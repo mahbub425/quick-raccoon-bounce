@@ -115,6 +115,7 @@ export type SubmittedVoucher = CartItem & {
 
 // NEW: Type for Petty Cash Ledger Entry
 export type PettyCashLedgerEntry = {
+  userPin: string; // Explicitly add userPin
   date: string;
   branch: string;
   type: string; // e.g., "Official", "Bazar", "Personal" or "Adjustment"

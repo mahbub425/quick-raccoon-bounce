@@ -31,6 +31,7 @@ export const generatePettyCashVoucherNumber = (): string => {
 // Function to create a ledger entry from a paid petty cash demand voucher
 export const createWithdrawalLedgerEntry = (voucher: SubmittedVoucher): PettyCashLedgerEntry => {
   return {
+    userPin: voucher.submittedByPin, // Include userPin
     date: format(parseISO(voucher.createdAt), "yyyy-MM-dd"),
     branch: voucher.data.branchId, // Assuming branchId is stored in data
     type: voucher.data.pettyCashType,
@@ -44,6 +45,7 @@ export const createWithdrawalLedgerEntry = (voucher: SubmittedVoucher): PettyCas
 // Function to create a ledger entry from a submitted non-petty-cash voucher (for adjustment)
 export const createAdjustmentLedgerEntry = (voucher: SubmittedVoucher): PettyCashLedgerEntry => {
   return {
+    userPin: voucher.submittedByPin, // Include userPin
     date: format(parseISO(voucher.createdAt), "yyyy-MM-dd"),
     branch: voucher.data.branchId, // Assuming branchId is stored in data
     type: voucher.voucherHeading, // Use voucher heading as type for adjustment

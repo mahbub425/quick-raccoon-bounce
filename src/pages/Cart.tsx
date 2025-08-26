@@ -137,7 +137,7 @@ const Cart = () => {
     const otherVouchers = cartItems.filter(item => item.voucherTypeId !== 'petty-cash-demand');
 
     let submittedOtherVouchers: SubmittedVoucher[] = [];
-    let submittedPettyCashDemands: SubmittedVoucher[] = [];
+    // let submittedPettyCashDemands: SubmittedVoucher[] = []; // This variable is not used
 
     if (otherVouchers.length > 0) {
       submittedOtherVouchers = addSubmittedVouchers(otherVouchers); // Capture returned items
@@ -150,8 +150,7 @@ const Cart = () => {
     }
 
     if (pettyCashDemands.length > 0) {
-      submittedPettyCashDemands = addSubmittedVouchers(pettyCashDemands); // Capture returned items
-      // Petty cash demands are added to ledger only upon payment, so no ledger entry here.
+      addSubmittedVouchers(pettyCashDemands); // No need to capture, as ledger entry happens on payment
     }
 
     clearCart(); // Clear the cart after submission
