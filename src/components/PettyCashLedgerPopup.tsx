@@ -71,7 +71,7 @@ const PettyCashLedgerPopup = ({ isOpen, onOpenChange, userPin }: PettyCashLedger
                 <TableHead className="w-[50px]">ক্রমিক</TableHead>
                 <TableHead>তারিখ</TableHead>
                 <TableHead>উত্তলনের শাখা</TableHead>
-                <TableHead>পেটিক্যাশের ধরন</TableHead>
+                <TableHead>পেটিক্যাশ/ ভাউচারের ধরন</TableHead> {/* Updated header */}
                 <TableHead className="text-right">উত্তলনের পরিমান</TableHead>
                 <TableHead className="text-right">সমন্বয়ের পরিমান</TableHead>
                 <TableHead className="text-right">ব্যালেন্স</TableHead>
