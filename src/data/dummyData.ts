@@ -241,7 +241,8 @@ export const SUPPORT_STAFF_ALLOWED_VOUCHER_TYPES_IDS = [
   "publicity-students-inspiration-multi", // পাবলিসিটি ও স্টুডেন্টস ইন্সপাইরেশন ভাউচার (parent for publicity, publicity-students-inspiration)
   "stationery-maintenance-multi", // স্টেশনারি ও রক্ষণাবেক্ষণ সম্পর্কিত ভাউচার (parent for office-supplies-stationery, cleaning-supplies, kitchen-household-items)
   "mobile-bill", // মোবাইল বিল
-  "petty-cash", // পেটি ক্যাশ
+  "petty-cash", // পেটি ক্যাশ (Existing petty cash)
+  "petty-cash-demand", // পেটি ক্যাশ চাহিদাপত্র (New petty cash demand)
 ];
 
 export const OFFICE_SUPPLIES_ITEM_OPTIONS: { [key: string]: { value: string; label: string }[] } = {
@@ -1060,7 +1061,7 @@ export const DUMMY_VOUCHER_TYPES: VoucherType[] = [
           { value: "Telephone Bill", label: "Telephone Bill (টেলিফোন বিল)" },
           { value: "Service Charge", label: "Service Charge (সার্ভিস চার্জ)" },
           { value: "Guard & Cleaner Bill", label: "Guard & Cleaner Bill (গার্ড এন্ড ক্লিনার বিল)" },
-          { value: "Extra Space Rent", label: "Extra Office Rent (অতিরিক্ত জায়গা ভাড়া)" },
+          { value: "Extra Space Rent", label: "Extra Space Rent (অতিরিক্ত জায়গা ভাড়া)" },
         ],
       },
       {
@@ -1151,6 +1152,44 @@ export const DUMMY_VOUCHER_TYPES: VoucherType[] = [
       { name: "amount", label: "টাকার পরিমাণ", type: "number", mandatory: true, placeholder: "টাকার পরিমাণ লিখুন" },
       { name: "description", label: "বর্ণনা", type: "textarea", mandatory: true, placeholder: "বর্ণনা লিখুন" },
       { name: "attachment", label: "সংযুক্তি", type: "file", mandatory: false },
+    ],
+  },
+  // NEW: Petty Cash Demand Letter Voucher Type
+  {
+    id: "petty-cash-demand",
+    heading: "পেটি ক্যাশ চাহিদাপত্র",
+    shortDescription: "দৈনন্দিন খরচ সম্পাদনের জন্য চাহিদাপত্র।",
+    type: "single",
+    formFields: [
+      {
+        name: "institutionId",
+        label: "প্রতিষ্ঠানের নাম",
+        type: "dropdown",
+        mandatory: true,
+        options: DUMMY_INSTITUTIONS.map((inst) => ({ value: inst.id, label: inst.name })),
+      },
+      {
+        name: "branchId",
+        label: "প্রদেয় শাখা",
+        type: "dropdown",
+        mandatory: true,
+        options: [{ value: "bogura", label: "Bogura (বগুড়া)" }], // Fixed to Bogura
+        dependency: { field: "institutionId", value: "*" },
+      },
+      { name: "dateNeeded", label: "কত তারিখে প্রয়োজন", type: "date", mandatory: true },
+      {
+        name: "pettyCashType",
+        label: "পেটি ক্যাশের ধরন",
+        type: "dropdown",
+        mandatory: true,
+        options: [
+          { value: "Official", label: "Official (অফিসিয়াল)" },
+          { value: "Bazar", label: "Bazar (বাজার)" },
+          { value: "Personal", label: "Personal (ব্যক্তিগত)" },
+        ],
+      },
+      { name: "requestedAmount", label: "চাহিদাকৃত টাকার পরিমান", type: "number", mandatory: true, placeholder: "টাকার পরিমাণ লিখুন" },
+      { name: "description", label: "বর্ণনা", type: "textarea", mandatory: true, placeholder: "বর্ণনা লিখুন" },
     ],
   },
 

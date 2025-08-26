@@ -367,6 +367,7 @@ const DynamicVoucherForm = forwardRef<DynamicVoucherFormRef, DynamicVoucherFormP
         ...initialData,
         // Special handling for date type if it's a string from initialData
         date: initialData.date ? new Date(initialData.date) : null,
+        dateNeeded: initialData.dateNeeded ? new Date(initialData.dateNeeded) : null, // Handle dateNeeded
         monthName: initialData.monthName ? new Date(initialData.monthName) : null, // Handle monthName
       } : defaultFormValues,
       resolver: (values, context, options) => {
@@ -381,6 +382,7 @@ const DynamicVoucherForm = forwardRef<DynamicVoucherFormRef, DynamicVoucherFormP
         ...defaultFormValues,
         ...initialData,
         date: initialData.date ? new Date(initialData.date) : null,
+        dateNeeded: initialData.dateNeeded ? new Date(initialData.dateNeeded) : null, // Handle dateNeeded
         monthName: initialData.monthName ? new Date(initialData.monthName) : null, // Handle monthName
       } : defaultFormValues);
     }, [voucherTypeId, initialData, defaultFormValues]);
