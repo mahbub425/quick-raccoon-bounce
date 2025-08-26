@@ -169,7 +169,6 @@ const createSchema = (fields: FormFieldType[], currentFormValues: any, voucherTy
           } else if (voucherTypeId === "entertainment" && currentExpenseTitle) {
             const entertainmentVoucherDetails = getVoucherDetails("entertainment");
             const expenseTitleField = entertainmentVoucherDetails?.formFields?.find(f => f.name === 'expenseTitle');
-            const matchingConditionalField = expenseTitleField?.conditionalFields?.find(cf => cf.value === currentExpenseTitle);
             // In the new structure, expenseCategory is a direct field, but its options are still derived from conditional logic
             // So we need to manually construct the options based on expenseTitle
             if (currentExpenseTitle === "Myself") {
@@ -248,10 +247,8 @@ const createSchema = (fields: FormFieldType[], currentFormValues: any, voucherTy
           const currentExpenseTitle = currentFormValues.expenseTitle;
           const currentExpenseCategory = currentFormValues.expenseCategory;
 
-          const isStaffPinsVisible = currentExpenseTitle === "Staff" && (currentExpenseCategory === "Afternoon Snacks" || currentExpenseCategory === "Iftar");
-          const isTeacherPinsVisible = currentExpenseTitle === "Teacher" && (currentExpenseCategory === "Breakfast" || currentExpenseCategory === "Afternoon Snacks");
-
-          const shouldBeMandatory = isStaffPinsVisible || isTeacherPinsVisible;
+          const shouldBeMandatory = (currentExpenseTitle === "Staff" && (currentExpenseCategory === "Afternoon Snacks" || currentExpenseCategory === "Iftar")) ||
+                                   (currentExpenseTitle === "Teacher" && (currentExpenseCategory === "Breakfast" || currentExpenseCategory === "Afternoon Snacks"));
 
           currentFieldSchema = z.array(z.string());
           if (shouldBeMandatory) {
@@ -269,21 +266,71 @@ const createSchema = (fields: FormFieldType[], currentFormValues: any, voucherTy
         }
         break;
       case "quantity-unit":
-        currentFieldSchema = z.object({
-          quantity: z.string().min(1, "পরিমান আবশ্যক"),
-          unit: z.string().min(1, "ইউনিট আবশ্যক"),
-        });
-        if (field.mandatory) {
-          currentFieldSchema = (currentFieldSchema as z.ZodObject<{ quantity: z.ZodString, unit: z.ZodString }>).refine(
-            (val) => val.quantity !== "" && val.unit !== "",
-            { message: `${field.label} এর পরিমান ও ইউনিট উভয়ই আবশ্যক` }
-          );
+        // Special validation logic for 'quantityUnit' fields in 'entertainment' voucher
+        if (voucherTypeId === "entertainment" && (field.name === "quantityUnitTea" || field.name === "quantityUnitWater" || field.name === "quantityUnitOthers")) {
+          const currentExpenseTitle = currentFormValues.expenseTitle;
+          const currentExpenseCategory = currentFormValues.expenseCategory;
+
+          let shouldBeMandatory = false;
+          if (field.name === "quantityUnitTea") {
+            shouldBeMandatory = currentExpenseTitle === "Tea & Tea Materials" && (currentExpenseCategory === "Tea Bag" || currentExpenseCategory === "Sugar" || currentExpenseCategory === "Ginger" || currentExpenseCategory === "Lemon");
+          } else if (field.name === "quantityUnitWater") {
+            shouldBeMandatory = currentExpenseTitle === "Drinking Water" && (currentExpenseCategory === "Safe International" || currentExpenseCategory === "Ma Enterprise" || currentExpenseCategory === "Others");
+          } else if (field.name === "quantityUnitOthers") {
+            shouldBeMandatory = currentExpenseTitle === "Others" && currentExpenseCategory === "Gas for Cooking";
+          }
+
+          currentFieldSchema = z.object({
+            quantity: z.string().min(1, "পরিমান আবশ্যক"),
+            unit: z.string().min(1, "ইউনিট আবশ্যক"),
+          });
+          if (shouldBeMandatory) {
+            currentFieldSchema = (currentFieldSchema as z.ZodObject<{ quantity: z.ZodString, unit: z.ZodString }>).refine(
+              (val) => val.quantity !== "" && val.unit !== "",
+              { message: `${field.label} এর পরিমান ও ইউনিট উভয়ই আবশ্যক` }
+            );
+          } else {
+            currentFieldSchema = (currentFieldSchema as z.ZodObject<{ quantity: z.ZodString, unit: z.ZodString }>).optional();
+          }
         } else {
-          currentFieldSchema = (currentFieldSchema as z.ZodObject<{ quantity: z.ZodString, unit: z.ZodString }>).optional();
+          currentFieldSchema = z.object({
+            quantity: z.string().min(1, "পরিমান আবশ্যক"),
+            unit: z.string().min(1, "ইউনিট আবশ্যক"),
+          });
+          if (field.mandatory) {
+            currentFieldSchema = (currentFieldSchema as z.ZodObject<{ quantity: z.ZodString, unit: z.ZodString }>).refine(
+              (val) => val.quantity !== "" && val.unit !== "",
+              { message: `${field.label} এর পরিমান ও ইউনিট উভয়ই আবশ্যক` }
+            );
+          } else {
+            currentFieldSchema = (currentFieldSchema as z.ZodObject<{ quantity: z.ZodString, unit: z.ZodString }>).optional();
+          }
         }
         break;
       default:
-        currentFieldSchema = z.any().optional();
+        // Special validation logic for 'guestName', 'studentName', 'guardianName' in 'entertainment' voucher
+        if (voucherTypeId === "entertainment" && (field.name === "guestName" || field.name === "studentName" || field.name === "guardianName")) {
+          const currentExpenseTitle = currentFormValues.expenseTitle;
+          const currentExpenseCategory = currentFormValues.expenseCategory;
+
+          let shouldBeMandatory = false;
+          if (field.name === "guestName") {
+            shouldBeMandatory = currentExpenseTitle === "Director & Guest" && currentExpenseCategory === "Guest";
+          } else if (field.name === "studentName") {
+            shouldBeMandatory = currentExpenseTitle === "Student & Guardian" && currentExpenseCategory === "Student";
+          } else if (field.name === "guardianName") {
+            shouldBeMandatory = currentExpenseTitle === "Student & Guardian" && currentExpenseCategory === "Guardian";
+          }
+
+          currentFieldSchema = z.string();
+          if (shouldBeMandatory) {
+            currentFieldSchema = (currentFieldSchema as z.ZodString).min(1, { message: `${field.label} আবশ্যক` });
+          } else {
+            currentFieldSchema = (currentFieldSchema as z.ZodString).optional().or(z.literal(""));
+          }
+        } else {
+          currentFieldSchema = z.any().optional();
+        }
     }
 
     schemaFields[field.name] = currentFieldSchema;
@@ -534,7 +581,7 @@ const DynamicVoucherForm = forwardRef<DynamicVoucherFormRef, DynamicVoucherFormP
                       optionsToRender = selectedExpenseTitle ? CLEANING_SUPPLIES_ITEM_OPTIONS[selectedExpenseTitle] || [] : [];
                     } else if (voucherTypeId === "kitchen-household-items" && field.name === "itemName") {
                       optionsToRender = selectedExpenseTitle ? KITCHEN_HOUSEHOLD_ITEM_OPTIONS[selectedExpenseTitle] || [] : [];
-                    } else if (voucherTypeId === "repair" && field.name === "itemName") { // NEW: Add repair logic
+                    } else if (voucherTypeId === "repair" && field.name === "itemName") {
                       optionsToRender = selectedExpenseTitle ? REPAIR_ITEM_OPTIONS[selectedExpenseTitle] || [] : [];
                     } else if (field.name === "expenseCategory") { // Dynamic options for expenseCategory
                       optionsToRender = expenseCategoryOptions;
@@ -662,15 +709,27 @@ const DynamicVoucherForm = forwardRef<DynamicVoucherFormRef, DynamicVoucherFormP
     const renderField = (field: FormFieldType, index: number, array: FormFieldType[]) => {
       let isVisible = !field.dependency || (form.watch(field.dependency.field) === field.dependency.value || field.dependency.value === "*");
 
-      // Special visibility logic for 'selectedPins' in 'entertainment' voucher
-      if (voucherTypeId === "entertainment" && field.name === "selectedPins") {
+      // Special visibility logic for 'entertainment' voucher's conditional fields
+      if (voucherTypeId === "entertainment") {
         const currentExpenseTitle = form.watch("expenseTitle");
         const currentExpenseCategory = form.watch("expenseCategory");
 
-        const isStaffPinsVisible = currentExpenseTitle === "Staff" && (currentExpenseCategory === "Afternoon Snacks" || currentExpenseCategory === "Iftar");
-        const isTeacherPinsVisible = currentExpenseTitle === "Teacher" && (currentExpenseCategory === "Breakfast" || currentExpenseCategory === "Afternoon Snacks");
-        
-        isVisible = isStaffPinsVisible || isTeacherPinsVisible;
+        if (field.name === "guestName") {
+          isVisible = currentExpenseTitle === "Director & Guest" && currentExpenseCategory === "Guest";
+        } else if (field.name === "studentName") {
+          isVisible = currentExpenseTitle === "Student & Guardian" && currentExpenseCategory === "Student";
+        } else if (field.name === "guardianName") {
+          isVisible = currentExpenseTitle === "Student & Guardian" && currentExpenseCategory === "Guardian";
+        } else if (field.name === "quantityUnitTea") {
+          isVisible = currentExpenseTitle === "Tea & Tea Materials" && (currentExpenseCategory === "Tea Bag" || currentExpenseCategory === "Sugar" || currentExpenseCategory === "Ginger" || currentExpenseCategory === "Lemon");
+        } else if (field.name === "quantityUnitWater") {
+          isVisible = currentExpenseTitle === "Drinking Water" && (currentExpenseCategory === "Safe International" || currentExpenseCategory === "Ma Enterprise" || currentExpenseCategory === "Others");
+        } else if (field.name === "quantityUnitOthers") {
+          isVisible = currentExpenseTitle === "Others" && currentExpenseCategory === "Gas for Cooking";
+        } else if (field.name === "selectedPins") {
+          isVisible = (currentExpenseTitle === "Staff" && (currentExpenseCategory === "Afternoon Snacks" || currentExpenseCategory === "Iftar")) ||
+                      (currentExpenseTitle === "Teacher" && (currentExpenseCategory === "Breakfast" || currentExpenseCategory === "Afternoon Snacks"));
+        }
       }
 
       if (!isVisible) return null;

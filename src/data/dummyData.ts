@@ -597,125 +597,7 @@ export const DUMMY_VOUCHER_TYPES: VoucherType[] = [
               { value: "Drinking Water", label: "Drinking Water (খাবার পানি)" },
               { value: "Others", label: "Others (অন্যান্য)" },
             ],
-            conditionalFields: [
-              // Removed selectedPins from here
-              {
-                value: "Director & Guest",
-                fields: [
-                  { name: "guestName", label: "Guest Name (অতিথির নাম)", type: "text", mandatory: true, placeholder: "অতিথির নাম লিখুন", dependency: { field: "expenseCategory", value: "Guest" } },
-                ],
-              },
-              {
-                value: "Student & Guardian",
-                fields: [
-                  { name: "studentName", label: "Student Name (শিক্ষার্থীর নাম)", type: "text", mandatory: true, placeholder: "শিক্ষার্থীর নাম লিখুন", dependency: { field: "expenseCategory", value: "Student" } },
-                  { name: "guardianName", label: "Guardian Name (অভিভাবকের নাম)", type: "text", mandatory: true, placeholder: "অভিভাবকের নাম লিখুন", dependency: { field: "expenseCategory", value: "Guardian" } },
-                ],
-              },
-              {
-                value: "Tea & Tea Materials",
-                fields: [
-                  {
-                    name: "quantityUnit",
-                    label: "পরিমান এবং ইউনিট",
-                    type: "quantity-unit",
-                    mandatory: true,
-                    unitOptions: [
-                      { value: "piece", label: "পিস" }, { value: "kg", label: "কেজি" }, { value: "gram", label: "গ্রাম" },
-                      { value: "liter", label: "লিটার" }, { value: "box", label: "বক্স" }, { value: "ream", label: "রিম" },
-                    ],
-                    dependency: { field: "expenseCategory", value: "Tea Bag" },
-                  },
-                  {
-                    name: "quantityUnit",
-                    label: "পরিমান এবং ইউনিট",
-                    type: "quantity-unit",
-                    mandatory: true,
-                    unitOptions: [
-                      { value: "piece", label: "পিস" }, { value: "kg", label: "কেজি" }, { value: "gram", label: "গ্রাম" },
-                      { value: "liter", label: "লিটার" }, { value: "box", label: "বক্স" }, { value: "ream", label: "রিম" },
-                    ],
-                    dependency: { field: "expenseCategory", value: "Sugar" },
-                  },
-                  {
-                    name: "quantityUnit",
-                    label: "পরিমান এবং ইউনিট",
-                    type: "quantity-unit",
-                    mandatory: true,
-                    unitOptions: [
-                      { value: "piece", label: "পিস" }, { value: "kg", label: "কেজি" }, { value: "gram", label: "গ্রাম" },
-                      { value: "liter", label: "লিটার" }, { value: "box", label: "বক্স" }, { value: "ream", label: "রিম" },
-                    ],
-                    dependency: { field: "expenseCategory", value: "Ginger" },
-                  },
-                  {
-                    name: "quantityUnit",
-                    label: "পরিমান এবং ইউনিট",
-                    type: "quantity-unit",
-                    mandatory: true,
-                    unitOptions: [
-                      { value: "piece", label: "পিস" }, { value: "kg", label: "কেজি" }, { value: "gram", label: "গ্রাম" },
-                      { value: "liter", label: "লিটার" }, { value: "box", label: "বক্স" }, { value: "ream", label: "রিম" },
-                    ],
-                    dependency: { field: "expenseCategory", value: "Lemon" },
-                  },
-                ],
-              },
-              {
-                value: "Drinking Water",
-                fields: [
-                  {
-                    name: "quantityUnit",
-                    label: "পরিমান এবং ইউনিট",
-                    type: "quantity-unit",
-                    mandatory: true,
-                    unitOptions: [
-                      { value: "piece", label: "পিস" }, { value: "kg", label: "কেজি" }, { value: "gram", label: "গ্রাম" },
-                      { value: "liter", label: "লিটার" }, { value: "box", label: "বক্স" }, { value: "ream", label: "রিম" },
-                    ],
-                    dependency: { field: "expenseCategory", value: "Safe International" },
-                  },
-                  {
-                    name: "quantityUnit",
-                    label: "পরিমান এবং ইউনিট",
-                    type: "quantity-unit",
-                    mandatory: true,
-                    unitOptions: [
-                      { value: "piece", label: "পিস" }, { value: "kg", label: "কেজি" }, { value: "gram", label: "গ্রাম" },
-                      { value: "liter", label: "লিটার" }, { value: "box", label: "বক্স" }, { value: "ream", label: "রিম" },
-                    ],
-                    dependency: { field: "expenseCategory", value: "Ma Enterprise" },
-                  },
-                  {
-                    name: "quantityUnit",
-                    label: "পরিমান এবং ইউনিট",
-                    type: "quantity-unit",
-                    mandatory: true,
-                    unitOptions: [
-                      { value: "piece", label: "পিস" }, { value: "kg", label: "কেজি" }, { value: "gram", label: "গ্রাম" },
-                      { value: "liter", label: "লিটার" }, { value: "box", label: "বক্স" }, { value: "ream", label: "রিম" },
-                    ],
-                    dependency: { field: "expenseCategory", value: "Others" },
-                  },
-                ],
-              },
-              {
-                value: "Others",
-                fields: [
-                  {
-                    name: "quantityUnit",
-                    label: "পরিমান এবং ইউনিট",
-                    type: "quantity-unit",
-                    mandatory: true,
-                    unitOptions: [
-                      { value: "piece", label: "পিস" }, { value: "kg", label: "কেজি" }, { value: "gram", label: "গ্রাম" },
-                      { value: "liter", label: "লিটার" }, { value: "box", label: "বক্স" }, { value: "ream", label: "রিম" },
-                    ],
-                    dependency: { field: "expenseCategory", value: "Gas for Cooking" },
-                  },
-                ],
-              },
-            ],
+            // Removed conditionalFields from here
           },
           {
             name: "expenseCategory",
@@ -725,15 +607,55 @@ export const DUMMY_VOUCHER_TYPES: VoucherType[] = [
             options: [], // Dynamically populated in DynamicVoucherForm
             dependency: { field: "expenseTitle", value: "*" }, // Always visible, options change based on expenseTitle
           },
-          { // NEW: selectedPins field moved here
+          { name: "amount", label: "টাকার পরিমাণ", type: "number", mandatory: true, placeholder: "টাকার পরিমাণ লিখুন" },
+
+          // --- Conditional fields moved here, after 'amount' ---
+          { name: "guestName", label: "Guest Name (অতিথির নাম)", type: "text", mandatory: true, placeholder: "অতিথির নাম লিখুন", dependency: { field: "expenseTitle", value: "Director & Guest" } },
+          { name: "studentName", label: "Student Name (শিক্ষার্থীর নাম)", type: "text", mandatory: true, placeholder: "শিক্ষার্থীর নাম লিখুন", dependency: { field: "expenseTitle", value: "Student & Guardian" } },
+          { name: "guardianName", label: "Guardian Name (অভিভাবকের নাম)", type: "text", mandatory: true, placeholder: "অভিভাবকের নাম লিখুন", dependency: { field: "expenseTitle", value: "Student & Guardian" } },
+          {
+            name: "quantityUnitTea", // Renamed to avoid conflict if multiple quantityUnit fields exist
+            label: "পরিমান এবং ইউনিট (চা)",
+            type: "quantity-unit",
+            mandatory: true,
+            unitOptions: [
+              { value: "piece", label: "পিস" }, { value: "kg", label: "কেজি" }, { value: "gram", label: "গ্রাম" },
+              { value: "liter", label: "লিটার" }, { value: "box", label: "বক্স" }, { value: "ream", label: "রিম" },
+            ],
+            dependency: { field: "expenseTitle", value: "Tea & Tea Materials" },
+          },
+          {
+            name: "quantityUnitWater", // Renamed
+            label: "পরিমান এবং ইউনিট (পানি)",
+            type: "quantity-unit",
+            mandatory: true,
+            unitOptions: [
+              { value: "piece", label: "পিস" }, { value: "kg", label: "কেজি" }, { value: "gram", label: "গ্রাম" },
+              { value: "liter", label: "লিটার" }, { value: "box", label: "বক্স" }, { value: "ream", label: "রিম" },
+            ],
+            dependency: { field: "expenseTitle", value: "Drinking Water" },
+          },
+          {
+            name: "quantityUnitOthers", // Renamed
+            label: "পরিমান এবং ইউনিট (অন্যান্য)",
+            type: "quantity-unit",
+            mandatory: true,
+            unitOptions: [
+              { value: "piece", label: "পিস" }, { value: "kg", label: "কেজি" }, { value: "gram", label: "গ্রাম" },
+              { value: "liter", label: "লিটার" }, { value: "box", label: "বক্স" }, { value: "ream", label: "রিম" },
+            ],
+            dependency: { field: "expenseTitle", value: "Others" },
+          },
+          {
             name: "selectedPins",
             label: "পিন নম্বর সংযুক্ত করুন",
             type: "pin-selector",
             mandatory: true, // Will be conditionally mandatory in schema
             allowMultiplePins: true,
-            // No dependency here, as visibility is handled in renderField
+            dependency: { field: "expenseTitle", value: "*" }, // Always visible, but actual visibility handled in renderField
           },
-          { name: "amount", label: "টাকার পরিমাণ", type: "number", mandatory: true, placeholder: "টাকার পরিমাণ লিখুন" },
+          // --- End of moved conditional fields ---
+
           { name: "description", label: "বর্ণনা", type: "textarea", mandatory: true, placeholder: "বর্ণনা লিখুন" },
           { name: "attachment", label: "সংযুক্তি", type: "file", mandatory: false },
         ],
@@ -1138,7 +1060,7 @@ export const DUMMY_VOUCHER_TYPES: VoucherType[] = [
           { value: "Telephone Bill", label: "Telephone Bill (টেলিফোন বিল)" },
           { value: "Service Charge", label: "Service Charge (সার্ভিস চার্জ)" },
           { value: "Guard & Cleaner Bill", label: "Guard & Cleaner Bill (গার্ড এন্ড ক্লিনার বিল)" },
-          { value: "Extra Space Rent", label: "Extra Space Rent (অতিরিক্ত জায়গা ভাড়া)" },
+          { value: "Extra Space Rent", label: "Extra Office Rent (অতিরিক্ত জায়গা ভাড়া)" },
         ],
       },
       {
