@@ -11,7 +11,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon } from "lucide-react";
 import { format, isWithinInterval, parseISO, endOfDay } from "date-fns";
 import { DUMMY_INSTITUTIONS, DUMMY_VOUCHER_TYPES } from "@/data/dummyData";
-import { cn } from "@/lib/utils";
+import { cn }
 import { SubmittedVoucher } from "@/types";
 
 // Helper function to get voucher heading by ID (copied from other files for consistency)
@@ -37,6 +37,7 @@ const MentorApproval = () => {
       }
     });
 
+    // Explicitly remove 'publicity' if it was added, as its sub-types are now listed separately
     uniqueTypes.delete('publicity');
 
     return Array.from(uniqueTypes).map(id => {
@@ -88,7 +89,8 @@ const MentorApproval = () => {
         };
       }
       groupedByPinAndType[key].pendingCount += 1;
-      groupedByPinAndType[key].totalAmount += (voucher.data.amount || 0);
+      // Use requestedAmount for petty-cash-demand, otherwise use amount
+      groupedByPinAndType[key].totalAmount += (voucher.voucherTypeId === 'petty-cash-demand' ? (voucher.data.requestedAmount || 0) : (voucher.data.amount || 0));
     });
 
     return Object.values(groupedByPinAndType);
