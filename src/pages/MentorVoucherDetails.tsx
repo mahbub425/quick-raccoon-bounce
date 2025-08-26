@@ -16,6 +16,7 @@ import { SubmittedVoucher } from "@/types";
 import VoucherDetailsPopup from "@/components/VoucherDetailsPopup";
 import { toast } from "sonner";
 import { generateUniquePettyCashCode } from "@/utils/pettyCashUtils"; // Import utility for code generation
+import PettyCashLedgerPopup from "@/components/PettyCashLedgerPopup"; // Import the new popup component
 
 // Helper function to get correction text
 const getCorrectionText = (count: number | undefined) => {
@@ -49,6 +50,8 @@ const MentorVoucherDetails = () => {
   const [editingPettyCashId, setEditingPettyCashId] = useState<string | null>(null);
   const [approvedAmount, setApprovedAmount] = useState<number | null>(null);
   const [expectedAdjustmentDate, setExpectedAdjustmentDate] = useState<Date | null>(null);
+
+  const [isLedgerPopupOpen, setIsLedgerPopupOpen] = useState(false); // State for ledger popup
 
   // Options for dropdowns
   const voucherTypeOptions = useMemo(() => {
@@ -165,7 +168,7 @@ const MentorVoucherDetails = () => {
     return getPettyCashBalance(userPin);
   }, [userPin, getPettyCashBalance, submittedVouchers]); // Re-calculate when submittedVouchers change
 
-  const pettyCashLedgerLink = `/report?userPin=${userPin}&reportType=pettyCashLedger`;
+  // const pettyCashLedgerLink = `/report?userPin=${userPin}&reportType=pettyCashLedger`; // Removed navigation link
 
   if (!currentUser) {
     return (
@@ -244,7 +247,7 @@ const MentorVoucherDetails = () => {
                 </p>
               )}
               <div className="mt-4">
-                <Button variant="link" className="text-blue-600 hover:text-blue-800 p-0" onClick={() => navigate(pettyCashLedgerLink)}>
+                <Button variant="link" className="text-blue-600 hover:text-blue-800 p-0" onClick={() => setIsLedgerPopupOpen(true)}>
                   পূর্ববর্তী পেটিক্যাশের ব্যালেন্স
                 </Button>
               </div>
@@ -439,6 +442,14 @@ const MentorVoucherDetails = () => {
           isOpen={isPopupOpen}
           onOpenChange={setIsPopupOpen}
           voucher={selectedVoucherForPopup}
+        />
+      )}
+
+      {userPin && (
+        <PettyCashLedgerPopup
+          isOpen={isLedgerPopupOpen}
+          onOpenChange={setIsLedgerPopupOpen}
+          userPin={userPin}
         />
       )}
     </div>
