@@ -11,16 +11,26 @@ import { SubmittedVoucher } from "@/types";
 import VoucherDetailsPopup from "@/components/VoucherDetailsPopup"; // Import the popup component
 import { createWithdrawalLedgerEntry } from "@/utils/pettyCashUtils"; // Import utility for ledger entry
 
+type PaymentViewFilter = 'all' | 'petty_cash' | 'other_vouchers';
+
 const Payment = () => {
   const { submittedVouchers, updateSubmittedVoucherStatus, addPettyCashLedgerEntry } = useSubmittedVouchers();
   const navigate = useNavigate();
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [selectedVoucherForPopup, setSelectedVoucherForPopup] = useState<SubmittedVoucher | null>(null);
+  const [currentFilter, setCurrentFilter] = useState<PaymentViewFilter>('all'); // New state for filter
 
   // Filter for vouchers that are 'pending' or 'approved'
   const vouchersForPaymentView = useMemo(() => {
-    return submittedVouchers.filter(v => v.status === 'pending' || v.status === 'approved');
-  }, [submittedVouchers]);
+    const approvedOrPending = submittedVouchers.filter(v => v.status === 'pending' || v.status === 'approved');
+
+    if (currentFilter === 'petty_cash') {
+      return approvedOrPending.filter(v => v.voucherTypeId === 'petty-cash-demand');
+    } else if (currentFilter === 'other_vouchers') {
+      return approvedOrPending.filter(v => v.voucherTypeId !== 'petty-cash-demand');
+    }
+    return approvedOrPending;
+  }, [submittedVouchers, currentFilter]);
 
   const getVoucherHeadingById = (id: string) => {
     const voucherType = DUMMY_VOUCHER_TYPES.flatMap(v => v.type === 'multi' && v.subTypes ? [v, ...v.subTypes] : [v]).find(v => v.id === id);
@@ -63,6 +73,32 @@ const Payment = () => {
       <h1 className="text-4xl font-extrabold text-center text-teal-800 mb-8">
         পেমেন্ট
       </h1>
+
+      {/* Filter Buttons */}
+      <div className="flex justify-center gap-4 mb-8">
+        <Button
+          variant={currentFilter === 'petty_cash' ? "default" : "outline"}
+          className={currentFilter === 'petty_cash' ? "bg-teal-600 text-white hover:bg-teal-700" : "bg-white text-teal-700 border-teal-400 hover:bg-teal-100 hover:text-teal-800"}
+          onClick={() => setCurrentFilter('petty_cash')}
+        >
+          অনুমোদন প্রাপ্ত পেটিক্যাশের ভাউচার সমূহ
+        </Button>
+        <Button
+          variant={currentFilter === 'other_vouchers' ? "default" : "outline"}
+          className={currentFilter === 'other_vouchers' ? "bg-teal-600 text-white hover:bg-teal-700" : "bg-white text-teal-700 border-teal-400 hover:bg-teal-100 hover:text-teal-800"}
+          onClick={() => setCurrentFilter('other_vouchers')}
+        >
+          অনুমোদন প্রাপ্ত ভাউচার সমূহ
+        </Button>
+        {/* Optionally, an "All" button */}
+        <Button
+          variant={currentFilter === 'all' ? "default" : "outline"}
+          className={currentFilter === 'all' ? "bg-teal-600 text-white hover:bg-teal-700" : "bg-white text-teal-700 border-teal-400 hover:bg-teal-100 hover:text-teal-800"}
+          onClick={() => setCurrentFilter('all')}
+        >
+          সকল ভাউচার
+        </Button>
+      </div>
 
       {vouchersForPaymentView.length === 0 ? (
         <div className="text-center text-xl text-gray-600 p-8 bg-white rounded-lg shadow-inner border border-gray-200">
