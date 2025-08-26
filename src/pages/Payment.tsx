@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { SubmittedVoucher } from "@/types";
 import VoucherDetailsPopup from "@/components/VoucherDetailsPopup"; // Import the popup component
+import PaymentCodeVerificationPopup from "@/components/PaymentCodeVerificationPopup"; // Import new component
 import { createWithdrawalLedgerEntry } from "@/utils/pettyCashUtils"; // Import utility for ledger entry
 
 type PaymentViewFilter = 'all' | 'petty_cash' | 'other_vouchers';
@@ -19,6 +20,9 @@ const Payment = () => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [selectedVoucherForPopup, setSelectedVoucherForPopup] = useState<SubmittedVoucher | null>(null);
   const [currentFilter, setCurrentFilter] = useState<PaymentViewFilter>('all'); // New state for filter
+
+  const [isCodeVerificationPopupOpen, setIsCodeVerificationPopupOpen] = useState(false); // State for code verification popup
+  const [voucherToProcess, setVoucherToProcess] = useState<SubmittedVoucher | null>(null); // Voucher awaiting code verification
 
   // Filter for vouchers that are 'pending' or 'approved'
   const vouchersForPaymentView = useMemo(() => {
@@ -45,18 +49,34 @@ const Payment = () => {
 
   const handleMarkAsPaid = (voucherId: string) => {
     const voucherToPay = vouchersForPaymentView.find(v => v.id === voucherId);
-    if (voucherToPay) {
-      if (voucherToPay.status === 'approved') {
-        updateSubmittedVoucherStatus(voucherId, 'paid');
-        toast.success(`ভাউচার ${voucherToPay.voucherNumber} সফলভাবে পেমেন্ট করা হয়েছে!`);
+    if (!voucherToPay) return;
 
-        // If it's a petty cash demand, add to ledger as withdrawal
-        if (voucherToPay.voucherTypeId === 'petty-cash-demand') {
-          addPettyCashLedgerEntry(createWithdrawalLedgerEntry(voucherToPay));
-        }
-      } else {
-        toast.error("এই ভাউচারটি এখনো অনুমোদিত হয়নি।");
-      }
+    if (voucherToPay.status !== 'approved') {
+      toast.error("এই ভাউচারটি এখনো অনুমোদিত হয়নি।");
+      return;
+    }
+
+    if (voucherToPay.voucherTypeId === 'petty-cash-demand') {
+      setVoucherToProcess(voucherToPay);
+      setIsCodeVerificationPopupOpen(true);
+    } else {
+      // For non-petty-cash vouchers, proceed directly
+      updateSubmittedVoucherStatus(voucherId, 'paid');
+      toast.success(`ভাউচার ${voucherToPay.voucherNumber} সফলভাবে পেমেন্ট করা হয়েছে!`);
+    }
+  };
+
+  const handleVerifyCodeAndPay = (inputCode: string) => {
+    if (!voucherToProcess) return;
+
+    if (voucherToProcess.pettyCashUniqueCode === inputCode) {
+      updateSubmittedVoucherStatus(voucherToProcess.id, 'paid');
+      toast.success(`পেটি ক্যাশ চাহিদাপত্র ${voucherToProcess.voucherNumber} সফলভাবে পেমেন্ট করা হয়েছে!`);
+      addPettyCashLedgerEntry(createWithdrawalLedgerEntry(voucherToProcess)); // Add to ledger
+      setIsCodeVerificationPopupOpen(false);
+      setVoucherToProcess(null);
+    } else {
+      toast.error("আপনি ভুল কোড প্রবেশ করিয়েছেন। পেমেন্ট সম্পন্ন হয়নি।");
     }
   };
 
@@ -66,7 +86,7 @@ const Payment = () => {
   };
 
   const totalVouchers = vouchersForPaymentView.length;
-  const grandTotalAmount = vouchersForPaymentView.reduce((sum, voucher) => sum + (voucher.approvedAmount || voucher.data.amount || 0), 0); // Use approvedAmount for petty cash
+  const grandTotalAmount = vouchersForPaymentView.reduce((sum, voucher) => sum + (voucher.voucherTypeId === 'petty-cash-demand' ? (voucher.approvedAmount || 0) : (voucher.data.amount || 0)), 0);
 
   return (
     <div className="min-h-[calc(100vh-80px)] bg-gradient-to-br from-teal-50 to-blue-50 p-6">
@@ -185,6 +205,14 @@ const Payment = () => {
           onOpenChange={setIsPopupOpen}
           voucher={selectedVoucherForPopup}
           isPaymentView={true} // Pass the new prop here
+        />
+      )}
+
+      {isCodeVerificationPopupOpen && (
+        <PaymentCodeVerificationPopup
+          isOpen={isCodeVerificationPopupOpen}
+          onOpenChange={setIsCodeVerificationPopupOpen}
+          onVerify={handleVerifyCodeAndPay}
         />
       )}
     </div>
