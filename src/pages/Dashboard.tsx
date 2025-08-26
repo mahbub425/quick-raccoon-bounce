@@ -12,9 +12,10 @@ import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext"; // Import useAuth
 import AttachmentViewerPopup from "@/components/AttachmentViewerPopup"; // Import the new component
+import { generateUniquePettyCashCode } from "@/utils/pettyCashUtils"; // Import utility for code generation
 
 const Dashboard = () => {
-  const { submittedVouchers, updateSubmittedVoucherStatus, markVoucherAsCorrected, addSubmittedVouchers } = useSubmittedVouchers();
+  const { submittedVouchers, updateSubmittedVoucherStatus, markVoucherAsCorrected, addSubmittedVouchers, updatePettyCashCode } = useSubmittedVouchers();
   const { user } = useAuth(); // Get current user
   const { addToCart } = useCart(); // Use addToCart for new submission
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -30,6 +31,7 @@ const Dashboard = () => {
 
   const sentBackVouchers = useMemo(() => userSpecificVouchers.filter(v => v.status === 'sent_back'), [userSpecificVouchers]);
   const rejectedVouchers = useMemo(() => userSpecificVouchers.filter(v => v.status === 'rejected'), [userSpecificVouchers]);
+  const approvedPettyCashVouchers = useMemo(() => userSpecificVouchers.filter(v => v.voucherTypeId === 'petty-cash-demand' && v.status === 'approved'), [userSpecificVouchers]);
 
   const getInstitutionName = (id: string) => DUMMY_INSTITUTIONS.find(inst => inst.id === id)?.name || "N/A";
   const getBranchName = (institutionId: string, branchId: string) => {
@@ -47,6 +49,11 @@ const Dashboard = () => {
   const getVoucherHeadingById = (id: string) => {
     const voucherType = DUMMY_VOUCHER_TYPES.flatMap(v => v.type === 'multi' && v.subTypes ? [v, ...v.subTypes] : [v]).find(v => v.id === id);
     return voucherType?.heading || id;
+  };
+  const getPettyCashTypeLabel = (typeValue: string) => {
+    const pettyCashVoucher = DUMMY_VOUCHER_TYPES.find(v => v.id === 'petty-cash-demand');
+    const pettyCashTypeField = pettyCashVoucher?.formFields?.find(f => f.name === 'pettyCashType');
+    return pettyCashTypeField?.options?.find(opt => opt.value === typeValue)?.label || typeValue;
   };
 
   const getDropdownLabel = (voucherTypeId: string, fieldName: string, fieldValue: string, itemData: any = {}) => {
@@ -139,6 +146,12 @@ const Dashboard = () => {
     setIsAttachmentPopupOpen(true);
   };
 
+  const handleGeneratePettyCashCode = (voucherId: string) => {
+    const code = generateUniquePettyCashCode();
+    updatePettyCashCode(voucherId, code);
+    toast.success(`গোপন কোড তৈরি হয়েছে: ${code}`);
+  };
+
   const renderAttachmentCell = (itemData: any) => (
     <TableCell>
       {itemData.attachment ? (
@@ -189,9 +202,68 @@ const Dashboard = () => {
         ড্যাশবোর্ড
       </h1>
 
-      {sentBackVouchers.length === 0 && rejectedVouchers.length === 0 ? (
+      {/* Approved Petty Cash List */}
+      {approvedPettyCashVouchers.length > 0 && (
+        <Card className="shadow-lg border-green-300 mb-8 max-w-7xl mx-auto">
+          <CardHeader className="bg-green-100 rounded-t-lg p-4">
+            <CardTitle className="text-2xl font-bold text-green-700">অনুমোদিত পেটিক্যাশ তালিকা</CardTitle>
+            <CardDescription className="text-green-600">আপনার অনুমোদিত পেটি ক্যাশ চাহিদাপত্রগুলো এখানে দেখুন।</CardDescription>
+          </CardHeader>
+          <CardContent className="p-4">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-green-50">
+                    <TableHead className="w-[50px]">ক্রমিক</TableHead>
+                    <TableHead>পেটিক্যাশ চাহিদাপত্র নাম্বার</TableHead>
+                    <TableHead>প্রতিষ্ঠানের নাম</TableHead>
+                    <TableHead>প্রদেয় শাখা</TableHead>
+                    <TableHead>কত তারিখে প্রয়োজন</TableHead>
+                    <TableHead>পেটি ক্যাশের ধরন</TableHead>
+                    <TableHead>বর্ণনা</TableHead>
+                    <TableHead className="text-right">অনুমোদিত টাকার পরিমান</TableHead>
+                    <TableHead>সম্ভাব্য সমন্বয়ের তারিখ</TableHead>
+                    <TableHead className="text-center">অ্যাকশন</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {approvedPettyCashVouchers.map((voucher, index) => (
+                    <TableRow key={voucher.id}>
+                      <TableCell className="font-medium">{index + 1}</TableCell>
+                      <TableCell>{voucher.voucherNumber}</TableCell>
+                      <TableCell>{getInstitutionName(voucher.data.institutionId)}</TableCell>
+                      <TableCell>{getBranchName(voucher.data.institutionId, voucher.data.branchId)}</TableCell>
+                      <TableCell>{voucher.data.dateNeeded ? format(new Date(voucher.data.dateNeeded), "dd MMM, yyyy") : "N/A"}</TableCell>
+                      <TableCell>{getPettyCashTypeLabel(voucher.data.pettyCashType)}</TableCell>
+                      <TableCell>{voucher.data.description || "N/A"}</TableCell>
+                      <TableCell className="text-right">{(voucher.approvedAmount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</TableCell>
+                      <TableCell>{voucher.expectedAdjustmentDate ? format(parseISO(voucher.expectedAdjustmentDate), "dd MMM, yyyy") : "N/A"}</TableCell>
+                      <TableCell className="text-center">
+                        {voucher.isCodeGenerated ? (
+                          <span className="font-bold text-green-700">{voucher.pettyCashUniqueCode}</span>
+                        ) : (
+                          <Button
+                            variant="default"
+                            size="sm"
+                            onClick={() => handleGeneratePettyCashCode(voucher.id)}
+                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                          >
+                            টাকা উত্তলনের জন্য গোপন কোড তৈরি করুন
+                          </Button>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {sentBackVouchers.length === 0 && rejectedVouchers.length === 0 && approvedPettyCashVouchers.length === 0 ? (
         <div className="text-center text-xl text-gray-600 p-8 bg-white rounded-lg shadow-inner border border-gray-200">
-          কোনো ফেরত পাঠানো বা বাতিল করা ভাউচার নেই।
+          কোনো ফেরত পাঠানো, বাতিল করা বা অনুমোদিত ভাউচার নেই।
         </div>
       ) : (
         <div className="space-y-8 max-w-7xl mx-auto">

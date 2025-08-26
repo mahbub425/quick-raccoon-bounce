@@ -15,7 +15,7 @@ import AttachmentViewerPopup from "@/components/AttachmentViewerPopup"; // Impor
 
 const Cart = () => {
   const { cartItems, removeFromCart, updateCartItem, clearCart } = useCart();
-  const { addSubmittedVouchers } = useSubmittedVouchers();
+  const { addSubmittedVouchers, addPettyCashLedgerEntry } = useSubmittedVouchers(); // Added addPettyCashLedgerEntry
   const { user } = useAuth();
   const [editingItem, setEditingItem] = useState<CartItem | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -31,7 +31,6 @@ const Cart = () => {
   const rentalUtilityVouchers = cartItems.filter(item => item.voucherTypeId === 'rental-utility');
   const mobileBillVouchers = cartItems.filter(item => item.voucherTypeId === 'mobile-bill');
   const repairVouchers = cartItems.filter(item => item.voucherTypeId === 'repair'); // NEW: Filter for repair vouchers
-  // const pettyCashVouchers = cartItems.filter(item => item.voucherTypeId === 'petty-cash'); // Removed petty-cash
   const pettyCashDemandVouchers = cartItems.filter(item => item.voucherTypeId === 'petty-cash-demand'); // NEW: Filter for petty-cash-demand
   const officeSuppliesStationeryVouchers = cartItems.filter(item => item.voucherTypeId === 'office-supplies-stationery');
   const cleaningSuppliesVouchers = cartItems.filter(item => item.voucherTypeId === 'cleaning-supplies');
@@ -89,7 +88,8 @@ const Cart = () => {
       }
     } else if (fieldName === "expenseCategory") { // Handle expenseCategory for all relevant voucher types
       if (voucherTypeId === "entertainment" && itemData.expenseTitle) {
-        const expenseTitleField = voucher.formFields.find(f => f.name === 'expenseTitle');
+        const entertainmentVoucherDetails = DUMMY_VOUCHER_TYPES.flatMap(v => v.type === 'multi' && v.subTypes ? [v, ...v.subTypes] : [v]).find(v => v.id === "entertainment");
+        const expenseTitleField = entertainmentVoucherDetails?.formFields?.find(f => f.name === 'expenseTitle');
         const matchingConditionalField = expenseTitleField?.conditionalFields?.find(cf => cf.value === itemData.expenseTitle);
         const expenseCategoryField = matchingConditionalField?.fields.find(f => f.name === 'expenseCategory');
         options = expenseCategoryField?.options || [];
@@ -131,11 +131,29 @@ const Cart = () => {
       toast.error("কার্টে কোনো ভাউচার নেই সাবমিট করার জন্য।");
       return;
     }
-    // Forward all cart items to the submitted vouchers context
-    addSubmittedVouchers(cartItems);
+    
+    // Filter petty cash demand vouchers for special handling
+    const pettyCashDemands = cartItems.filter(item => item.voucherTypeId === 'petty-cash-demand');
+    const otherVouchers = cartItems.filter(item => item.voucherTypeId !== 'petty-cash-demand');
+
+    // Submit other vouchers normally (they will go to mentor and payment)
+    if (otherVouchers.length > 0) {
+      addSubmittedVouchers(otherVouchers);
+      // Add adjustment entries for non-petty-cash vouchers to the user's ledger
+      otherVouchers.forEach(voucher => {
+        if (user) {
+          addPettyCashLedgerEntry(createAdjustmentLedgerEntry({ ...voucher, submittedByPin: user.pin }));
+        }
+      });
+    }
+
+    // Submit petty cash demand vouchers (they will only go to mentor initially)
+    if (pettyCashDemands.length > 0) {
+      addSubmittedVouchers(pettyCashDemands);
+    }
+
     clearCart(); // Clear the cart after submission
-    toast.success("আপনার ভাউচার সফলভাবে সাবমিট হয়েছে!"); // Updated success message
-    // Removed: navigate("/mentor-approval"); // No longer navigate to mentor approval page
+    toast.success("আপনার ভাউচার সফলভাবে সাবমিট হয়েছে!");
   };
 
   const handleViewAttachment = (filename: string) => {
@@ -926,31 +944,6 @@ const Cart = () => {
             </div>
           )}
 
-          {/* Removed Petty Cash Voucher Table */}
-          {/* {pettyCashVouchers.length > 0 && (
-            <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
-              <h2 className="text-2xl font-bold text-gray-700 mb-4">পেটি ক্যাশ ভাউচার</h2>
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-gray-100">
-                      <TableHead className="w-[50px]">ক্রমিক</TableHead>
-                      <TableHead>তারিখ</TableHead>
-                      <TableHead>প্রতিষ্ঠানের নাম</TableHead>
-                      <TableHead>শাখার নাম</TableHead>
-                      <TableHead className="text-right">টাকার পরিমাণ</TableHead>
-                      <TableHead>বর্ণনা</TableHead>
-                      <TableHead>সংযুক্তি</TableHead>
-                      <TableHead className="text-center">অ্যাকশন</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {renderGenericSimpleTable(pettyCashVouchers, "পেটি ক্যাশ", "bg-gray-100")}
-                  </TableBody>
-                </Table>
-              </div>
-            </div>
-          )} */}
           <div className="text-center mt-10">
             <Button
               onClick={handleSubmitAllVouchers}

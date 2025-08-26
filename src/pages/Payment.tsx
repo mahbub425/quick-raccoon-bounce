@@ -9,9 +9,10 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { SubmittedVoucher } from "@/types";
 import VoucherDetailsPopup from "@/components/VoucherDetailsPopup"; // Import the popup component
+import { createWithdrawalLedgerEntry } from "@/utils/pettyCashUtils"; // Import utility for ledger entry
 
 const Payment = () => {
-  const { submittedVouchers, updateSubmittedVoucherStatus } = useSubmittedVouchers();
+  const { submittedVouchers, updateSubmittedVoucherStatus, addPettyCashLedgerEntry } = useSubmittedVouchers();
   const navigate = useNavigate();
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [selectedVoucherForPopup, setSelectedVoucherForPopup] = useState<SubmittedVoucher | null>(null);
@@ -34,11 +35,18 @@ const Payment = () => {
 
   const handleMarkAsPaid = (voucherId: string) => {
     const voucherToPay = vouchersForPaymentView.find(v => v.id === voucherId);
-    if (voucherToPay && voucherToPay.status === 'approved') {
-      updateSubmittedVoucherStatus(voucherId, 'paid');
-      toast.success(`ভাউচার ${voucherId} সফলভাবে পেমেন্ট করা হয়েছে!`);
-    } else {
-      toast.error("এই ভাউচারটি এখনো অনুমোদিত হয়নি।");
+    if (voucherToPay) {
+      if (voucherToPay.status === 'approved') {
+        updateSubmittedVoucherStatus(voucherId, 'paid');
+        toast.success(`ভাউচার ${voucherToPay.voucherNumber} সফলভাবে পেমেন্ট করা হয়েছে!`);
+
+        // If it's a petty cash demand, add to ledger as withdrawal
+        if (voucherToPay.voucherTypeId === 'petty-cash-demand') {
+          addPettyCashLedgerEntry(createWithdrawalLedgerEntry(voucherToPay));
+        }
+      } else {
+        toast.error("এই ভাউচারটি এখনো অনুমোদিত হয়নি।");
+      }
     }
   };
 
@@ -48,7 +56,7 @@ const Payment = () => {
   };
 
   const totalVouchers = vouchersForPaymentView.length;
-  const grandTotalAmount = vouchersForPaymentView.reduce((sum, voucher) => sum + (voucher.data.amount || 0), 0);
+  const grandTotalAmount = vouchersForPaymentView.reduce((sum, voucher) => sum + (voucher.approvedAmount || voucher.data.amount || 0), 0); // Use approvedAmount for petty cash
 
   return (
     <div className="min-h-[calc(100vh-80px)] bg-gradient-to-br from-teal-50 to-blue-50 p-6">
@@ -99,7 +107,9 @@ const Payment = () => {
                          'N/A'}
                       </span>
                     </TableCell>
-                    <TableCell className="text-right">{(voucher.data.amount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</TableCell>
+                    <TableCell className="text-right">
+                      {(voucher.voucherTypeId === 'petty-cash-demand' ? (voucher.approvedAmount || 0) : (voucher.data.amount || 0)).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT', minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                    </TableCell>
                     <TableCell className="text-center flex justify-center space-x-2">
                       <Button 
                         variant="outline" 

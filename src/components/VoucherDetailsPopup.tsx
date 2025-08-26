@@ -96,7 +96,8 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
       }
     } else if (fieldName === "expenseCategory") { // Handle expenseCategory for all relevant voucher types
       if (voucherTypeId === "entertainment" && itemData.expenseTitle) {
-        const expenseTitleField = voucherTypeDetails.formFields.find(f => f.name === 'expenseTitle');
+        const entertainmentVoucherDetails = DUMMY_VOUCHER_TYPES.flatMap(v => v.type === 'multi' && v.subTypes ? [v, ...v.subTypes] : [v]).find(v => v.id === "entertainment");
+        const expenseTitleField = entertainmentVoucherDetails?.formFields?.find(f => f.name === 'expenseTitle');
         const matchingConditionalField = expenseTitleField?.conditionalFields?.find(cf => cf.value === itemData.expenseTitle);
         const expenseCategoryField = matchingConditionalField?.fields.find(f => f.name === 'expenseCategory');
         options = expenseCategoryField?.options || [];
@@ -126,10 +127,21 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
   };
 
   const handleApprove = () => {
-    updateSubmittedVoucherStatus(voucher.id, 'approved');
-    toast.success("অনুমোদন সম্পন্ন হয়েছে!");
+    // Special handling for petty-cash-demand
+    if (voucher.voucherTypeId === 'petty-cash-demand') {
+      if (voucher.approvedAmount === undefined || voucher.approvedAmount <= 0 || !voucher.expectedAdjustmentDate) {
+        toast.error("পেটি ক্যাশ অনুমোদনের জন্য অনুমোদিত টাকার পরিমাণ এবং সম্ভাব্য সমন্বয়ের তারিখ আবশ্যক।");
+        return;
+      }
+      // For petty-cash-demand, approval means it goes to payment and user dashboard
+      updateSubmittedVoucherStatus(voucher.id, 'approved'); // Mark as approved by mentor
+      toast.success("পেটি ক্যাশ চাহিদাপত্র অনুমোদিত হয়েছে এবং পেমেন্টের জন্য প্রস্তুত!");
+    } else {
+      // Existing logic for other voucher types
+      updateSubmittedVoucherStatus(voucher.id, 'approved');
+      toast.success("অনুমোদন সম্পন্ন হয়েছে!");
+    }
     onOpenChange(false); // Close popup
-    // Removed: navigate("/final-check-approval"); // No longer navigate
   };
 
   const handleSendBack = () => {
@@ -150,11 +162,9 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
     if (commentType === 'send_back') {
       updateSubmittedVoucherStatus(voucher.id, 'sent_back', comment);
       toast.info("ভাউচার ফেরত পাঠানো হয়েছে।");
-      // Removed: navigate("/dashboard"); // No longer navigate
     } else if (commentType === 'reject') {
       updateSubmittedVoucherStatus(voucher.id, 'rejected', comment);
       toast.error("ভাউচার বাতিল করা হয়েছে।");
-      // Removed: navigate("/dashboard"); // No longer navigate
     }
     setIsCommentDialogOpen(false);
     setComment("");
@@ -416,6 +426,8 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
               <TableCell>{itemData.dateNeeded ? format(new Date(itemData.dateNeeded), "dd MMM, yyyy") : "N/A"}</TableCell>
               <TableCell>{getDropdownLabel(voucherTypeId, 'pettyCashType', itemData.pettyCashType, itemData) || "N/A"}</TableCell>
               <TableCell className="text-right">{(itemData.requestedAmount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</TableCell>
+              <TableCell className="text-right">{(item.approvedAmount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</TableCell>
+              <TableCell>{item.expectedAdjustmentDate ? format(parseISO(item.expectedAdjustmentDate), "dd MMM, yyyy") : "N/A"}</TableCell>
               <TableCell>{itemData.description || "N/A"}</TableCell>
             </TableRow>
           </TableBody>
@@ -604,6 +616,8 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
             <TableHead>কত তারিখে প্রয়োজন</TableHead>
             <TableHead>পেটি ক্যাশের ধরন</TableHead>
             <TableHead className="text-right">চাহিদাকৃত টাকার পরিমান</TableHead>
+            <TableHead className="text-right">অনুমোদিত টাকার পরিমান</TableHead>
+            <TableHead>সম্ভাব্য সমন্বয়ের তারিখ</TableHead>
             <TableHead>বর্ণনা</TableHead>
           </TableRow>
         );
@@ -629,7 +643,7 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
       case 'rental-utility': return 10;
       case 'repair': return 8; // NEW: Colspan for repair
       case 'mobile-bill': return 6;
-      case 'petty-cash-demand': return 6; // NEW: Colspan for petty-cash-demand
+      case 'petty-cash-demand': return 8; // NEW: Colspan for petty-cash-demand
       default: return 1;
     }
   };

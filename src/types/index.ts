@@ -71,6 +71,8 @@ export type FormField = {
     [key: string]: number; // e.g., { "সকাল": 220, "দুপুর": 220 } for 'number' type with 'shift' dependency
   };
   allowMultiplePins?: boolean; // For 'pin-selector' type
+  minDate?: Date; // For date fields, to restrict past dates
+  maxDate?: Date; // For date fields, to restrict future dates
 };
 
 export type VoucherType = {
@@ -104,7 +106,22 @@ export type SubmittedVoucher = CartItem & {
   submittedByDepartment: string;
   submittedByDesignation: string;
   submittedByRole: UserProfile['role']; // Added submittedByRole
+  approvedAmount?: number; // NEW: For Petty Cash Demand, amount approved by mentor
+  expectedAdjustmentDate?: string; // NEW: For Petty Cash Demand, expected adjustment date
+  pettyCashUniqueCode?: string; // NEW: For Petty Cash Demand, unique code for withdrawal
+  isCodeGenerated?: boolean; // NEW: To track if code has been generated
   // originalVoucherId and correctionCount are now part of CartItem
+};
+
+// NEW: Type for Petty Cash Ledger Entry
+export type PettyCashLedgerEntry = {
+  date: string;
+  branch: string;
+  type: string; // e.g., "Official", "Bazar", "Personal" or "Adjustment"
+  withdrawalAmount: number; // Amount withdrawn (positive)
+  adjustmentAmount: number; // Amount adjusted (positive, for submitted vouchers)
+  balance: number; // Running balance
+  description: string; // Description of the transaction
 };
 
 // Specific form data types for better type safety (optional, can be inferred from FormField definitions)
@@ -206,11 +223,11 @@ export type RepairVoucherFormData = {
   attachment?: File;
 };
 
-export type PettyCashVoucherFormData = {
-  date: Date;
+export type PettyCashDemandFormData = {
   institutionId: string;
   branchId: string;
-  amount: number;
+  dateNeeded: Date;
+  pettyCashType: string;
+  requestedAmount: number;
   description: string;
-  attachment?: File;
 };
