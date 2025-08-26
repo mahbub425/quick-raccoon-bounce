@@ -16,6 +16,7 @@ interface VoucherDetailsPopupProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   voucher: SubmittedVoucher;
+  isPaymentView?: boolean; // New prop to control button visibility
 }
 
 // Helper function to get correction text
@@ -33,7 +34,7 @@ const getCorrectionText = (count: number | undefined) => {
   }
 };
 
-const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPopupProps) => {
+const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher, isPaymentView = false }: VoucherDetailsPopupProps) => {
   const { submittedVouchers, updateSubmittedVoucherStatus } = useSubmittedVouchers();
   const navigate = useNavigate();
   const [isCommentDialogOpen, setIsCommentDialogOpen] = useState(false);
@@ -410,7 +411,7 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
             <TableRow>
               <TableCell>{itemData.date ? format(new Date(itemData.date), "dd MMM, yyyy") : "N/A"}</TableCell>
               <TableCell>{getInstitutionName(itemData.institutionId)}</TableCell>
-              <TableCell>{getBranchName(itemData.institutionId, itemData.branchId)}</TableCell>
+              <TableCell>{getBranchName(itemData.institutionId, item.data.branchId)}</TableCell>
               <TableCell className="text-right">{(itemData.amount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</TableCell>
               <TableCell>{itemData.description || "N/A"}</TableCell>
               {renderAttachmentCell(itemData)}
@@ -692,17 +693,19 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
             </Table>
           </div>
 
-          <DialogFooter className="flex flex-col sm:flex-row sm:justify-center gap-4 mt-6">
-            <Button className="bg-green-600 hover:bg-green-700 text-white" onClick={handleApprove}>
-              অনুমোদিত
-            </Button>
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white" onClick={handleSendBack}>
-              ফেরত পাঠান
-            </Button>
-            <Button variant="destructive" onClick={handleReject}>
-              বাতিল করুন
-            </Button>
-          </DialogFooter>
+          {!isPaymentView && ( // Conditionally render buttons if not in payment view
+            <DialogFooter className="flex flex-col sm:flex-row sm:justify-center gap-4 mt-6">
+              <Button className="bg-green-600 hover:bg-green-700 text-white" onClick={handleApprove}>
+                অনুমোদিত
+              </Button>
+              <Button className="bg-blue-600 hover:bg-blue-700 text-white" onClick={handleSendBack}>
+                ফেরত পাঠান
+              </Button>
+              <Button variant="destructive" onClick={handleReject}>
+                বাতিল করুন
+              </Button>
+            </DialogFooter>
+          )}
         </DialogContent>
       </Dialog>
 

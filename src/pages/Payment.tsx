@@ -148,6 +148,7 @@ const Payment = () => {
           isOpen={isPopupOpen}
           onOpenChange={setIsPopupOpen}
           voucher={selectedVoucherForPopup}
+          isPaymentView={true} // Pass the new prop here
         />
       )}
     </div>
