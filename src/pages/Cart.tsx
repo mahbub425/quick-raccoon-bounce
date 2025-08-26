@@ -879,7 +879,7 @@ const Cart = () => {
                       <TableHead className="text-right">টাকার পরিমাণ</TableHead>
                       <TableHead>গ্রহিতার নাম</TableHead>
                       <TableHead>মাসের নাম</TableHead>
-                      <TableHead>বর্ণনা</Head>
+                      <TableHead>বর্ণনা</TableHead>
                       <TableHead>সংযুক্তি</TableHead>
                       <TableHead className="text-center">অ্যাকশন</TableHead>
                     </TableRow>
