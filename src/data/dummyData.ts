@@ -1204,6 +1204,33 @@ export const DUMMY_VOUCHER_TYPES: VoucherType[] = [
       { name: "attachment", label: "সংযুক্তি", type: "file", mandatory: false },
     ],
   },
+  {
+    id: "petty-cash",
+    heading: "পেটি ক্যাশ",
+    shortDescription: "দৈনন্দিন খরচ সম্পাদনের জন্য প্রদান।",
+    type: "single",
+    formFields: [
+      { name: "date", label: "তারিখ", type: "date", mandatory: true },
+      {
+        name: "institutionId",
+        label: "প্রতিষ্ঠানের নাম",
+        type: "dropdown",
+        mandatory: true,
+        options: DUMMY_INSTITUTIONS.map((inst) => ({ value: inst.id, label: inst.name })),
+      },
+      {
+        name: "branchId",
+        label: "শাখার নাম",
+        type: "dropdown",
+        mandatory: true,
+        options: [{ value: "bogura", label: "Bogura (বগুড়া)" }],
+        dependency: { field: "institutionId", value: "*" },
+      },
+      { name: "amount", label: "টাকার পরিমাণ", type: "number", mandatory: true, placeholder: "টাকার পরিমাণ লিখুন" },
+      { name: "description", label: "বর্ণনা", type: "textarea", mandatory: true, placeholder: "বর্ণনা লিখুন" },
+      { name: "attachment", label: "সংযুক্তি", type: "file", mandatory: false },
+    ],
+  },
 
   // Publicity sub-vouchers (these should NOT appear in VoucherEntry.tsx main list)
   {
