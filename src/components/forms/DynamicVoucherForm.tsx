@@ -84,6 +84,38 @@ const createSchema = (fields: FormFieldType[], currentFormValues: any, voucherTy
   const addFieldToSchema = (field: FormFieldType) => {
     let currentFieldSchema: z.ZodTypeAny;
 
+    // Determine visibility based on the same logic as renderField
+    let isFieldVisibleInCurrentContext = !field.dependency || (currentFormValues[field.dependency.field] === field.dependency.value || field.dependency.value === "*");
+
+    // Apply special visibility logic for 'entertainment' voucher's conditional fields
+    if (voucherTypeId === "entertainment") {
+      const currentExpenseTitle = currentFormValues.expenseTitle;
+      const currentExpenseCategory = currentFormValues.expenseCategory;
+
+      if (field.name === "guestName") {
+        isFieldVisibleInCurrentContext = currentExpenseTitle === "Director & Guest" && currentExpenseCategory === "Guest";
+      } else if (field.name === "studentName") {
+        isFieldVisibleInCurrentContext = currentExpenseTitle === "Student & Guardian" && currentExpenseCategory === "Student";
+      } else if (field.name === "guardianName") {
+        isFieldVisibleInCurrentContext = currentExpenseTitle === "Student & Guardian" && currentExpenseCategory === "Guardian";
+      } else if (field.name === "quantityUnitTea") {
+        isFieldVisibleInCurrentContext = currentExpenseTitle === "Tea & Tea Materials" && (currentExpenseCategory === "Tea Bag" || currentExpenseCategory === "Sugar" || currentExpenseCategory === "Ginger" || currentExpenseCategory === "Lemon");
+      } else if (field.name === "quantityUnitWater") {
+        isFieldVisibleInCurrentContext = currentExpenseTitle === "Drinking Water" && (currentExpenseCategory === "Safe International" || currentExpenseCategory === "Ma Enterprise" || currentExpenseCategory === "Others");
+      } else if (field.name === "quantityUnitOthers") {
+        isFieldVisibleInCurrentContext = currentExpenseTitle === "Others" && currentExpenseCategory === "Gas for Cooking";
+      } else if (field.name === "selectedPins") {
+        isFieldVisibleInCurrentContext = (currentExpenseTitle === "Staff" && (currentExpenseCategory === "Afternoon Snacks" || currentExpenseCategory === "Iftar")) ||
+                                  (currentExpenseTitle === "Teacher" && (currentExpenseCategory === "Breakfast" || currentExpenseCategory === "Afternoon Snacks"));
+      }
+    }
+
+    // If the field is not visible, it should always be optional in the schema.
+    if (!isFieldVisibleInCurrentContext) {
+      schemaFields[field.name] = z.any().optional(); // Make it optional and allow any value if not visible
+      return; // Skip further schema definition for this field
+    }
+
     switch (field.type) {
       case "date":
         currentFieldSchema = z.date({ invalid_type_error: `${field.label} অবশ্যই একটি তারিখ হতে হবে` });
@@ -208,7 +240,7 @@ const createSchema = (fields: FormFieldType[], currentFormValues: any, voucherTy
               dynamicCategoryOptions = [
                 { value: "Tea Bag", label: "Tea Bag (টি ব্যাগ)" },
                 { value: "Sugar", label: "Sugar (চিনি)" },
-                { value: "Ginger", label: "Ginger (আদা)" },
+                { value: "Cinger", label: "Ginger (আদা)" },
                 { value: "Lemon", label: "Lemon (লেবু)" },
                 { value: "Spice", label: "Spice (মসলা)" },
               ];
