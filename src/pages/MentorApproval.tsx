@@ -11,7 +11,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon } from "lucide-react";
 import { format, isWithinInterval, parseISO, endOfDay } from "date-fns";
 import { DUMMY_INSTITUTIONS, DUMMY_VOUCHER_TYPES } from "@/data/dummyData";
-import { cn }
+import { cn } from "@/lib/utils"; // Corrected import statement
 import { SubmittedVoucher } from "@/types";
 
 // Helper function to get voucher heading by ID (copied from other files for consistency)
