@@ -31,7 +31,8 @@ const Cart = () => {
   const rentalUtilityVouchers = cartItems.filter(item => item.voucherTypeId === 'rental-utility');
   const mobileBillVouchers = cartItems.filter(item => item.voucherTypeId === 'mobile-bill');
   const repairVouchers = cartItems.filter(item => item.voucherTypeId === 'repair'); // NEW: Filter for repair vouchers
-  const pettyCashVouchers = cartItems.filter(item => item.voucherTypeId === 'petty-cash');
+  // const pettyCashVouchers = cartItems.filter(item => item.voucherTypeId === 'petty-cash'); // Removed petty-cash
+  const pettyCashDemandVouchers = cartItems.filter(item => item.voucherTypeId === 'petty-cash-demand'); // NEW: Filter for petty-cash-demand
   const officeSuppliesStationeryVouchers = cartItems.filter(item => item.voucherTypeId === 'office-supplies-stationery');
   const cleaningSuppliesVouchers = cartItems.filter(item => item.voucherTypeId === 'cleaning-supplies');
   const kitchenHouseholdVouchers = cartItems.filter(item => item.voucherTypeId === 'kitchen-household-items');
@@ -102,6 +103,8 @@ const Cart = () => {
     } else if (fieldName === "type" && voucherTypeId === "publicity-entertainment") {
       options = field.options || [];
     } else if (fieldName === "shift" && voucherTypeId === "publicity-publicist-bill") {
+      options = field.options || [];
+    } else if (fieldName === "pettyCashType" && voucherTypeId === "petty-cash-demand") { // NEW: Petty Cash Type
       options = field.options || [];
     } else {
       options = field.options || []; // Fallback for other dropdowns
@@ -501,7 +504,36 @@ const Cart = () => {
     ));
   };
 
-  // Helper function for rendering simple voucher tables (mobile-bill, petty-cash)
+  // NEW: Render Petty Cash Demand Table
+  const renderPettyCashDemandTable = (items: CartItem[]) => {
+    if (items.length === 0) {
+      return (
+        <TableRow>
+          <TableCell colSpan={8} className="text-center text-gray-500">
+            কোনো পেটি ক্যাশ চাহিদাপত্র ভাউচার নেই।
+          </TableCell>
+        </TableRow>
+      );
+    }
+
+    return items.map((item, index) => (
+      <TableRow key={item.id}>
+        <TableCell className="font-medium">{index + 1}</TableCell>
+        <TableCell>{getInstitutionName(item.data.institutionId)}</TableCell>
+        <TableCell>{getBranchName(item.data.institutionId, item.data.branchId)}</TableCell>
+        <TableCell>{item.data.dateNeeded ? format(new Date(item.data.dateNeeded), "dd MMM, yyyy") : "N/A"}</TableCell>
+        <TableCell>{getDropdownLabel(item.voucherTypeId, 'pettyCashType', item.data.pettyCashType, item.data) || "N/A"}</TableCell>
+        <TableCell className="text-right">{item.data.requestedAmount || 0}</TableCell>
+        <TableCell>{item.data.description || "N/A"}</TableCell>
+        <TableCell className="flex justify-center space-x-2">
+          <Button variant="outline" size="sm" onClick={() => handleEdit(item)}>এডিট</Button>
+          <Button variant="destructive" size="sm" onClick={() => removeFromCart(item.id)}>মুছে ফেলুন</Button>
+        </TableCell>
+      </TableRow>
+    ));
+  };
+
+  // Helper function for rendering simple voucher tables (mobile-bill)
   const renderGenericSimpleTable = (items: CartItem[], title: string, headerBgClass: string) => {
     if (items.length === 0) {
       return (
@@ -543,6 +575,32 @@ const Cart = () => {
         </div>
       ) : (
         <div className="space-y-8">
+          {/* Petty Cash Demand Voucher Table */}
+          {pettyCashDemandVouchers.length > 0 && (
+            <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+              <h2 className="text-2xl font-bold text-gray-700 mb-4">পেটি ক্যাশ চাহিদাপত্র</h2>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-gray-100">
+                      <TableHead className="w-[50px]">ক্রমিক</TableHead>
+                      <TableHead>প্রতিষ্ঠানের নাম</TableHead>
+                      <TableHead>প্রদেয় শাখা</TableHead>
+                      <TableHead>কত তারিখে প্রয়োজন</TableHead>
+                      <TableHead>পেটি ক্যাশের ধরন</TableHead>
+                      <TableHead className="text-right">চাহিদাকৃত টাকার পরিমান</TableHead>
+                      <TableHead>বর্ণনা</TableHead>
+                      <TableHead className="text-center">অ্যাকশন</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {renderPettyCashDemandTable(pettyCashDemandVouchers)}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          )}
+
           {/* Publicity Conveyance Voucher Table */}
           {publicityConveyanceVouchers.length > 0 && (
             <div className="bg-white p-6 rounded-xl shadow-lg border border-blue-200">
@@ -868,7 +926,8 @@ const Cart = () => {
             </div>
           )}
 
-          {pettyCashVouchers.length > 0 && (
+          {/* Removed Petty Cash Voucher Table */}
+          {/* {pettyCashVouchers.length > 0 && (
             <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
               <h2 className="text-2xl font-bold text-gray-700 mb-4">পেটি ক্যাশ ভাউচার</h2>
               <div className="overflow-x-auto">
@@ -891,7 +950,7 @@ const Cart = () => {
                 </Table>
               </div>
             </div>
-          )}
+          )} */}
           <div className="text-center mt-10">
             <Button
               onClick={handleSubmitAllVouchers}

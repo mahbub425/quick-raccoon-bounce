@@ -29,12 +29,13 @@ const voucherIcons: { [key: string]: React.ElementType } = {
   "mobile-bill": Smartphone,
   "rental-utility": Building,
   "repair": Wrench,
-  "petty-cash": Wallet,
+  // "petty-cash": Wallet, // Removed petty-cash
 
   // Publicity sub-vouchers (these are not in the main list, but defined in dummyData)
   "publicity-conveyance": Car, // Reusing Car
   "publicity-entertainment": Utensils, // Reusing Utensils
   "publicity-publicist-bill": DollarSign, // Publicist bill
+  "petty-cash-demand": Wallet, // Icon for new petty-cash-demand
 };
 
 const VoucherEntry = () => {
@@ -96,6 +97,7 @@ const VoucherEntry = () => {
   // Filter vouchers based on user designation
   const visibleVoucherTypes = DUMMY_VOUCHER_TYPES
     .filter(v => !hiddenVoucherIds.includes(v.id)) // Existing filter for sub-types
+    .filter(v => v.id !== "petty-cash") // Exclude the old petty-cash voucher
     .filter(v => {
       if (user?.designation === "Support Staff") {
         return SUPPORT_STAFF_ALLOWED_VOUCHER_TYPES_IDS.includes(v.id);

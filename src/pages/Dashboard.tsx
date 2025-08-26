@@ -96,6 +96,8 @@ const Dashboard = () => {
       options = field.options || [];
     } else if (fieldName === "shift" && voucherTypeId === "publicity-publicist-bill") {
       options = field.options || [];
+    } else if (fieldName === "pettyCashType" && voucherTypeId === "petty-cash-demand") { // NEW: Petty Cash Type
+      options = field.options || [];
     } else {
       options = field.options || [];
     }
@@ -164,9 +166,9 @@ const Dashboard = () => {
       <TableCell>{getVoucherHeadingById(voucher.voucherTypeId)}</TableCell>
       <TableCell>{getInstitutionName(voucher.data.institutionId)}</TableCell>
       <TableCell>{getBranchName(voucher.data.institutionId, voucher.data.branchId)}</TableCell>
-      <TableCell className="text-right">{(voucher.data.amount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT' })}</TableCell>
+      <TableCell className="text-right">{(voucher.data.amount || voucher.data.requestedAmount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT' })}</TableCell> {/* Adjusted for requestedAmount */}
       <TableCell>{voucher.comment || "N/A"}</TableCell>
-      {renderAttachmentCell(voucher.data)} {/* Added attachment cell */}
+      {voucher.voucherTypeId !== 'petty-cash-demand' && renderAttachmentCell(voucher.data)} {/* Only render attachment if not petty-cash-demand */}
       <TableCell className="text-center">
         {isEditable ? (
           <Button variant="outline" size="sm" onClick={() => handleEditSentBackVoucher(voucher)}>

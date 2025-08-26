@@ -111,6 +111,8 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
       options = field.options || [];
     } else if (fieldName === "shift" && voucherTypeId === "publicity-publicist-bill") {
       options = field.options || [];
+    } else if (fieldName === "pettyCashType" && voucherTypeId === "petty-cash-demand") { // NEW: Petty Cash Type
+      options = field.options || [];
     } else {
       options = field.options || []; // Fallback for other dropdowns
     }
@@ -393,7 +395,6 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
           </TableBody>
         );
       case 'mobile-bill':
-      case 'petty-cash':
         return (
           <TableBody>
             <TableRow>
@@ -403,6 +404,19 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
               <TableCell className="text-right">{(itemData.amount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</TableCell>
               <TableCell>{itemData.description || "N/A"}</TableCell>
               {renderAttachmentCell(itemData)}
+            </TableRow>
+          </TableBody>
+        );
+      case 'petty-cash-demand': // NEW: Petty Cash Demand details
+        return (
+          <TableBody>
+            <TableRow>
+              <TableCell>{getInstitutionName(itemData.institutionId)}</TableCell>
+              <TableCell>{getBranchName(itemData.institutionId, itemData.branchId)}</TableCell>
+              <TableCell>{itemData.dateNeeded ? format(new Date(itemData.dateNeeded), "dd MMM, yyyy") : "N/A"}</TableCell>
+              <TableCell>{getDropdownLabel(voucherTypeId, 'pettyCashType', itemData.pettyCashType, itemData) || "N/A"}</TableCell>
+              <TableCell className="text-right">{(itemData.requestedAmount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</TableCell>
+              <TableCell>{itemData.description || "N/A"}</TableCell>
             </TableRow>
           </TableBody>
         );
@@ -572,7 +586,6 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
           </TableRow>
         );
       case 'mobile-bill':
-      case 'petty-cash':
         return (
           <TableRow className="bg-gray-100">
             <TableHead>তারিখ</TableHead>
@@ -581,6 +594,17 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
             <TableHead className="text-right">টাকার পরিমাণ</TableHead>
             <TableHead>বর্ণনা</TableHead>
             <TableHead>সংযুক্তি</TableHead>
+          </TableRow>
+        );
+      case 'petty-cash-demand': // NEW: Petty Cash Demand table header
+        return (
+          <TableRow className="bg-gray-100">
+            <TableHead>প্রতিষ্ঠানের নাম</TableHead>
+            <TableHead>প্রদেয় শাখা</TableHead>
+            <TableHead>কত তারিখে প্রয়োজন</TableHead>
+            <TableHead>পেটি ক্যাশের ধরন</TableHead>
+            <TableHead className="text-right">চাহিদাকৃত টাকার পরিমান</TableHead>
+            <TableHead>বর্ণনা</TableHead>
           </TableRow>
         );
       default:
@@ -604,8 +628,8 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
       case 'kitchen-household-items': return 9;
       case 'rental-utility': return 10;
       case 'repair': return 8; // NEW: Colspan for repair
-      case 'mobile-bill':
-      case 'petty-cash': return 6;
+      case 'mobile-bill': return 6;
+      case 'petty-cash-demand': return 6; // NEW: Colspan for petty-cash-demand
       default: return 1;
     }
   };
@@ -648,7 +672,7 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher }: VoucherDetailsPo
               <TableFooter>
                 <TableRow className="bg-gray-50 font-bold">
                   <TableCell colSpan={getTableColSpan(voucher.voucherTypeId) - 1}>মোট</TableCell>
-                  <TableCell className="text-right">{(voucher.data.amount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</TableCell>
+                  <TableCell className="text-right">{(voucher.data.amount || voucher.data.requestedAmount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</TableCell>
                 </TableRow>
               </TableFooter>
             </Table>

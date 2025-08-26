@@ -241,7 +241,6 @@ export const SUPPORT_STAFF_ALLOWED_VOUCHER_TYPES_IDS = [
   "publicity-students-inspiration-multi", // পাবলিসিটি ও স্টুডেন্টস ইন্সপাইরেশন ভাউচার (parent for publicity, publicity-students-inspiration)
   "stationery-maintenance-multi", // স্টেশনারি ও রক্ষণাবেক্ষণ সম্পর্কিত ভাউচার (parent for office-supplies-stationery, cleaning-supplies, kitchen-household-items)
   "mobile-bill", // মোবাইল বিল
-  "petty-cash", // পেটি ক্যাশ (Existing petty cash)
   "petty-cash-demand", // পেটি ক্যাশ চাহিদাপত্র (New petty cash demand)
 ];
 
@@ -1127,34 +1126,6 @@ export const DUMMY_VOUCHER_TYPES: VoucherType[] = [
       { name: "attachment", label: "সংযুক্তি", type: "file", mandatory: false },
     ],
   },
-  {
-    id: "petty-cash",
-    heading: "পেটি ক্যাশ",
-    shortDescription: "দৈনন্দিন খরচ সম্পাদনের জন্য প্রদান।",
-    type: "single",
-    formFields: [
-      { name: "date", label: "তারিখ", type: "date", mandatory: true },
-      {
-        name: "institutionId",
-        label: "প্রতিষ্ঠানের নাম",
-        type: "dropdown",
-        mandatory: true,
-        options: DUMMY_INSTITUTIONS.map((inst) => ({ value: inst.id, label: inst.name })),
-      },
-      {
-        name: "branchId",
-        label: "শাখার নাম",
-        type: "dropdown",
-        mandatory: true,
-        options: [{ value: "bogura", label: "Bogura (বগুড়া)" }],
-        dependency: { field: "institutionId", value: "*" },
-      },
-      { name: "amount", label: "টাকার পরিমাণ", type: "number", mandatory: true, placeholder: "টাকার পরিমাণ লিখুন" },
-      { name: "description", label: "বর্ণনা", type: "textarea", mandatory: true, placeholder: "বর্ণনা লিখুন" },
-      { name: "attachment", label: "সংযুক্তি", type: "file", mandatory: false },
-    ],
-  },
-  // NEW: Petty Cash Demand Letter Voucher Type
   {
     id: "petty-cash-demand",
     heading: "পেটি ক্যাশ চাহিদাপত্র",
