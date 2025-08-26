@@ -278,9 +278,19 @@ const MentorVoucherDetails = () => {
                 <TableRow className="bg-blue-100">
                   <TableHead className="w-[50px]">ক্রমিক</TableHead>
                   <TableHead>ভাউচার নাম্বার</TableHead>
-                  <TableHead>জমাদানের তারিখ</TableHead>
-                  <TableHead>শাখার নাম</TableHead>
-                  <TableHead>ভাউচারের ধরন</TableHead>
+                  {selectedVoucherType === 'petty-cash-demand' ? (
+                    <TableHead>কত তারিখে প্রয়োজন</TableHead> // Renamed
+                  ) : (
+                    <TableHead>জমাদানের তারিখ</TableHead>
+                  )}
+                  {selectedVoucherType === 'petty-cash-demand' ? (
+                    <TableHead>প্রদেয় শাখা</TableHead> // Renamed
+                  ) : (
+                    <TableHead>শাখার নাম</TableHead>
+                  )}
+                  {selectedVoucherType !== 'petty-cash-demand' && ( // Removed for petty cash
+                    <TableHead>ভাউচারের ধরন</TableHead>
+                  )}
                   {selectedVoucherType === 'petty-cash-demand' && (
                     <>
                       <TableHead>পেটি ক্যাশের ধরন</TableHead>
@@ -308,10 +318,20 @@ const MentorVoucherDetails = () => {
                         </span>
                       )}
                     </TableCell>
-                    <TableCell>{format(parseISO(voucher.createdAt), "dd MMM, yyyy")}</TableCell>
+                    {/* Conditional Date Cell */}
+                    {selectedVoucherType === 'petty-cash-demand' ? (
+                      <TableCell>{voucher.data.dateNeeded ? format(new Date(voucher.data.dateNeeded), "dd MMM, yyyy") : "N/A"}</TableCell> // Use dateNeeded
+                    ) : (
+                      <TableCell>{format(parseISO(voucher.createdAt), "dd MMM, yyyy")}</TableCell>
+                    )}
+                    {/* Conditional Branch Name Cell */}
                     <TableCell>{getBranchName(voucher.data.institutionId, voucher.data.branchId)}</TableCell>
-                    <TableCell>{getVoucherHeadingById(voucher.voucherTypeId)}</TableCell>
-                    {voucher.voucherTypeId === 'petty-cash-demand' && (
+                    {/* Conditional Voucher Type Cell */}
+                    {selectedVoucherType !== 'petty-cash-demand' && (
+                      <TableCell>{getVoucherHeadingById(voucher.voucherTypeId)}</TableCell>
+                    )}
+                    {/* Petty Cash Specific Cells */}
+                    {selectedVoucherType === 'petty-cash-demand' && (
                       <>
                         <TableCell>{getPettyCashTypeLabel(voucher.data.pettyCashType)}</TableCell>
                         <TableCell>{voucher.data.description || "N/A"}</TableCell>
@@ -359,14 +379,14 @@ const MentorVoucherDetails = () => {
                         </TableCell>
                       </>
                     )}
-                    {voucher.voucherTypeId !== 'petty-cash-demand' && (
+                    {selectedVoucherType !== 'petty-cash-demand' && (
                       <TableCell className="text-right">{(voucher.data.amount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</TableCell>
                     )}
                     <TableCell className="text-center flex justify-center space-x-2">
                       {voucher.voucherTypeId === 'petty-cash-demand' && editingPettyCashId === voucher.id ? (
                         <>
                           <Button variant="default" size="sm" onClick={() => handleSavePettyCashApproval(voucher.id)}>
-                            সেভ
+                            অনুমোদিত {/* Changed from সেভ to অনুমোদিত */}
                           </Button>
                           <Button variant="outline" size="sm" onClick={handleCancelEdit}>
                             বাতিল
@@ -374,9 +394,12 @@ const MentorVoucherDetails = () => {
                         </>
                       ) : (
                         <>
-                          <Button variant="outline" size="sm" onClick={() => handleViewVoucherDetails(voucher)}>
-                            দেখুন
-                          </Button>
+                          {voucher.voucherTypeId !== 'petty-cash-demand' && ( // Conditionally render "দেখুন"
+                            <Button variant="outline" size="sm" onClick={() => handleViewVoucherDetails(voucher)}>
+                              দেখুন
+                            </Button>
+                          )}
+                          {/* The "এডিট" button for petty-cash-demand is already conditional */}
                           {voucher.voucherTypeId === 'petty-cash-demand' && (
                             <Button variant="secondary" size="sm" onClick={() => handleEditPettyCashApproval(voucher)}>
                               এডিট
@@ -390,18 +413,20 @@ const MentorVoucherDetails = () => {
               </TableBody>
               <TableFooter>
                 <TableRow className="bg-blue-50 font-bold">
-                  <TableCell colSpan={selectedVoucherType === 'petty-cash-demand' ? 7 : 4}>মোট</TableCell> {/* Adjusted colSpan */}
-                  {selectedVoucherType === 'petty-cash-demand' && (
+                  {selectedVoucherType === 'petty-cash-demand' ? (
                     <>
+                      <TableCell colSpan={6}>মোট</TableCell> {/* Spans up to 'বর্ণনা' */}
                       <TableCell className="text-right">{(filteredUserVouchers.reduce((sum, v) => sum + (v.data.requestedAmount || 0), 0)).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</TableCell>
                       <TableCell className="text-right">{(filteredUserVouchers.reduce((sum, v) => sum + (v.approvedAmount || 0), 0)).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</TableCell>
-                      <TableCell></TableCell> {/* Empty for date */}
+                      <TableCell colSpan={2}></TableCell> {/* Empty for date and action */}
+                    </>
+                  ) : (
+                    <>
+                      <TableCell colSpan={5}>মোট</TableCell> {/* Spans up to 'ভাউচারের ধরন' */}
+                      <TableCell className="text-right">{totalAmountForUserVouchers.toLocaleString('bn-BD', { style: 'currency', currency: 'BDT', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</TableCell>
+                      <TableCell></TableCell> {/* Empty cell for action column */}
                     </>
                   )}
-                  {selectedVoucherType !== 'petty-cash-demand' && (
-                    <TableCell className="text-right">{totalAmountForUserVouchers.toLocaleString('bn-BD', { style: 'currency', currency: 'BDT', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</TableCell>
-                  )}
-                  <TableCell></TableCell> {/* Empty cell for action column */}
                 </TableRow>
               </TableFooter>
             </Table>
