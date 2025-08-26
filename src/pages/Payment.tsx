@@ -67,12 +67,26 @@ const Payment = () => {
   };
 
   const handleVerifyCodeAndPay = (inputCode: string) => {
-    if (!voucherToProcess) return;
+    if (!voucherToProcess) {
+      console.error("No voucher to process for verification.");
+      return;
+    }
 
-    if (voucherToProcess.pettyCashUniqueCode === inputCode) {
-      updateSubmittedVoucherStatus(voucherToProcess.id, 'paid');
-      toast.success(`পেটি ক্যাশ চাহিদাপত্র ${voucherToProcess.voucherNumber} সফলভাবে পেমেন্ট করা হয়েছে!`);
-      addPettyCashLedgerEntry(createWithdrawalLedgerEntry(voucherToProcess)); // Add to ledger
+    // Retrieve the latest version of the voucher from the context's submittedVouchers
+    // This ensures we have the most up-to-date pettyCashUniqueCode
+    const latestVoucher = submittedVouchers.find(v => v.id === voucherToProcess.id);
+
+    if (!latestVoucher) {
+      console.error("Latest voucher not found in submittedVouchers context.");
+      toast.error("ভাউচার তথ্য খুঁজে পাওয়া যায়নি।");
+      return;
+    }
+
+    // Compare the stored code with the input code (converted to uppercase for case-insensitivity)
+    if (latestVoucher.pettyCashUniqueCode === inputCode.toUpperCase()) {
+      updateSubmittedVoucherStatus(latestVoucher.id, 'paid');
+      toast.success(`পেটি ক্যাশ চাহিদাপত্র ${latestVoucher.voucherNumber} সফলভাবে পেমেন্ট করা হয়েছে!`);
+      addPettyCashLedgerEntry(createWithdrawalLedgerEntry(latestVoucher)); // Add to ledger
       setIsCodeVerificationPopupOpen(false);
       setVoucherToProcess(null);
     } else {
