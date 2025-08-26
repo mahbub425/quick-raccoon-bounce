@@ -31,8 +31,8 @@ const Header = ({ children }: HeaderProps) => {
   };
 
   return (
-    <header className="bg-gradient-to-r from-blue-600 to-purple-700 text-white p-4 shadow-lg">
-      <div className="container mx-auto flex justify-between items-center">
+    <header className="fixed top-0 w-full z-50 bg-gradient-to-r from-blue-600 to-purple-700 text-white p-4 shadow-lg h-16 flex items-center">
+      <div className="container mx-auto flex justify-between items-center w-full">
         <div className="flex items-center">
           {children} {/* Mobile menu trigger will be rendered here */}
           <Link to="/" className="text-2xl font-bold tracking-wide">

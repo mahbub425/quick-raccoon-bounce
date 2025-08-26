@@ -38,7 +38,7 @@ const Layout = () => {
       </Header>
 
       {user ? ( // Only show sidebar and main content if logged in
-        <div className="flex flex-1">
+        <div className="flex flex-1 pt-16"> {/* Added pt-16 to push content below the fixed header */}
           {/* Desktop Sidebar */}
           {!isMobile && (
             <aside className="w-64 bg-sidebar border-r border-sidebar-border shadow-md">
@@ -50,7 +50,7 @@ const Layout = () => {
           </main>
         </div>
       ) : ( // If not logged in, just show the outlet (login page)
-        <main className="flex-1">
+        <main className="flex-1 pt-16"> {/* Added pt-16 for consistency, though login page might not need it */}
           <Outlet />
         </main>
       )}
