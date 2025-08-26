@@ -4,7 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { toast } from "sonner";
 import { useCart } from "@/context/CartContext";
 import { useSubmittedVouchers } from "@/context/SubmittedVouchersContext";
-import { CartItem } from "@/types";
+import { CartItem, SubmittedVoucher } from "@/types"; // Import SubmittedVoucher type
 import { DUMMY_INSTITUTIONS, DUMMY_PINS, DUMMY_PROGRAM_SESSIONS, DUMMY_VOUCHER_TYPES, OFFICE_SUPPLIES_ITEM_OPTIONS, CLEANING_SUPPLIES_ITEM_OPTIONS, KITCHEN_HOUSEHOLD_ITEM_OPTIONS, RENTAL_UTILITY_EXPENSE_CATEGORIES, REPAIR_ITEM_OPTIONS } from "@/data/dummyData";
 import { format } from "date-fns";
 import { useAuth } from "@/context/AuthContext";
@@ -12,10 +12,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import DynamicVoucherForm from "@/components/forms/DynamicVoucherForm";
 import { useNavigate } from "react-router-dom";
 import AttachmentViewerPopup from "@/components/AttachmentViewerPopup"; // Import the new component
+import { createAdjustmentLedgerEntry } from "@/utils/pettyCashUtils"; // Ensure this is imported
 
 const Cart = () => {
   const { cartItems, removeFromCart, updateCartItem, clearCart } = useCart();
-  const { addSubmittedVouchers, addPettyCashLedgerEntry } = useSubmittedVouchers(); // Added addPettyCashLedgerEntry
+  const { addSubmittedVouchers, addPettyCashLedgerEntry } = useSubmittedVouchers();
   const { user } = useAuth();
   const [editingItem, setEditingItem] = useState<CartItem | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -30,8 +31,8 @@ const Cart = () => {
   const publicityPublicistBillVouchers = cartItems.filter(item => item.voucherTypeId === 'publicity-publicist-bill');
   const rentalUtilityVouchers = cartItems.filter(item => item.voucherTypeId === 'rental-utility');
   const mobileBillVouchers = cartItems.filter(item => item.voucherTypeId === 'mobile-bill');
-  const repairVouchers = cartItems.filter(item => item.voucherTypeId === 'repair'); // NEW: Filter for repair vouchers
-  const pettyCashDemandVouchers = cartItems.filter(item => item.voucherTypeId === 'petty-cash-demand'); // NEW: Filter for petty-cash-demand
+  const repairVouchers = cartItems.filter(item => item.voucherTypeId === 'repair');
+  const pettyCashDemandVouchers = cartItems.filter(item => item.voucherTypeId === 'petty-cash-demand');
   const officeSuppliesStationeryVouchers = cartItems.filter(item => item.voucherTypeId === 'office-supplies-stationery');
   const cleaningSuppliesVouchers = cartItems.filter(item => item.voucherTypeId === 'cleaning-supplies');
   const kitchenHouseholdVouchers = cartItems.filter(item => item.voucherTypeId === 'kitchen-household-items');
@@ -132,24 +133,25 @@ const Cart = () => {
       return;
     }
     
-    // Filter petty cash demand vouchers for special handling
     const pettyCashDemands = cartItems.filter(item => item.voucherTypeId === 'petty-cash-demand');
     const otherVouchers = cartItems.filter(item => item.voucherTypeId !== 'petty-cash-demand');
 
-    // Submit other vouchers normally (they will go to mentor and payment)
+    let submittedOtherVouchers: SubmittedVoucher[] = [];
+    let submittedPettyCashDemands: SubmittedVoucher[] = [];
+
     if (otherVouchers.length > 0) {
-      addSubmittedVouchers(otherVouchers);
+      submittedOtherVouchers = addSubmittedVouchers(otherVouchers); // Capture returned items
       // Add adjustment entries for non-petty-cash vouchers to the user's ledger
-      otherVouchers.forEach(voucher => {
-        if (user) {
-          addPettyCashLedgerEntry(createAdjustmentLedgerEntry({ ...voucher, submittedByPin: user.pin }));
+      submittedOtherVouchers.forEach(voucher => { // Iterate over fully formed SubmittedVoucher
+        if (user) { // user is guaranteed to be not null here due to ProtectedRoute
+          addPettyCashLedgerEntry(createAdjustmentLedgerEntry(voucher)); // Pass the full SubmittedVoucher
         }
       });
     }
 
-    // Submit petty cash demand vouchers (they will only go to mentor initially)
     if (pettyCashDemands.length > 0) {
-      addSubmittedVouchers(pettyCashDemands);
+      submittedPettyCashDemands = addSubmittedVouchers(pettyCashDemands); // Capture returned items
+      // Petty cash demands are added to ledger only upon payment, so no ledger entry here.
     }
 
     clearCart(); // Clear the cart after submission
@@ -878,7 +880,7 @@ const Cart = () => {
                       <TableHead className="text-right">টাকার পরিমাণ</TableHead>
                       <TableHead>গ্রহিতার নাম</TableHead>
                       <TableHead>মাসের নাম</TableHead>
-                      <TableHead>বর্ণনা</TableHead>
+                      <TableHead>বর্ণনা</Head>
                       <TableHead>সংযুক্তি</TableHead>
                       <TableHead className="text-center">অ্যাকশন</TableHead>
                     </TableRow>

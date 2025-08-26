@@ -7,7 +7,7 @@ import { format, parseISO } from "date-fns";
 
 interface SubmittedVouchersContextType {
   submittedVouchers: SubmittedVoucher[];
-  addSubmittedVouchers: (items: Omit<CartItem, 'id' | 'createdAt'>[]) => void;
+  addSubmittedVouchers: (items: Omit<CartItem, 'id' | 'createdAt'>[]) => SubmittedVoucher[]; // Added return type
   updateSubmittedVoucherStatus: (voucherId: string, status: VoucherStatus, comment?: string) => void;
   updateSubmittedVoucherData: (voucherId: string, newData: any) => void;
   markVoucherAsCorrected: (voucherId: string) => void;
@@ -77,10 +77,10 @@ export const SubmittedVouchersProvider = ({ children }: { children: ReactNode })
     }
   }, [allPettyCashLedgers]);
 
-  const addSubmittedVouchers = (items: Omit<CartItem, 'id' | 'createdAt'>[]) => {
+  const addSubmittedVouchers = (items: Omit<CartItem, 'id' | 'createdAt'>[]): SubmittedVoucher[] => { // Added return type
     if (!user) {
       toast.error("ভাউচার সাবমিট করার জন্য লগইন করুন।");
-      return;
+      return []; // Return empty array if no user
     }
 
     const newSubmittedItems: SubmittedVoucher[] = items.map(item => {
@@ -106,6 +106,7 @@ export const SubmittedVouchersProvider = ({ children }: { children: ReactNode })
       };
     });
     setSubmittedVouchers((prev) => [...prev, ...newSubmittedItems]);
+    return newSubmittedItems; // Return the newly added items
   };
 
   const updateSubmittedVoucherStatus = (voucherId: string, status: VoucherStatus, comment?: string) => {
