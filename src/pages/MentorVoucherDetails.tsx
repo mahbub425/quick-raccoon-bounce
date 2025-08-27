@@ -298,8 +298,8 @@ const MentorVoucherDetails = () => {
                     <>
                       <TableHead>পেটি ক্যাশের ধরন</TableHead>
                       <TableHead>বর্ণনা</TableHead>
-                      <TableHead className="text-right">চাহিদাকৃত টাকার পরিমান</TableHead>
-                      <TableHead className="text-right">অনুমোদিত টাকার পরিমান</TableHead>
+                      <TableHead className="text-right">চাহিদাকৃত টাকার পরিমাণ</TableHead>
+                      <TableHead className="text-right">অনুমোদিত টাকার পরিমাণ</TableHead>
                       <TableHead>সম্ভাব্য সমন্বয়ের তারিখ</TableHead>
                     </>
                   )}

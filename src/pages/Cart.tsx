@@ -607,7 +607,7 @@ const Cart = () => {
                       <TableHead>প্রদেয় শাখা</TableHead>
                       <TableHead>কত তারিখে প্রয়োজন</TableHead>
                       <TableHead>পেটি ক্যাশের ধরন</TableHead>
-                      <TableHead className="text-right">চাহিদাকৃত টাকার পরিমান</TableHead>
+                      <TableHead className="text-right">চাহিদাকৃত টাকার পরিমাণ</TableHead>
                       <TableHead>বর্ণনা</TableHead>
                       <TableHead className="text-center">অ্যাকশন</TableHead>
                     </TableRow>

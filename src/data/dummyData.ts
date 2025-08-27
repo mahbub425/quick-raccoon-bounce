@@ -615,7 +615,7 @@ export const DUMMY_VOUCHER_TYPES: VoucherType[] = [
           { name: "guardianName", label: "Guardian Name (অভিভাবকের নাম)", type: "text", mandatory: true, placeholder: "অভিভাবকের নাম লিখুন", dependency: { field: "expenseTitle", value: "Student & Guardian" } },
           {
             name: "quantityUnitTea", // Renamed to avoid conflict if multiple quantityUnit fields exist
-            label: "পরিমান এবং ইউনিট (চা)",
+            label: "পরিমাণ এবং ইউনিট (চা)",
             type: "quantity-unit",
             mandatory: true,
             unitOptions: [
@@ -626,7 +626,7 @@ export const DUMMY_VOUCHER_TYPES: VoucherType[] = [
           },
           {
             name: "quantityUnitWater", // Renamed
-            label: "পরিমান এবং ইউনিট (পানি)",
+            label: "পরিমাণ এবং ইউনিট (পানি)",
             type: "quantity-unit",
             mandatory: true,
             unitOptions: [
@@ -637,7 +637,7 @@ export const DUMMY_VOUCHER_TYPES: VoucherType[] = [
           },
           {
             name: "quantityUnitOthers", // Renamed
-            label: "পরিমান এবং ইউনিট (অন্যান্য)",
+            label: "পরিমাণ এবং ইউনিট (অন্যান্য)",
             type: "quantity-unit",
             mandatory: true,
             unitOptions: [
@@ -1159,7 +1159,7 @@ export const DUMMY_VOUCHER_TYPES: VoucherType[] = [
           { value: "Personal", label: "Personal (ব্যক্তিগত)" },
         ],
       },
-      { name: "requestedAmount", label: "চাহিদাকৃত টাকার পরিমান", type: "number", mandatory: true, placeholder: "টাকার পরিমাণ লিখুন" },
+      { name: "requestedAmount", label: "চাহিদাকৃত টাকার পরিমাণ", type: "number", mandatory: true, placeholder: "টাকার পরিমাণ লিখুন" },
       { name: "description", label: "বর্ণনা", type: "textarea", mandatory: true, placeholder: "বর্ণনা লিখুন" },
     ],
   },

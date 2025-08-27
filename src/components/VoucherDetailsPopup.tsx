@@ -616,8 +616,8 @@ const VoucherDetailsPopup = ({ isOpen, onOpenChange, voucher, isPaymentView = fa
             <TableHead>প্রদেয় শাখা</TableHead>
             <TableHead>কত তারিখে প্রয়োজন</TableHead>
             <TableHead>পেটি ক্যাশের ধরন</TableHead>
-            <TableHead className="text-right">চাহিদাকৃত টাকার পরিমান</TableHead>
-            <TableHead className="text-right">অনুমোদিত টাকার পরিমান</TableHead>
+            <TableHead className="text-right">চাহিদাকৃত টাকার পরিমাণ</TableHead>
+            <TableHead className="text-right">অনুমোদিত টাকার পরিমাণ</TableHead>
             <TableHead>সম্ভাব্য সমন্বয়ের তারিখ</TableHead>
             <TableHead>বর্ণনা</TableHead>
           </TableRow>

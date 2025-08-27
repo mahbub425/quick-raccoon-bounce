@@ -70,10 +70,10 @@ const PettyCashLedgerPopup = ({ isOpen, onOpenChange, userPin }: PettyCashLedger
               <TableRow className="bg-blue-100">
                 <TableHead className="w-[50px]">ক্রমিক</TableHead>
                 <TableHead>তারিখ</TableHead>
-                <TableHead>উত্তলনের শাখা</TableHead>
+                <TableHead>উত্তোলনের শাখা</TableHead>
                 <TableHead>পেটিক্যাশ/ ভাউচারের ধরন</TableHead> {/* Updated header */}
-                <TableHead className="text-right">উত্তলনের পরিমান</TableHead>
-                <TableHead className="text-right">সমন্বয়ের পরিমান</TableHead>
+                <TableHead className="text-right">উত্তোলনের পরিমাণ</TableHead>
+                <TableHead className="text-right">সমন্বয়ের পরিমাণ</TableHead>
                 <TableHead className="text-right">ব্যালেন্স</TableHead>
                 <TableHead>বর্ণনা</TableHead>
               </TableRow>
@@ -101,9 +101,9 @@ const PettyCashLedgerPopup = ({ isOpen, onOpenChange, userPin }: PettyCashLedger
                     </TableCell>
                     <TableCell className="text-right">
                       <span className={cn(
-                        entry.balance >= 0 ? "text-red-700" : "text-green-700"
+                        currentBalance >= 0 ? "text-red-700" : "text-green-700"
                       )}>
-                        {entry.balance.toLocaleString('bn-BD', { style: 'currency', currency: 'BDT', minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                        {currentBalance.toLocaleString('bn-BD', { style: 'currency', currency: 'BDT', minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                       </span>
                     </TableCell>
                     <TableCell>{entry.description}</TableCell>

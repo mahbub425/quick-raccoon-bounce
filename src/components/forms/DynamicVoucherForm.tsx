@@ -148,7 +148,7 @@ const createSchema = (fields: FormFieldType[], currentFormValues: any, voucherTy
             currentFieldSchema = baseNumberSchema.refine(
               (val) => val === null || val <= maxAmount, // Allow null
               {
-                message: `আপনি টাকার পরিমান বেশি দেখিয়েছেন`, // Updated message
+                message: `আপনি টাকার পরিমাণ বেশি দেখিয়েছেন`, // Updated message
               }
             );
           } else {
@@ -240,7 +240,7 @@ const createSchema = (fields: FormFieldType[], currentFormValues: any, voucherTy
               dynamicCategoryOptions = [
                 { value: "Tea Bag", label: "Tea Bag (টি ব্যাগ)" },
                 { value: "Sugar", label: "Sugar (চিনি)" },
-                { value: "Cinger", label: "Ginger (আদা)" },
+                { value: "Ginger", label: "Ginger (আদা)" },
                 { value: "Lemon", label: "Lemon (লেবু)" },
                 { value: "Spice", label: "Spice (মসলা)" },
               ];
@@ -313,26 +313,26 @@ const createSchema = (fields: FormFieldType[], currentFormValues: any, voucherTy
           }
 
           currentFieldSchema = z.object({
-            quantity: z.string().min(1, "পরিমান আবশ্যক"),
+            quantity: z.string().min(1, "পরিমাণ আবশ্যক"),
             unit: z.string().min(1, "ইউনিট আবশ্যক"),
           });
           if (shouldBeMandatory) {
             currentFieldSchema = (currentFieldSchema as z.ZodObject<{ quantity: z.ZodString, unit: z.ZodString }>).refine(
               (val) => val.quantity !== "" && val.unit !== "",
-              { message: `${field.label} এর পরিমান ও ইউনিট উভয়ই আবশ্যক` }
+              { message: `${field.label} এর পরিমাণ ও ইউনিট উভয়ই আবশ্যক` }
             );
           } else {
             currentFieldSchema = (currentFieldSchema as z.ZodObject<{ quantity: z.ZodString, unit: z.ZodString }>).optional();
           }
         } else {
           currentFieldSchema = z.object({
-            quantity: z.string().min(1, "পরিমান আবশ্যক"),
+            quantity: z.string().min(1, "পরিমাণ আবশ্যক"),
             unit: z.string().min(1, "ইউনিট আবশ্যক"),
           });
           if (field.mandatory) {
             currentFieldSchema = (currentFieldSchema as z.ZodObject<{ quantity: z.ZodString, unit: z.ZodString }>).refine(
               (val) => val.quantity !== "" && val.unit !== "",
-              { message: `${field.label} এর পরিমান ও ইউনিট উভয়ই আবশ্যক` }
+              { message: `${field.label} এর পরিমাণ ও ইউনিট উভয়ই আবশ্যক` }
             );
           } else {
             currentFieldSchema = (currentFieldSchema as z.ZodObject<{ quantity: z.ZodString, unit: z.ZodString }>).optional();
@@ -708,7 +708,7 @@ const DynamicVoucherForm = forwardRef<DynamicVoucherFormRef, DynamicVoucherFormP
                       <div className="flex space-x-2">
                         <Input
                           type="text"
-                          placeholder="পরিমান"
+                          placeholder="পরিমাণ"
                           value={formHookField.value?.quantity || ""}
                           onChange={(e) => formHookField.onChange({ ...formHookField.value, quantity: e.target.value })}
                           className="w-2/3 border-blue-300 focus:border-blue-500 focus:ring-blue-500"
