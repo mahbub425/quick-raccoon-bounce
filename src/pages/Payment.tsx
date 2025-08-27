@@ -12,7 +12,7 @@ import VoucherDetailsPopup from "@/components/VoucherDetailsPopup"; // Import th
 import PaymentCodeVerificationPopup from "@/components/PaymentCodeVerificationPopup"; // Import new component
 import { createWithdrawalLedgerEntry } from "@/utils/pettyCashUtils"; // Import utility for ledger entry
 
-type PaymentViewFilter = 'all' | 'petty_cash' | 'other_vouchers';
+type PaymentViewFilter = 'all' | 'petty_cash'; // Removed 'other_vouchers'
 
 const Payment = () => {
   const { submittedVouchers, updateSubmittedVoucherStatus, addPettyCashLedgerEntry } = useSubmittedVouchers();
@@ -29,10 +29,10 @@ const Payment = () => {
     const approvedOrPending = submittedVouchers.filter(v => v.status === 'pending' || v.status === 'approved');
 
     if (currentFilter === 'petty_cash') {
-      return approvedOrPending.filter(v => v.voucherTypeId === 'petty-cash-demand');
-    } else if (currentFilter === 'other_vouchers') {
-      return approvedOrPending.filter(v => v.voucherTypeId !== 'petty-cash-demand');
-    }
+      // Only show approved petty cash vouchers
+      return approvedOrPending.filter(v => v.voucherTypeId === 'petty-cash-demand' && v.status === 'approved');
+    } 
+    // 'all' filter shows all approved or pending vouchers
     return approvedOrPending;
   }, [submittedVouchers, currentFilter]);
 
@@ -117,14 +117,7 @@ const Payment = () => {
         >
           অনুমোদন প্রাপ্ত পেটিক্যাশের ভাউচার সমূহ
         </Button>
-        <Button
-          variant={currentFilter === 'other_vouchers' ? "default" : "outline"}
-          className={currentFilter === 'other_vouchers' ? "bg-teal-600 text-white hover:bg-teal-700" : "bg-white text-teal-700 border-teal-400 hover:bg-teal-100 hover:text-teal-800"}
-          onClick={() => setCurrentFilter('other_vouchers')}
-        >
-          অনুমোদন প্রাপ্ত ভাউচার সমূহ
-        </Button>
-        {/* Optionally, an "All" button */}
+        {/* Removed 'other_vouchers' button */}
         <Button
           variant={currentFilter === 'all' ? "default" : "outline"}
           className={currentFilter === 'all' ? "bg-teal-600 text-white hover:bg-teal-700" : "bg-white text-teal-700 border-teal-400 hover:bg-teal-100 hover:text-teal-800"}
