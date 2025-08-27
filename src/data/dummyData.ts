@@ -1294,3 +1294,13 @@ export const DUMMY_VOUCHER_TYPES: VoucherType[] = [
     ],
   },
 ];
+
+// New constant for payment types
+export const PAYMENT_TYPES = [
+  { value: "petty_person", label: "পেটিপার্সন" },
+  { value: "salary_allowance", label: "স্যালারি ও এলাউন্স" },
+  { value: "office_rent", label: "অফিস ভাড়া" },
+  { value: "director_payment", label: "ডিরেক্টর পেমেন্ট" },
+  { value: "donation", label: "ডোনেশন" },
+  { value: "tuition_fee_return", label: "টিউশন ফি রিটার্ন" },
+];

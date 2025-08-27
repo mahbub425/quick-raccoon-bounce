@@ -99,6 +99,10 @@ const Payment = () => {
     setIsPopupOpen(true);
   };
 
+  const handleMakePaymentClick = () => {
+    navigate("/payment/make-payment");
+  };
+
   const totalVouchers = vouchersForPaymentView.length;
   const grandTotalAmount = vouchersForPaymentView.reduce((sum, voucher) => sum + (voucher.voucherTypeId === 'petty-cash-demand' ? (voucher.approvedAmount || 0) : (voucher.data.amount || 0)), 0);
 
@@ -123,6 +127,13 @@ const Payment = () => {
           onClick={() => setCurrentFilter('all')}
         >
           সকল ভাউচার
+        </Button>
+        <Button
+          variant="default"
+          className="bg-purple-600 text-white hover:bg-purple-700"
+          onClick={handleMakePaymentClick}
+        >
+          পেমেন্ট করুন
         </Button>
       </div>
 
