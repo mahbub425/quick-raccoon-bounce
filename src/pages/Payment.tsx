@@ -12,7 +12,7 @@ import VoucherDetailsPopup from "@/components/VoucherDetailsPopup"; // Import th
 import PaymentCodeVerificationPopup from "@/components/PaymentCodeVerificationPopup"; // Import new component
 import { createWithdrawalLedgerEntry } from "@/utils/pettyCashUtils"; // Import utility for ledger entry
 
-type PaymentViewFilter = 'all' | 'petty_cash'; // Removed 'other_vouchers'
+type PaymentViewFilter = 'all' | 'petty_cash';
 
 const Payment = () => {
   const { submittedVouchers, updateSubmittedVoucherStatus, addPettyCashLedgerEntry } = useSubmittedVouchers();
@@ -32,8 +32,8 @@ const Payment = () => {
       // Only show approved petty cash vouchers
       return approvedOrPending.filter(v => v.voucherTypeId === 'petty-cash-demand' && v.status === 'approved');
     } 
-    // 'all' filter shows all approved or pending vouchers
-    return approvedOrPending;
+    // 'all' filter shows all approved or pending vouchers, excluding petty cash demands
+    return approvedOrPending.filter(v => v.voucherTypeId !== 'petty-cash-demand');
   }, [submittedVouchers, currentFilter]);
 
   const getVoucherHeadingById = (id: string) => {
@@ -117,7 +117,6 @@ const Payment = () => {
         >
           অনুমোদন প্রাপ্ত পেটিক্যাশের ভাউচার সমূহ
         </Button>
-        {/* Removed 'other_vouchers' button */}
         <Button
           variant={currentFilter === 'all' ? "default" : "outline"}
           className={currentFilter === 'all' ? "bg-teal-600 text-white hover:bg-teal-700" : "bg-white text-teal-700 border-teal-400 hover:bg-teal-100 hover:text-teal-800"}
@@ -181,15 +180,17 @@ const Payment = () => {
                       >
                         দেখুন
                       </Button>
-                      <Button 
-                        variant="default" 
-                        size="sm" 
-                        className="bg-teal-600 hover:bg-teal-700 text-white" 
-                        onClick={() => handleMarkAsPaid(voucher.id)}
-                        disabled={voucher.status !== 'approved'} // Disable if not approved
-                      >
-                        পেমেন্ট সম্পন্ন করুন
-                      </Button>
+                      {currentFilter !== 'all' && ( // Conditionally render "পেমেন্ট সম্পন্ন করুন"
+                        <Button 
+                          variant="default" 
+                          size="sm" 
+                          className="bg-teal-600 hover:bg-teal-700 text-white" 
+                          onClick={() => handleMarkAsPaid(voucher.id)}
+                          disabled={voucher.status !== 'approved'} // Disable if not approved
+                        >
+                          পেমেন্ট সম্পন্ন করুন
+                        </Button>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}
