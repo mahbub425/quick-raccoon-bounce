@@ -1,12 +1,16 @@
 import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { PAYMENT_TYPES } from "@/data/dummyData";
+import { cn } from "@/lib/utils"; // Import cn for conditional classnames
 
 const MakePayment = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedPaymentType, setSelectedPaymentType] = useState<string | undefined>(undefined);
+
+  // Determine if an error should be shown for the search input
+  const showSearchError = searchTerm.trim() !== "" && selectedPaymentType === undefined;
 
   return (
     <div className="min-h-[calc(100vh-80px)] bg-gradient-to-br from-blue-50 to-purple-50 p-6">
@@ -41,8 +45,11 @@ const MakePayment = () => {
               placeholder="নাম বা আইডি দিয়ে সার্চ করুন"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full"
+              className={cn("w-full", showSearchError && "border-red-500 focus:border-red-500 focus:ring-red-500")} // Add red border on error
             />
+            {showSearchError && (
+              <p className="text-red-500 text-sm mt-1">পেমেন্টের ধরণ নির্বাচন করুন</p>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -50,11 +57,7 @@ const MakePayment = () => {
       {/* Placeholder for data display with conditional message */}
       <div className="text-center text-xl text-gray-600 p-8 bg-white rounded-lg shadow-inner border border-gray-200 max-w-4xl mx-auto">
         {!selectedPaymentType ? (
-          searchTerm ? (
-            <p>পেমেন্টের ধরন নির্বাচন করুন।</p>
-          ) : (
-            <p>পেমেন্টের ধরণ নির্বাচন করুন অথবা সার্চ করুন।</p>
-          )
+          <p>পেমেন্টের ধরণ নির্বাচন করুন</p> // Simplified message
         ) : (
           <p>
             আপনি "{PAYMENT_TYPES.find(p => p.value === selectedPaymentType)?.label}" নির্বাচন করেছেন।
