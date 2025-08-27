@@ -10,6 +10,12 @@ const MakePayment = () => {
 
   return (
     <div className="min-h-[calc(100vh-80px)] bg-gradient-to-br from-blue-50 to-purple-50 p-6">
+      {/* Temporary debugging element */}
+      <div style={{ backgroundColor: 'red', color: 'white', padding: '10px', marginBottom: '20px' }}>
+        DEBUG: MakePayment component is active!
+      </div>
+      {/* End temporary debugging element */}
+
       <h1 className="text-4xl font-extrabold text-center text-blue-800 mb-8">
         পেমেন্ট করুন
       </h1>
