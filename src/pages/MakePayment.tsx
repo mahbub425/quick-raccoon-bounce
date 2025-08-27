@@ -39,7 +39,7 @@ const MakePayment = () => {
                 <SelectValue placeholder="পেমেন্টের ধরণ নির্বাচন করুন" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">পেমেন্টের ধরণ নির্বাচন করুন</SelectItem>
+                {/* Removed the problematic SelectItem with empty value */}
                 {PAYMENT_TYPES.map(option => (
                   <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
                 ))}
