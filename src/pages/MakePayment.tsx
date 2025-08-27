@@ -6,7 +6,7 @@ import { PAYMENT_TYPES } from "@/data/dummyData";
 
 const MakePayment = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedPaymentType, setSelectedPaymentType] = useState<string | undefined>(undefined); // Changed initial state to undefined
+  const [selectedPaymentType, setSelectedPaymentType] = useState<string | undefined>(undefined);
 
   return (
     <div className="min-h-[calc(100vh-80px)] bg-gradient-to-br from-blue-50 to-purple-50 p-6">
@@ -16,7 +16,7 @@ const MakePayment = () => {
 
       <Card className="mb-8 p-6 shadow-lg border-blue-300 bg-white max-w-4xl mx-auto">
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Dropdown Filter - Moved before Search Input */}
+          {/* Dropdown Filter */}
           <div className="flex flex-col space-y-1">
             <label htmlFor="paymentType" className="text-sm font-medium text-gray-700">পেমেন্টের ধরণ নির্বাচন করুন</label>
             <Select value={selectedPaymentType} onValueChange={setSelectedPaymentType}>
@@ -49,9 +49,9 @@ const MakePayment = () => {
 
       {/* Placeholder for data display with conditional message */}
       <div className="text-center text-xl text-gray-600 p-8 bg-white rounded-lg shadow-inner border border-gray-200 max-w-4xl mx-auto">
-        {!selectedPaymentType ? ( // Check if selectedPaymentType is undefined
+        {!selectedPaymentType ? (
           searchTerm ? (
-            <p>পেমেন্টের ধরন নির্বাচন করুন এটি দেখাবে</p>
+            <p>পেমেন্টের ধরন নির্বাচন করুন।</p>
           ) : (
             <p>পেমেন্টের ধরণ নির্বাচন করুন অথবা সার্চ করুন।</p>
           )
