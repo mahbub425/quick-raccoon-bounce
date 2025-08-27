@@ -120,7 +120,7 @@ export type PettyCashLedgerEntry = {
   branch: string;
   type: string; // e.g., "Official", "Bazar", "Personal" or "Adjustment"
   withdrawalAmount: number; // Amount withdrawn (positive)
-  adjustmentAmount: number; // Amount adjusted (positive, for submitted vouchers)
+  adjustmentAmount: number; // Amount adjusted (negative for submission, positive for reversal/rejected)
   balance: number; // Running balance
   description: string; // Description of the transaction
 };

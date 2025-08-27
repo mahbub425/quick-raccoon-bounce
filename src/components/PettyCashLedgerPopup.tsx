@@ -93,7 +93,12 @@ const PettyCashLedgerPopup = ({ isOpen, onOpenChange, userPin }: PettyCashLedger
                     <TableCell>{getBranchName(entry.branch)}</TableCell>
                     <TableCell>{getPettyCashTypeLabel(entry.type)}</TableCell>
                     <TableCell className="text-right">{(entry.withdrawalAmount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</TableCell>
-                    <TableCell className="text-right">{(entry.adjustmentAmount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</TableCell>
+                    <TableCell className="text-right">
+                      {entry.adjustmentAmount < 0 ? 
+                        `-${Math.abs(entry.adjustmentAmount).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT', minimumFractionDigits: 0, maximumFractionDigits: 0 })}` :
+                        (entry.adjustmentAmount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT', minimumFractionDigits: 0, maximumFractionDigits: 0 })
+                      }
+                    </TableCell>
                     <TableCell className="text-right">
                       <span className={cn(
                         entry.balance >= 0 ? "text-red-700" : "text-green-700"

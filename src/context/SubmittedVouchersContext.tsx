@@ -2,7 +2,7 @@ import React, { createContext, useState, useContext, ReactNode, useEffect, useMe
 import { CartItem, SubmittedVoucher, VoucherStatus, PettyCashLedgerEntry } from "@/types";
 import { useAuth } from "./AuthContext";
 import { toast } from "sonner";
-import { generatePettyCashVoucherNumber, createWithdrawalLedgerEntry, createAdjustmentLedgerEntry } from "@/utils/pettyCashUtils"; // Import utility functions
+import { generatePettyCashVoucherNumber, createWithdrawalLedgerEntry, createAdjustmentLedgerEntry, createReversalLedgerEntry } from "@/utils/pettyCashUtils"; // Import new function
 import { format, parseISO } from "date-fns";
 
 interface SubmittedVouchersContextType {
@@ -111,9 +111,21 @@ export const SubmittedVouchersProvider = ({ children }: { children: ReactNode })
 
   const updateSubmittedVoucherStatus = (voucherId: string, status: VoucherStatus, comment?: string) => {
     setSubmittedVouchers((prev) =>
-      prev.map((voucher) =>
-        voucher.id === voucherId ? { ...voucher, status, comment } : voucher,
-      ),
+      prev.map((voucher) => {
+        if (voucher.id === voucherId) {
+          // Check if it's a non-petty-cash voucher being sent back or rejected
+          // And ensure it's not already in that state to prevent duplicate ledger entries
+          if (
+            voucher.voucherTypeId !== 'petty-cash-demand' &&
+            (status === 'sent_back' || status === 'rejected') &&
+            (voucher.status !== 'sent_back' && voucher.status !== 'rejected') // Only add ledger entry if status is changing to sent_back/rejected for the first time
+          ) {
+            addPettyCashLedgerEntry(createReversalLedgerEntry(voucher, status));
+          }
+          return { ...voucher, status, comment };
+        }
+        return voucher;
+      }),
     );
   };
 
@@ -177,7 +189,7 @@ export const SubmittedVouchersProvider = ({ children }: { children: ReactNode })
       // Recalculate balances for all entries in the new ledger
       let runningBalance = 0;
       const updatedLedger = newLedger.map(item => {
-        runningBalance += item.withdrawalAmount - item.adjustmentAmount;
+        runningBalance += item.withdrawalAmount + item.adjustmentAmount; // Corrected balance calculation
         return { ...item, balance: runningBalance };
       });
 
