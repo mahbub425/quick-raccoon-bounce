@@ -71,9 +71,9 @@ const PettyCashLedgerPopup = ({ isOpen, onOpenChange, userPin }: PettyCashLedger
                 <TableHead className="w-[50px]">ক্রমিক</TableHead>
                 <TableHead>তারিখ</TableHead>
                 <TableHead>উত্তলনের শাখা</TableHead>
-                <TableHead>পেটিক্যাশ/ ভাউচারের ধরন</TableHead>
-                <TableHead className="text-right">ডেবিট</TableHead> {/* Changed header */}
-                <TableHead className="text-right">ক্রেডিট</TableHead> {/* Changed header */}
+                <TableHead>পেটিক্যাশ/ ভাউচারের ধরন</TableHead> {/* Updated header */}
+                <TableHead className="text-right">উত্তলনের পরিমান</TableHead>
+                <TableHead className="text-right">সমন্বয়ের পরিমান</TableHead>
                 <TableHead className="text-right">ব্যালেন্স</TableHead>
                 <TableHead>বর্ণনা</TableHead>
               </TableRow>
@@ -92,8 +92,13 @@ const PettyCashLedgerPopup = ({ isOpen, onOpenChange, userPin }: PettyCashLedger
                     <TableCell>{format(parseISO(entry.date), "dd MMM, yyyy")}</TableCell>
                     <TableCell>{getBranchName(entry.branch)}</TableCell>
                     <TableCell>{getPettyCashTypeLabel(entry.type)}</TableCell>
-                    <TableCell className="text-right">{(entry.debit || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</TableCell> {/* Display debit */}
-                    <TableCell className="text-right">{(entry.credit || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</TableCell> {/* Display credit */}
+                    <TableCell className="text-right">{(entry.withdrawalAmount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</TableCell>
+                    <TableCell className="text-right">
+                      {entry.adjustmentAmount < 0 ? 
+                        `-${Math.abs(entry.adjustmentAmount).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT', minimumFractionDigits: 0, maximumFractionDigits: 0 })}` :
+                        (entry.adjustmentAmount || 0).toLocaleString('bn-BD', { style: 'currency', currency: 'BDT', minimumFractionDigits: 0, maximumFractionDigits: 0 })
+                      }
+                    </TableCell>
                     <TableCell className="text-right">
                       <span className={cn(
                         entry.balance >= 0 ? "text-red-700" : "text-green-700"

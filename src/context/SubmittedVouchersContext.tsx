@@ -189,7 +189,7 @@ export const SubmittedVouchersProvider = ({ children }: { children: ReactNode })
       // Recalculate balances for all entries in the new ledger
       let runningBalance = 0;
       const updatedLedger = newLedger.map(item => {
-        runningBalance += item.debit - item.credit; // Balance = Previous Balance + Debit - Credit
+        runningBalance += item.withdrawalAmount + item.adjustmentAmount; // Corrected balance calculation
         return { ...item, balance: runningBalance };
       });
 

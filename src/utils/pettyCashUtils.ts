@@ -14,7 +14,7 @@ export const generateUniquePettyCashCode = (): string => {
 // Function to calculate the running balance for a user's petty cash ledger
 export const calculatePettyCashBalance = (ledger: PettyCashLedgerEntry[]): number => {
   return ledger.reduce((acc, entry) => {
-    return acc + entry.debit - entry.credit; // Balance = Previous Balance + Debit - Credit
+    return acc + entry.withdrawalAmount + entry.adjustmentAmount; // Adjusted calculation
   }, 0);
 };
 
@@ -28,35 +28,35 @@ export const generatePettyCashVoucherNumber = (): string => {
   return result;
 };
 
-// Function to create a ledger entry from a paid petty cash demand voucher (Withdrawal)
+// Function to create a ledger entry from a paid petty cash demand voucher
 export const createWithdrawalLedgerEntry = (voucher: SubmittedVoucher): PettyCashLedgerEntry => {
   return {
-    userPin: voucher.submittedByPin,
+    userPin: voucher.submittedByPin, // Include userPin
     date: format(parseISO(voucher.createdAt), "yyyy-MM-dd"),
-    branch: voucher.data.branchId,
+    branch: voucher.data.branchId, // Assuming branchId is stored in data
     type: voucher.data.pettyCashType,
-    debit: voucher.approvedAmount || 0, // Withdrawal is a debit to user's account
-    credit: 0,
+    withdrawalAmount: voucher.approvedAmount || 0,
+    adjustmentAmount: 0,
     balance: 0, // Will be calculated by the ledger logic
     description: `পেটি ক্যাশ উত্তোলন: ${voucher.voucherNumber}`,
   };
 };
 
-// Function to create a ledger entry from a submitted non-petty-cash voucher (Adjustment/Expense)
+// Function to create a ledger entry from a submitted non-petty-cash voucher (for adjustment)
 export const createAdjustmentLedgerEntry = (voucher: SubmittedVoucher): PettyCashLedgerEntry => {
   return {
-    userPin: voucher.submittedByPin,
+    userPin: voucher.submittedByPin, // Include userPin
     date: format(parseISO(voucher.createdAt), "yyyy-MM-dd"),
-    branch: voucher.data.branchId,
-    type: voucher.voucherHeading,
-    debit: 0,
-    credit: voucher.data.amount || 0, // Submitting a voucher is a credit to user's account
+    branch: voucher.data.branchId, // Assuming branchId is stored in data
+    type: voucher.voucherHeading, // Use voucher heading as type for adjustment
+    withdrawalAmount: 0,
+    adjustmentAmount: -(voucher.data.amount || 0), // Negative adjustment for submission
     balance: 0, // Will be calculated by the ledger logic
     description: `ভাউচার সমন্বয়: ${voucher.voucherNumber}`,
   };
 };
 
-// Function to create a ledger entry for a rejected/sent-back voucher (Reversing a previous adjustment)
+// NEW: Function to create a ledger entry for a rejected/sent-back voucher (reversing adjustment)
 export const createReversalLedgerEntry = (voucher: SubmittedVoucher, status: 'sent_back' | 'rejected'): PettyCashLedgerEntry => {
   const description = status === 'sent_back'
     ? `ভাউচার ফেরত পাঠানো হয়েছে: ${voucher.voucherNumber}`
@@ -67,9 +67,9 @@ export const createReversalLedgerEntry = (voucher: SubmittedVoucher, status: 'se
     date: format(new Date(), "yyyy-MM-dd"), // Use current date for reversal entry
     branch: voucher.data.branchId,
     type: voucher.voucherHeading,
-    debit: voucher.data.amount || 0, // Reversing a credit is a debit
-    credit: 0,
-    balance: 0, // Will be calculated by the ledger logic
+    withdrawalAmount: 0,
+    adjustmentAmount: (voucher.data.amount || 0), // Positive adjustment for reversal
+    balance: 0,
     description: description,
   };
 };
