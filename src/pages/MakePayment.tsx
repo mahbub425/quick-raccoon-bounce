@@ -15,10 +15,24 @@ const MakePayment = () => {
       </h1>
 
       <Card className="mb-8 p-6 shadow-lg border-blue-300 bg-white max-w-4xl mx-auto">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-2xl font-bold text-blue-700">পেমেন্ট ফিল্টার</CardTitle>
-        </CardHeader>
+        {/* Removed CardTitle "পেমেন্ট ফিল্টার" */}
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Dropdown Filter - Moved before Search Input */}
+          <div className="flex flex-col space-y-1">
+            <label htmlFor="paymentType" className="text-sm font-medium text-gray-700">পেমেন্টের ধরণ নির্বাচন করুন</label>
+            <Select value={selectedPaymentType} onValueChange={setSelectedPaymentType}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="পেমেন্টের ধরণ নির্বাচন করুন" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">পেমেন্টের ধরণ নির্বাচন করুন</SelectItem>
+                {PAYMENT_TYPES.map(option => (
+                  <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           {/* Search Input */}
           <div className="flex flex-col space-y-1">
             <label htmlFor="search" className="text-sm font-medium text-gray-700">সার্চ করুন</label>
@@ -30,34 +44,22 @@ const MakePayment = () => {
               className="w-full"
             />
           </div>
-
-          {/* Dropdown Filter */}
-          <div className="flex flex-col space-y-1">
-            <label htmlFor="paymentType" className="text-sm font-medium text-gray-700">পেমেন্টের ধরণ নির্বাচন করুন</label>
-            <Select value={selectedPaymentType} onValueChange={setSelectedPaymentType}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="পেমেন্টের ধরণ নির্বাচন করুন" />
-              </SelectTrigger>
-              <SelectContent>
-                {/* Removed the problematic SelectItem with empty value */}
-                {PAYMENT_TYPES.map(option => (
-                  <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
         </CardContent>
       </Card>
 
-      {/* Placeholder for data display */}
+      {/* Placeholder for data display with conditional message */}
       <div className="text-center text-xl text-gray-600 p-8 bg-white rounded-lg shadow-inner border border-gray-200 max-w-4xl mx-auto">
-        {selectedPaymentType ? (
+        {selectedPaymentType === "" ? (
+          searchTerm ? (
+            <p>পেমেন্টের ধরন নির্বাচন করুন এটি দেখাবে</p>
+          ) : (
+            <p>পেমেন্টের ধরণ নির্বাচন করুন অথবা সার্চ করুন।</p>
+          )
+        ) : (
           <p>
             আপনি "{PAYMENT_TYPES.find(p => p.value === selectedPaymentType)?.label}" নির্বাচন করেছেন।
             এখানে সংশ্লিষ্ট ডাটা দেখানো হবে।
           </p>
-        ) : (
-          <p>পেমেন্টের ধরণ নির্বাচন করুন অথবা সার্চ করুন।</p>
         )}
       </div>
     </div>
