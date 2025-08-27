@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ShoppingCart, User } from "lucide-react"; // Removed CheckCircle, DollarSign
+import { ShoppingCart, User, Bell } from "lucide-react"; // Added Bell icon
 
 interface HeaderProps {
   children?: React.ReactNode; // To allow passing mobile menu trigger
@@ -42,6 +42,15 @@ const Header = ({ children }: HeaderProps) => {
         <nav className="flex items-center space-x-4">
           {user ? (
             <>
+              {/* Notification Icon */}
+              <Button variant="ghost" size="icon" className="relative p-2 hover:bg-blue-700 rounded-md transition-colors">
+                <Bell className="h-6 w-6" />
+                {/* You can add a notification count here if needed in the future */}
+                {/* <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  3
+                </span> */}
+              </Button>
+
               <Link to={getCartPath()} className="relative p-2 hover:bg-blue-700 rounded-md transition-colors">
                 <ShoppingCart className="h-6 w-6" />
                 {cartItemCount > 0 && (
