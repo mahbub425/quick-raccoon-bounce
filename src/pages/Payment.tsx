@@ -69,6 +69,7 @@ const Payment = () => {
   const handleVerifyCodeAndPay = (inputCode: string) => {
     if (!voucherToProcess) {
       console.error("No voucher to process for verification.");
+      toast.error("পেমেন্ট প্রক্রিয়াকরণে ত্রুটি।");
       return;
     }
 
@@ -86,11 +87,20 @@ const Payment = () => {
     if (latestVoucher.pettyCashUniqueCode === inputCode.toUpperCase()) {
       updateSubmittedVoucherStatus(latestVoucher.id, 'paid');
       toast.success(`পেটি ক্যাশ চাহিদাপত্র ${latestVoucher.voucherNumber} সফলভাবে পেমেন্ট করা হয়েছে!`);
-      addPettyCashLedgerEntry(createWithdrawalLedgerEntry(latestVoucher)); // Add to ledger
+      
+      // Fix: Create a new object that strictly conforms to the expected type for createWithdrawalLedgerEntry
+      // Assert that approvedAmount is present, as it should be for an 'approved' petty-cash-demand voucher.
+      addPettyCashLedgerEntry(createWithdrawalLedgerEntry({
+        submittedByPin: latestVoucher.submittedByPin,
+        data: latestVoucher.data,
+        voucherHeading: latestVoucher.voucherHeading,
+        voucherNumber: latestVoucher.voucherNumber,
+        approvedAmount: latestVoucher.approvedAmount!, // Assert non-null
+      }));
       setIsCodeVerificationPopupOpen(false);
       setVoucherToProcess(null);
     } else {
-      toast.error("আপনি ভুল কোড প্রবেশ করিয়েছেন। পেমেন্ট সম্পন্ন হয়নি।");
+      toast.error("আপনি ভুল কোড প্রবেশ করিয়েছেন অথবা কোডটি ইতিমধ্যেই ব্যবহৃত হয়েছে।");
     }
   };
 

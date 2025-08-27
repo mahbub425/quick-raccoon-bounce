@@ -29,16 +29,17 @@ export const generatePettyCashVoucherNumber = (): string => {
 };
 
 // Function to create a ledger entry from a paid petty cash demand voucher
-export const createWithdrawalLedgerEntry = (voucher: SubmittedVoucher): PettyCashLedgerEntry => {
+// Now accepts a paymentAmount directly for flexibility
+export const createWithdrawalLedgerEntry = (voucher: Pick<SubmittedVoucher, 'submittedByPin' | 'data' | 'voucherHeading' | 'voucherNumber'> & { approvedAmount: number }): PettyCashLedgerEntry => {
   return {
-    userPin: voucher.submittedByPin, // Include userPin
-    date: format(parseISO(voucher.createdAt), "yyyy-MM-dd"),
+    userPin: voucher.submittedByPin,
+    date: format(new Date(), "yyyy-MM-dd"), // Use current date for withdrawal
     branch: voucher.data.branchId, // Assuming branchId is stored in data
-    type: voucher.data.pettyCashType,
-    withdrawalAmount: voucher.approvedAmount || 0,
+    type: voucher.voucherHeading, // Use voucher heading as type for withdrawal
+    withdrawalAmount: voucher.approvedAmount || 0, // Use the approvedAmount (which is the payment amount)
     adjustmentAmount: 0,
     balance: 0, // Will be calculated by the ledger logic
-    description: `পেটি ক্যাশ উত্তোলন: ${voucher.voucherNumber}`,
+    description: `পেটি ক্যাশ উত্তোলন: ${voucher.voucherNumber || 'N/A'}`,
   };
 };
 
@@ -47,7 +48,7 @@ export const createAdjustmentLedgerEntry = (voucher: SubmittedVoucher): PettyCas
   return {
     userPin: voucher.submittedByPin, // Include userPin
     date: format(parseISO(voucher.createdAt), "yyyy-MM-dd"),
-    branch: voucher.data.branchId, // Assuming branchId is stored in data
+    branch: voucher.data.institutionId, // Assuming institutionId is used for branch in ledger
     type: voucher.voucherHeading, // Use voucher heading as type for adjustment
     withdrawalAmount: 0,
     adjustmentAmount: -(voucher.data.amount || 0), // Negative adjustment for submission
@@ -65,7 +66,7 @@ export const createReversalLedgerEntry = (voucher: SubmittedVoucher, status: 'se
   return {
     userPin: voucher.submittedByPin,
     date: format(new Date(), "yyyy-MM-dd"), // Use current date for reversal entry
-    branch: voucher.data.branchId,
+    branch: voucher.data.institutionId, // Assuming institutionId is used for branch in ledger
     type: voucher.voucherHeading,
     withdrawalAmount: 0,
     adjustmentAmount: (voucher.data.amount || 0), // Positive adjustment for reversal

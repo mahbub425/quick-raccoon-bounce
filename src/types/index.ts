@@ -125,6 +125,15 @@ export type PettyCashLedgerEntry = {
   description: string; // Description of the transaction
 };
 
+// NEW: Type for a generated payment code notification
+export type GeneratedPaymentCode = {
+  code: string;
+  amount: number;
+  generatedAt: string;
+  isUsed: boolean;
+  paymentVoucherId?: string; // Link to the petty cash demand voucher if applicable
+};
+
 // Specific form data types for better type safety (optional, can be inferred from FormField definitions)
 export type EntertainmentVoucherFormData = {
   date: Date;

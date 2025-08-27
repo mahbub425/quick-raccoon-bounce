@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
+import { useNotifications } from "@/context/NotificationContext"; // Import useNotifications
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -12,7 +13,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ShoppingCart, User, Bell } from "lucide-react"; // Added Bell icon
+import { ShoppingCart, User, Bell } from "lucide-react";
+import NotificationPopup from "@/components/NotificationPopup"; // Import NotificationPopup
 
 interface HeaderProps {
   children?: React.ReactNode; // To allow passing mobile menu trigger
@@ -21,6 +23,10 @@ interface HeaderProps {
 const Header = ({ children }: HeaderProps) => {
   const { user, logout } = useAuth();
   const { cartItemCount } = useCart();
+  const { getUnreadNotificationCount } = useNotifications(); // Use notifications context
+  const [isNotificationPopupOpen, setIsNotificationPopupOpen] = useState(false);
+
+  const unreadNotificationCount = user ? getUnreadNotificationCount(user.pin) : 0;
 
   // Function to get the role-specific path for /cart
   const getCartPath = () => {
@@ -43,12 +49,18 @@ const Header = ({ children }: HeaderProps) => {
           {user ? (
             <>
               {/* Notification Icon */}
-              <Button variant="ghost" size="icon" className="relative p-2 hover:bg-blue-700 rounded-md transition-colors">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="relative p-2 hover:bg-blue-700 rounded-md transition-colors"
+                onClick={() => setIsNotificationPopupOpen(true)}
+              >
                 <Bell className="h-6 w-6" />
-                {/* You can add a notification count here if needed in the future */}
-                {/* <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                  3
-                </span> */}
+                {unreadNotificationCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {unreadNotificationCount}
+                  </span>
+                )}
               </Button>
 
               <Link to={getCartPath()} className="relative p-2 hover:bg-blue-700 rounded-md transition-colors">
@@ -95,6 +107,12 @@ const Header = ({ children }: HeaderProps) => {
           )}
         </nav>
       </div>
+      {user && (
+        <NotificationPopup
+          isOpen={isNotificationPopupOpen}
+          onOpenChange={setIsNotificationPopupOpen}
+        />
+      )}
     </header>
   );
 };

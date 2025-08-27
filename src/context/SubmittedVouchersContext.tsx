@@ -2,8 +2,7 @@ import React, { createContext, useState, useContext, ReactNode, useEffect, useMe
 import { CartItem, SubmittedVoucher, VoucherStatus, PettyCashLedgerEntry } from "@/types";
 import { useAuth } from "./AuthContext";
 import { toast } from "sonner";
-import { generatePettyCashVoucherNumber, createWithdrawalLedgerEntry, createAdjustmentLedgerEntry, createReversalLedgerEntry } from "@/utils/pettyCashUtils"; // Import new function
-import { format, parseISO } from "date-fns";
+import { generatePettyCashVoucherNumber, createWithdrawalLedgerEntry, createAdjustmentLedgerEntry, createReversalLedgerEntry, calculatePettyCashBalance } from "@/utils/pettyCashUtils"; // Import new function
 
 interface SubmittedVouchersContextType {
   submittedVouchers: SubmittedVoucher[];
@@ -187,15 +186,14 @@ export const SubmittedVouchersProvider = ({ children }: { children: ReactNode })
       const newLedger = [...currentLedger, entry];
       
       // Recalculate balances for all entries in the new ledger
-      let runningBalance = 0;
-      const updatedLedger = newLedger.map(item => {
-        runningBalance += item.withdrawalAmount + item.adjustmentAmount; // Corrected balance calculation
-        return { ...item, balance: runningBalance };
+      const updatedLedgerWithBalances = newLedger.map((item, index, arr) => {
+        const previousBalance = index > 0 ? arr[index - 1].balance : 0;
+        return { ...item, balance: previousBalance + item.withdrawalAmount + item.adjustmentAmount };
       });
 
       return {
         ...prevLedgers,
-        [userPin]: updatedLedger,
+        [userPin]: updatedLedgerWithBalances,
       };
     });
   };
