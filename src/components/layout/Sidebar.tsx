@@ -2,7 +2,7 @@ import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Home as HomeIcon, LayoutDashboard, FileText, CheckCircle, DollarSign, ClipboardList, BarChart } from "lucide-react";
+import { Home as HomeIcon, LayoutDashboard, FileText, CheckCircle, DollarSign, ClipboardList, BarChart, ReceiptText } from "lucide-react"; // Added ReceiptText icon
 import { useAuth } from "@/context/AuthContext";
 import { UserProfile } from "@/types";
 
@@ -47,6 +47,12 @@ const allSidebarNavItems: SidebarNavItem[] = [
     href: "/payment",
     icon: DollarSign,
     roles: ["payment"], // Only for payment
+  },
+  {
+    title: "Receive", // New menu item
+    href: "/payment/receive",
+    icon: ReceiptText, // Using ReceiptText icon
+    roles: ["payment"], // Only for payment role
   },
   {
     title: "Final Check & Approval",
@@ -97,7 +103,7 @@ const Sidebar = ({ onLinkClick }: SidebarProps) => {
     if (!user) return href;
     // Routes that should NOT be prefixed, as they are already role-specific top-level routes
     // or are intended to be accessed directly without a role prefix.
-    const directAccessRoutes = ["/mentor-approval", "/payment", "/final-check-approval"];
+    const directAccessRoutes = ["/mentor-approval", "/payment", "/payment/receive", "/final-check-approval"]; // Added /payment/receive
 
     if (directAccessRoutes.includes(href)) {
       return href; // Do not prefix these

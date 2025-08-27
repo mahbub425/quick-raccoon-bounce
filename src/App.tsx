@@ -15,7 +15,8 @@ import Cart from "./pages/Cart";
 import MentorApproval from "./pages/MentorApproval";
 import MentorVoucherDetails from "./pages/MentorVoucherDetails";
 import Payment from "./pages/Payment";
-import MakePayment from "./pages/MakePayment"; // Import the new page
+import MakePayment from "./pages/MakePayment";
+import Receive from "./pages/Receive"; // Import the new Receive page
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import FinalCheckApproval from "./pages/FinalCheckApproval";
@@ -71,7 +72,7 @@ const App = () => (
                     <Route path="/mentor-approval" element={<MentorApproval />} />
                     <Route path="/mentor-approval/:userPin" element={<MentorVoucherDetails />} />
                     <Route path="/mentor/report" element={<Report />} />
-                    <Route path="/mentor/payment" element={<Payment />} /> {/* New route for mentor's payment page */}
+                    <Route path="/mentor/payment" element={<Payment />} />
                   </Route>
                 </Route>
 
@@ -83,8 +84,9 @@ const App = () => (
                     <Route path="/payment/voucher-entry" element={<VoucherEntry />} />
                     <Route path="/payment/selected-vouchers" element={<SelectedVouchers />} />
                     <Route path="/payment/cart" element={<Cart />} />
-                    <Route path="/payment" element={<Payment />} /> {/* This is the actual Payment page */}
-                    <Route path="/payment/make-payment" element={<MakePayment />} /> {/* New route for MakePayment */}
+                    <Route path="/payment" element={<Payment />} />
+                    <Route path="/payment/make-payment" element={<MakePayment />} />
+                    <Route path="/payment/receive" element={<Receive />} /> {/* New route for Receive */}
                     <Route path="/payment/report" element={<Report />} />
                   </Route>
                 </Route>
